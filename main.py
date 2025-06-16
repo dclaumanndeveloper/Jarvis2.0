@@ -99,8 +99,6 @@ if os.path.exists(gif_path):
     root.after(0, animate)
     root.after(3000, anim_label.destroy)
 
-root.after(0, animate)
-root.after(3000, anim_label.destroy)
 chat_text.pack(side='left', expand=True, fill='both')
 
 scrollbar = tk.Scrollbar(
@@ -112,4 +110,7 @@ scrollbar.pack(side='right', fill='y')
 chat_text['yscrollcommand'] = scrollbar.set
 
 status_label.config(text="Pronto para ouvir...")
+
+# start voice recognition in background thread
+threading.Thread(target=listen_and_respond, daemon=True).start()
 root.mainloop()
