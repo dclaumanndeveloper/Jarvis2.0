@@ -48,6 +48,12 @@ class JarvisUI(QWidget):
         self.central_gif_label = QLabel()
         # Baixe um GIF e coloque o caminho aqui. Ex: "hud_circle.gif"
         self.movie = QMovie("7RRt.gif") 
+        # Faz o GIF preencher a tela inteira
+        screen = QApplication.primaryScreen()
+        rect = screen.availableGeometry()
+        self.central_gif_label.setScaledContents(True)
+        self.central_gif_label.setFixedSize(rect.size())
+        self.movie.setScaledSize(rect.size())
         self.central_gif_label.setMovie(self.movie)
         self.movie.start()
         self.layout.addWidget(self.central_gif_label, alignment=Qt.AlignmentFlag.AlignCenter)
