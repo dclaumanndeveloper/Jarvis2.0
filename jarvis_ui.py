@@ -10,10 +10,18 @@ class JarvisUI(QWidget):
         
         # --- Configuração da Janela ---
         self.setWindowTitle("J.A.R.V.I.S.")
-        self.setGeometry(100, 100, 800, 600)
+        # Ajusta para o tamanho máximo da tela
+        screen = QApplication.primaryScreen()
+        rect = screen.availableGeometry()
+        self.setGeometry(rect)
+        self.setWindowFlags(
+            self.windowFlags()
+            | Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.FramelessWindowHint
+        )
         
         # Deixa a janela sem bordas e com fundo transparente
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        #self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
         # Variável para permitir mover a janela
