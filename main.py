@@ -56,6 +56,7 @@ if __name__ == '__main__':
 
         # Lógica para executar tarefas
         if 'abrir google' in query:
+            
             speak("Abrindo o Google...")
             webbrowser.open("https://www.google.com")
         
