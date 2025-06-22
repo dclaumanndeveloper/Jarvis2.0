@@ -2,6 +2,7 @@ import speech_recognition as sr
 import pyttsx3
 import webbrowser
 import datetime
+from comandos import abrir, aumentar_volume, buscar_temperatura, definir_volume, diminuir_volume, escreva, finish_day, get_system_info, pesquisar, start_day, tocar, verificar_internet
 from jarvis_ui import JarvisUI
 # Inicializa a interface gráfica
 from PyQt6.QtWidgets import QApplication
@@ -31,7 +32,7 @@ def greet_user():
         speak("Boa noite!")
     speak("Eu sou Jarvis. Como posso ajudar?")
 
-def take_command():
+def take_query():
     """Ouve o comando do usuário e retorna como texto."""
     r = sr.Recognizer()
     with sr.Microphone() as source:
@@ -52,7 +53,7 @@ def take_command():
 if __name__ == '__main__':
     greet_user()
     while True:
-        query = take_command()
+        query = take_query()
 
         # Lógica para executar tarefas
         if 'abrir google' in query:
@@ -63,7 +64,36 @@ if __name__ == '__main__':
         elif 'que horas são' in query:
             str_time = datetime.datetime.now().strftime("%H:%M:%S")
             speak(f"Senhor, agora são {str_time}")
-
+        elif 'tocar' in query:
+            tocar(query) 
+         
+        elif 'aumentar volume' in query:
+            aumentar_volume()
+        elif 'diminuir volume' in query:
+            diminuir_volume()
+        elif 'definir' in query and 'volume' in query:
+            definir_volume(query)
+        elif 'pesquisar' in query:
+            pesquisar(query)
+        elif 'abrir' in query:
+            abrir(query)
+        elif 'verificar' in query and 'internet' in query:
+            verificar_internet()
+        elif 'verificar' in query and 'sistema' in query:
+            system_info = get_system_info()
+            for key, value in system_info.items():
+                print(f'{key}: {value}')
+                speak(f'{key}: {value}')
+        elif 'ligar as luzes' in query:
+            speak("Ligando as luzes.")
+        elif 'temperatura' in query :
+            buscar_temperatura()
+        elif 'escreva' in query:
+            escreva(query)
+        elif 'iniciar dia' in query:
+            start_day()
+        elif 'finalizar dia' in query:
+            finish_day()
         elif 'parar' in query or 'sair' in query:
             speak("Desativando. Até a próxima.")
             break
