@@ -1,5 +1,6 @@
 import speech_recognition as sr
 import pyttsx3
+
 import webbrowser
 import datetime
 from comandos import abrir, aumentar_volume, buscar_temperatura, definir_volume, diminuir_volume, escreva, finish_day, get_system_info, pesquisar, start_day, tocar, verificar_internet
@@ -43,22 +44,27 @@ def take_query():
     try:
         print("Reconhecendo...")
         query = r.recognize_google(audio, language='pt-BR')
-        print(f"Usuário disse: {query}\n")
-        ui.showMaximized()
+        if(query):
+            
+            print(f"Usuário disse: {query}\n")
+            ui.showMaximized()
     except Exception as e:
         print(e)
 #        speak("Desculpe, não consegui entender. Pode repetir?")
         return "None"
     return query.lower()
 
-if __name__ == '__main__':
+import threading
+import ctypes
+import sys
+
+def process_commands():
     greet_user()
     while True:
         query = take_query()
 
         # Lógica para executar tarefas
         if 'abrir google' in query:
-            
             speak("Abrindo o Google...")
             webbrowser.open("https://www.google.com")
             ui.showMinimized()
@@ -114,4 +120,10 @@ if __name__ == '__main__':
             speak("Desativando. Até a próxima.")
             ui.showMinimized()
             break
+
+if __name__ == '__main__':
+    command_thread = threading.Thread(target=process_commands, daemon=True)
+    command_thread.start()
+    app.exec()
+    
 
