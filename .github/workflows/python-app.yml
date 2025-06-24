@@ -34,7 +34,7 @@ jobs:
       - name: Download Inno Setup
         run: |
           curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe
-          start /wait innosetup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-
+          Start-Process -Wait -FilePath ".\innosetup.exe" -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-"
 
       - name: Download NSSM
         run: |
