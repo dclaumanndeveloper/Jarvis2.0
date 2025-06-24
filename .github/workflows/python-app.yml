@@ -29,7 +29,7 @@ jobs:
 
       - name: Build .exe with PyInstaller
         run: |
-          pyinstaller --onefile seu_script_principal.py
+          pyinstaller --onefile main.py
 
       - name: Download Inno Setup
         run: |
@@ -46,19 +46,19 @@ jobs:
           echo [Setup] > installer.iss
           echo AppName=SeuApp >> installer.iss
           echo AppVersion=1.0 >> installer.iss
-          echo DefaultDirName={pf}\SeuApp >> installer.iss
+          echo DefaultDirName={pf}\Jarvis >> installer.iss
           echo [Files] >> installer.iss
-          echo Source: "dist\seu_script_principal.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
+          echo Source: "dist\Jarvis.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
           echo Source: "nssm-2.24\win64\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
           echo [Run] >> installer.iss
-          echo Filename: "{app}\nssm.exe"; Parameters: "install SeuAppService ""{app}\seu_script_principal.exe"""; Flags: runhidden >> installer.iss
+          echo Filename: "{app}\nssm.exe"; Parameters: "install SeuAppService ""{app}\Jarvis.exe"""; Flags: runhidden >> installer.iss
 
       - name: Build Windows Installer
         run: |
           "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 
       - name: Upload Installer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: Output/*.exe
