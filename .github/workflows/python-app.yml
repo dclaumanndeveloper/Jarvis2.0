@@ -51,7 +51,7 @@ jobs:
           echo "Source: \"dist\\main.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
           echo "Source: \"nssm-2.24\\win64\\nssm.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
           echo [Run] >> installer.iss
-          echo 'Filename: "{app}\\nssm.exe"; Parameters: "install Jarvis \"{app}\\main.exe\""; Flags: runhidden' >> installer.iss
+          echo "Filename: \"{app}\\nssm.exe\"; Parameters: \"install Jarvis '{app}\\main.exe'\"; Flags: runhidden" >> installer.iss
 
       - name: Build Windows Installer
         run: |
