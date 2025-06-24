@@ -31,13 +31,34 @@ jobs:
         run: |
           pyinstaller --onefile seu_script_principal.py
 
-      - name: Criar instalador (opcional)
+      - name: Download Inno Setup
         run: |
-          # Exemplo: usar Inno Setup, NSIS ou outro criador de instalador
-          echo "Adicione aqui comandos para criar o instalador .exe"
+          curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe
+          start /wait innosetup.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-
 
-      - name: Instalar como serviço do Windows (opcional)
+      - name: Download NSSM
         run: |
-          # Exemplo simples usando NSSM (https://nssm.cc/)
-          # Baixe NSSM e instale o serviço apontando para seu .exe gerado
-          echo "Adicione aqui comandos para instalar como serviço do Windows"
+          curl -L -o nssm.zip https://nssm.cc/release/nssm-2.24.zip
+          tar -xf nssm.zip
+
+      - name: Prepare Inno Setup script
+        run: |
+          echo [Setup] > installer.iss
+          echo AppName=SeuApp >> installer.iss
+          echo AppVersion=1.0 >> installer.iss
+          echo DefaultDirName={pf}\SeuApp >> installer.iss
+          echo [Files] >> installer.iss
+          echo Source: "dist\seu_script_principal.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
+          echo Source: "nssm-2.24\win64\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
+          echo [Run] >> installer.iss
+          echo Filename: "{app}\nssm.exe"; Parameters: "install SeuAppService ""{app}\seu_script_principal.exe"""; Flags: runhidden >> installer.iss
+
+      - name: Build Windows Installer
+        run: |
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-installer
+          path: Output/*.exe
