@@ -48,7 +48,7 @@ jobs:
           echo AppVersion=1.0 >> installer.iss
           echo DefaultDirName="{pf}\\Jarvis" >> installer.iss
           echo [Files] >> installer.iss
-          echo "Source: \"dist\\main.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
+          echo Source: "dist\main.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
           echo "Source: \"nssm-2.24\\win64\\nssm.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
           echo [Run] >> installer.iss
       
