@@ -51,11 +51,11 @@ jobs:
           echo "Source: \"dist\Jarvis.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
           echo "Source: \"nssm-2.24\win64\nssm.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
           echo [Run] >> installer.iss
-          echo "Filename: \"{app}\nssm.exe\"; Parameters: \"install SeuAppService \"\"{app}\Jarvis.exe\"\"\"; Flags: runhidden" >> installer.iss
+          echo "Filename: \"{app}\nssm.exe\"; Parameters: \"install Jarvis \"\"{app}\Jarvis.exe\"\"\"; Flags: runhidden" >> installer.iss
 
       - name: Build Windows Installer
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer.iss"
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4
