@@ -46,12 +46,13 @@ jobs:
           echo [Setup] > installer.iss
           echo AppName=Jarvis >> installer.iss
           echo AppVersion=1.0 >> installer.iss
-          echo DefaultDirName="{pf}\\Jarvis" >> installer.iss
+          echo DefaultDirName="{pf}\Jarvis" >> installer.iss
           echo [Files] >> installer.iss
-          echo Source: "dist\main.exe"; DestDir: "{app}"; Flags: ignoreversion >> installer.iss
-          echo "Source: \"nssm-2.24\\win64\\nssm.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
+          echo "Source: \"dist\main.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
+          echo "Source: \"nssm-2.24\win64\nssm.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
           echo [Run] >> installer.iss
-      
+          echo "Filename: \\\"{app}\nssm.exe\"; Parameters: \\\"install Jarvis \\\"{app}\main.exe\\\"\"; Flags: runhidden" >> installer.iss
+
       - name: Build Windows Installer
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer.iss"
