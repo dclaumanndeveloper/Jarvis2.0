@@ -20,19 +20,13 @@ class JarvisUI(QWidget):
             | Qt.WindowType.FramelessWindowHint
         )
         
-        # Deixa a janela sem bordas e com fundo transparente
-        #self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        # Variável para permitir mover a janela
         self._old_pos = None
 
-        # --- Layout Principal ---
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         
-        # --- Adiciona a fonte customizada ---
-        # Substitua 'Orbitron-Regular.ttf' pelo caminho do arquivo da fonte se necessário
         try:
             font_id = QFontDatabase.addApplicationFont("Orbitron-Regular.ttf")
             if font_id < 0:
@@ -44,11 +38,8 @@ class JarvisUI(QWidget):
             print("Arquivo da fonte não encontrado. Usando fonte padrão.")
             self.font_family = "Arial"
             
-        # --- Elemento Central (GIF Animado) ---
         self.central_gif_label = QLabel()
-        # Baixe um GIF e coloque o caminho aqui. Ex: "hud_circle.gif"
-        self.movie = QMovie("7RRt.gif") 
-        # Faz o GIF preencher a tela inteira
+        self.movie = QMovie("yx9.gif") 
         screen = QApplication.primaryScreen()
         rect = screen.availableGeometry()
         self.central_gif_label.setScaledContents(True)
@@ -58,17 +49,15 @@ class JarvisUI(QWidget):
         self.movie.start()
         self.layout.addWidget(self.central_gif_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        # --- Labels de Informação ---
         self.time_label = QLabel()
         self.date_label = QLabel()
         self.status_label = QLabel("Status: Online")
         self.user_query_label = QLabel("Você disse: ...")
         
-        # Adiciona os labels ao layout
         self.layout.addWidget(self.status_label, alignment=Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.user_query_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(self.time_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(self.date_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        #self.layout.addWidget(self.time_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        #self.layout.addWidget(self.date_label, alignment=Qt.AlignmentFlag.AlignCenter)
         
         # --- Estilização (QSS - Qt Style Sheets) ---
         self.apply_stylesheet()
@@ -83,23 +72,23 @@ class JarvisUI(QWidget):
         """Aplica a folha de estilos (visual futurista)"""
         style = f"""
             QWidget {{
-                background-color: rgba(10, 20, 45, 0.85); /* Fundo azul escuro semi-transparente */
-                border-radius: 20px;
+            background-color: transparent; /* Fundo totalmente transparente */
+            border-radius: 20px;
             }}
             QLabel {{
-                color: #00FFFF; /* Cor do texto (Ciano) */
-                font-family: "{self.font_family}";
-                font-size: 20px;
+            color: #00FFFF; /* Cor do texto (Ciano) */
+            font-family: "{self.font_family}";
+            font-size: 20px;
             }}
             #status_label {{
-                font-size: 24px;
-                font-weight: bold;
-                color: #4dff4d; /* Verde claro */
+            font-size: 24px;
+            font-weight: bold;
+            color: #4dff4d; /* Verde claro */
             }}
             #user_query_label {{
-                font-size: 18px;
-                font-style: italic;
-                color: #FFFFFF; /* Branco */
+            font-size: 18px;
+            font-style: italic;
+            color: #FFFFFF; /* Branco */
             }}
         """
         # Nomeando widgets para aplicar estilos específicos
@@ -139,9 +128,7 @@ class JarvisUI(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    
-    # Você precisa de um arquivo de GIF, por exemplo, 'hud_circle.gif'
-    # E de uma fonte, como 'Orbitron-Regular.ttf' no mesmo diretório
+  
     
     ui = JarvisUI()
     ui.show()
