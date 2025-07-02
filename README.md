@@ -18,7 +18,7 @@ Jarvis 2.0 é um assistente virtual pessoal desenvolvido em Python, com interfac
 
 ## Demonstração
 
-> **Inclua aqui um GIF ou vídeo demonstrando o Jarvis 2.0 em funcionamento**
+> **IEm Breve**
 
 ---
 
@@ -36,3 +36,22 @@ Jarvis 2.0 é um assistente virtual pessoal desenvolvido em Python, com interfac
    ```bash
    git clone https://github.com/dclaumanndeveloper/Jarvis2.0.git
    cd Jarvis2.0
+
+
+## Avisos e Limitações
+
+- **Compatibilidade:** O projeto foi desenvolvido para Windows. Algumas automações podem não funcionar em outros sistemas operacionais sem adaptação.
+- **Segurança:** Cuidado ao usar comandos que executam programas externos ou manipulam o sistema.
+- **Dependências:** Algumas bibliotecas exigem permissões extras ou instalação de softwares auxiliares.
+
+---
+
+## Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+## Autor
+
+Desenvolvido por [dclaumanndeveloper](https://github.com/dclaumanndeveloper)
