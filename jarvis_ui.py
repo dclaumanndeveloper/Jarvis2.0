@@ -1,7 +1,7 @@
 import sys
 import datetime
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
-from PyQt6.QtGui import QMovie, QFont, QFontDatabase
+from PyQt6.QtGui import QMovie, QFontDatabase
 from PyQt6.QtCore import Qt, QTimer, QPoint
 
 class JarvisUI(QWidget):
@@ -10,6 +10,7 @@ class JarvisUI(QWidget):
         
         # --- Configuração da Janela ---
         self.setWindowTitle("J.A.R.V.I.S.")
+
         # Ajusta para o tamanho máximo da tela
         screen = QApplication.primaryScreen()
         rect = screen.availableGeometry()
