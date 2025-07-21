@@ -20,7 +20,9 @@ ui = JarvisUI()
 ui.show()
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[0].id)
+engine.setProperty('voice', voices[1].id)
+engine.setProperty('rate', 150)  # Ajuste a taxa de fala conforme necessário
+engine.setProperty('input', 'pt-BR')  # Definindo o idioma para português do Brasil
 
 def speak(audio_text):
     engine.say(audio_text)
