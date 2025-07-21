@@ -310,8 +310,10 @@ def start_day():
 def finish_day():
     """Executa a rotina de fim de dia e bloqueia a tela."""
     speak("Finalizando o dia...")
-    fechar("fechar vscode")
+    #fechar("fechar vscode")
     fechar("fechar teams")
+    fechar("fechar arc")
+
     
     lock_command = ""
     if IS_WINDOWS:
