@@ -9,6 +9,9 @@ import subprocess
 import speedtest
 import psutil
 import geocoder
+import google.generativeai as genai
+
+
 
 # --- Platform Detection ---
 IS_WINDOWS = platform.system() == "Windows"
@@ -187,6 +190,81 @@ def play():
     """Continua a mídia (simula a tecla de play/pause)."""
     speak("Continuando a mídia.")
     pyautogui.press("playpause")
+
+def data():
+    """Informa a data atual."""
+    meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", 
+           "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
+    agora = datetime.now()
+    nome_mes = meses[agora.month - 1]
+    speak(f"Hoje é dia {agora.day} de {nome_mes} de {agora.year}.")
+
+def get_desktop_path():
+    """Retorna o caminho da área de trabalho de forma mais robusta."""
+    home = os.path.expanduser("~")
+    if IS_WINDOWS:
+        # Tenta obter o caminho do Desktop do registro do Windows
+        try:
+            import winreg
+            key_path = r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path) as key:
+                desktop = winreg.QueryValueEx(key, "Desktop")[0]
+            return os.path.expandvars(desktop)
+        except Exception:
+            # Fallback para o método padrão se a leitura do registro falhar
+            pass
+    # Para macOS, Linux e como fallback para Windows
+    desktop_path = os.path.join(home, "Desktop")
+    if IS_WINDOWS and not os.path.exists(desktop_path):
+        # Fallback para o nome em português no Windows
+        desktop_pt = os.path.join(home, "Área de Trabalho")
+        if os.path.exists(desktop_pt):
+            return desktop_pt
+    return desktop_path
+
+def tirar_print():
+    """Tira uma captura de tela e a salva na área de trabalho."""
+    try:
+        # Cria um nome de arquivo único com data e hora
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        
+        # Obtém o caminho da área de trabalho de forma confiável
+        desktop_path = get_desktop_path()
+        
+        if not os.path.exists(desktop_path):
+            os.makedirs(desktop_path) # Cria a pasta Desktop se não existir
+            
+        file_name = f"captura_{timestamp}.png"
+        full_path = os.path.join(desktop_path, file_name)
+        
+        # Tira a captura de tela
+        screenshot = pyautogui.screenshot()
+        screenshot.save(full_path)
+            
+        speak(f"Captura de tela salva em sua área de trabalho como {file_name}.")
+    except Exception as e:
+        print(f"Erro ao tirar print: {e}")
+        speak("Desculpe, não consegui tirar a captura de tela.")
+
+def desligar_computador():
+    """Desliga o computador após confirmação."""
+    speak("Desligando o computador em 10 segundos.")
+    if IS_WINDOWS:
+        os.system("shutdown /s /t 10")
+    elif IS_MACOS:
+        os.system("sudo shutdown -h +0") # Requer senha de administrador
+    elif IS_LINUX:
+        os.system("shutdown now")
+                
+def reiniciar_computador(confirmado=False):
+    """Reinicia o computador após confirmação."""
+    speak("Reiniciando o computador em 10 segundos.")
+    if IS_WINDOWS:
+        os.system("shutdown /r /t 10")
+    elif IS_MACOS:
+            os.system("sudo shutdown -r +0") # Requer senha de administrador
+    elif IS_LINUX:
+            os.system("reboot")
 
 def pesquisar(command):
     """Pesquisa um termo no Google."""
@@ -367,3 +445,36 @@ def escreva(command):
     """Digita o texto que segue o comando 'escreva'."""
     texto_para_escrever = command.replace("escreva", "", 1).strip()
     pyautogui.write(texto_para_escrever)
+
+
+
+def pesquisar_gemini(command):
+    """
+    Pesquisa uma pergunta usando o Gemini 1.5 Pro e fala a resposta.
+    """
+    try:
+        
+        genai.configure(api_key="your_api_key_here")  # Substitua pela sua chave de API do Gemini
+    except (ImportError, Exception) as e:
+        print(f"Erro ao configurar o Gemini: {e}")
+        speak("Desculpe, a função de pesquisa com o Gemini não está disponível no momento.")
+      
+    # Remove o comando inicial para obter apenas a pergunta
+    # Ex: "gemini qual a capital do brasil" -> "qual a capital do brasil"
+    
+    try:
+        # Inicializa o modelo Gemini 2.0 Flash
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        
+        # Gera o conteúdo com base na pergunta do usuário
+        response = model.generate_content(command)
+        
+        # Extrai e fala a resposta
+        answer = response.text
+        print(f"Resposta do Gemini: {answer}")
+        speak(answer)
+
+    except Exception as e:
+        error_message = f"Desculpe, ocorreu um erro ao contatar o Gemini: {e}"
+        print(error_message)
+        speak("Desculpe, ocorreu um erro ao contatar o Gemini.")
