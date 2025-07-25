@@ -3,7 +3,7 @@ import pyttsx3
 
 import webbrowser
 import datetime
-from comandos import abrir, aumentar_volume, buscar_temperatura, definir_volume, diminuir_volume, escreva, finish_day, get_system_info, pesquisar, start_day, tocar, verificar_internet
+from comandos import abrir, aumentar_volume, buscar_temperatura, data, definir_volume, desligar_computador, diminuir_volume, escreva, finish_day, get_system_info, pausar, pesquisar, pesquisar_gemini, play, reiniciar_computador, start_day, tirar_print, tocar, verificar_internet
 from jarvis_ui import JarvisUI
 from PyQt6.QtWidgets import QApplication
 import threading
@@ -20,7 +20,7 @@ ui = JarvisUI()
 ui.show()
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[1].id)
+engine.setProperty('voice', voices[0].id)
 engine.setProperty('rate', 150)  # Ajuste a taxa de fala conforme necessário
 engine.setProperty('input', 'pt-BR')  # Definindo o idioma para português do Brasil
 
@@ -42,7 +42,7 @@ def listen_for_wake_word():
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Aguardando palavra de ativação ('Jarvis')...")
-        r.pause_threshold = 0.5
+        #r.pause_threshold = 0.5
         audio = r.listen(source)
     try:
         query = r.recognize_google(audio, language='pt-BR')
@@ -58,7 +58,7 @@ def take_query():
     with sr.Microphone() as source:
         speak("Estou ouvindo seu comando.")
         print("Ouvindo comando...")
-        r.pause_threshold = 0.5
+        r.pause_threshold = 1
         audio = r.listen(source)
     try:
         print("Reconhecendo...")
@@ -131,10 +131,47 @@ def process_commands():
             elif 'finalizar dia' in query:
                 finish_day()
                 ui.showMinimized()
+            elif 'pausar reprodução' in query:
+                pausar()
+                ui.showMinimized()
+            elif 'continuar reprodução' in query:
+                play()
+                ui.showMinimized()
+            elif 'que dia é hoje' in query:
+                data()
+                ui.showMinimized()
+            elif 'reiniciar computador' in query:
+                speak("Reiniciando o computador em 10 segundos.")
+                if ctypes.windll.shell32.IsUserAnAdmin():
+                    reiniciar_computador()
+                else:
+                    speak("Você precisa de privilégios de administrador para reiniciar o computador.")
+                ui.showMinimized()
+            elif 'desligar computador' in query:
+                speak("Desligando o computador em 10 segundos.")
+                if ctypes.windll.shell32.IsUserAnAdmin():
+                    desligar_computador()
+            
+                else:
+                    speak("Você precisa de privilégios de administrador para desligar o computador.")
+                ui.showMinimized()
+            elif 'tirar print' in query:
+                try:
+                    tirar_print()
+                    ui.showMinimized()
+                except Exception as e:
+                    print(f"Erro ao tirar print: {e}")
+                    speak("Desculpe, não consegui tirar a captura de tela.")
+                ui.showMinimized()
             elif 'parar' in query or 'sair' in query:
                 speak("Desativando. Até a próxima.")
                 ui.showMinimized()
                 break
+            else:
+                pesquisar_gemini(query)
+                ui.showMinimized()
+            
+
 
 if __name__ == '__main__':
     command_thread = threading.Thread(target=process_commands, daemon=True)
