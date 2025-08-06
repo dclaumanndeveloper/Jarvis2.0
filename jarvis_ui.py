@@ -40,7 +40,7 @@ class JarvisUI(QWidget):
             self.font_family = "Arial"
             
         self.central_gif_label = QLabel()
-        self.movie = QMovie("yx9.gif") 
+        self.movie = QMovie("jarvis.gif") 
         screen = QApplication.primaryScreen()
         rect = screen.availableGeometry()
         self.central_gif_label.setScaledContents(True)
