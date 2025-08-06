@@ -1,7 +1,7 @@
 import pyautogui
 import pyttsx3
 import pywhatkit
-from datetime import datetime
+from datetime import datetime, time
 import webbrowser
 import platform
 import os
@@ -10,7 +10,10 @@ import speedtest
 import psutil
 import geocoder
 import google.generativeai as genai
-
+import json
+import threading
+from collections import defaultdict
+from itertools import tee
 
 
 # --- Platform Detection ---
@@ -20,10 +23,11 @@ IS_LINUX = platform.system() == "Linux"
 
 # --- Conditional Imports and Initializations ---
 engine = pyttsx3.init()
+
 volume = None
 
 if IS_WINDOWS:
-    try:
+    try: 
         from ctypes import cast, POINTER
         from comtypes import CLSCTX_ALL
         from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
@@ -202,25 +206,29 @@ def data():
 def get_desktop_path():
     """Retorna o caminho da área de trabalho de forma mais robusta."""
     home = os.path.expanduser("~")
+
     if IS_WINDOWS:
-        # Tenta obter o caminho do Desktop do registro do Windows
         try:
+            # Tenta obter o caminho do Desktop do registro do Windows (mais confiável)
             import winreg
+
             key_path = r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path) as key:
-                desktop = winreg.QueryValueEx(key, "Desktop")[0]
-            return os.path.expandvars(desktop)
+                desktop_path = winreg.QueryValueEx(key, "Desktop")[0]
+            return os.path.expandvars(desktop_path)
         except Exception:
-            # Fallback para o método padrão se a leitura do registro falhar
-            pass
-    # Para macOS, Linux e como fallback para Windows
-    desktop_path = os.path.join(home, "Desktop")
-    if IS_WINDOWS and not os.path.exists(desktop_path):
-        # Fallback para o nome em português no Windows
-        desktop_pt = os.path.join(home, "Área de Trabalho")
-        if os.path.exists(desktop_pt):
-            return desktop_pt
-    return desktop_path
+            # Fallback para caminhos comuns se a leitura do registro falhar
+            desktop_en = os.path.join(home, "Desktop")
+            if os.path.exists(desktop_en):
+                return desktop_en
+            desktop_pt = os.path.join(home, "Área de Trabalho")
+            if os.path.exists(desktop_pt):
+                return desktop_pt
+            return desktop_en # Retorna o padrão em inglês como última opção
+    else:
+        # Para macOS e Linux, o padrão é geralmente 'Desktop'
+        return os.path.join(home, "Desktop")
+
 
 def tirar_print():
     """Tira uma captura de tela e a salva na área de trabalho."""
@@ -237,10 +245,9 @@ def tirar_print():
         file_name = f"captura_{timestamp}.png"
         full_path = os.path.join(desktop_path, file_name)
         
-        # Tira a captura de tela
-        screenshot = pyautogui.screenshot()
-        screenshot.save(full_path)
-            
+        # Tira a captura de tela e salva diretamente no arquivo
+        pyautogui.screenshot(full_path)
+                    
         speak(f"Captura de tela salva em sua área de trabalho como {file_name}.")
     except Exception as e:
         print(f"Erro ao tirar print: {e}")
@@ -339,7 +346,7 @@ def abrir(query):
     if query_lower in SITES:
         speak(f"Abrindo {query_lower}")
         webbrowser.open(SITES[query_lower])
-        return
+    
 
     os_name = platform.system().lower()
     if os_name == 'darwin': os_name = 'macos'
@@ -350,8 +357,9 @@ def abrir(query):
         command = app_dict[query_lower]
         # Use subprocess for better control and cross-platform compatibility
         subprocess.Popen(command, shell=True)
-        return
-    
+        # Optionally, you can wait for the process to start
+        time.sleep(1)
+
     speak(f"Desculpe, não sei como abrir {query_lower}.")
 
 def fechar(command):
@@ -454,7 +462,7 @@ def pesquisar_gemini(command):
     """
     try:
         
-        genai.configure(api_key="your_api_key_here")  # Substitua pela sua chave de API do Gemini
+        genai.configure(api_key="AIzaSyBuOScNR-FI818vE_JIZTx3J0X8YVgVpKw")  # Substitua pela sua chave de API do Gemini
     except (ImportError, Exception) as e:
         print(f"Erro ao configurar o Gemini: {e}")
         speak("Desculpe, a função de pesquisa com o Gemini não está disponível no momento.")
@@ -471,6 +479,10 @@ def pesquisar_gemini(command):
         
         # Extrai e fala a resposta
         answer = response.text
+        answer = answer.replace('*','')
+        answer = answer.replace('<','')
+        answer = answer.replace('>','')
+        answer = answer.replace('**','')
         print(f"Resposta do Gemini: {answer}")
         speak(answer)
 
@@ -478,3 +490,87 @@ def pesquisar_gemini(command):
         error_message = f"Desculpe, ocorreu um erro ao contatar o Gemini: {e}"
         print(error_message)
         speak("Desculpe, ocorreu um erro ao contatar o Gemini.")
+
+
+
+# --- Machine Learning / Pattern Recognition ---
+COMMAND_LOG_FILE = "command_log.json"
+LEARNED_PATTERNS = defaultdict(lambda: defaultdict(int))
+MIN_PATTERN_FREQUENCY = 3 # Minimum times a pattern must appear to be learned
+PATTERN_TIME_WINDOW_SECONDS = 120 # Max seconds between commands to be considered a sequence
+
+def log_command_for_learning(command_text):
+            """Logs a command with a timestamp for background learning."""
+            try:
+                # Avoid logging the learning command itself
+                if "sugerir rotina" in command_text:
+                    return
+                log_entry = {"timestamp": datetime.now().isoformat(), "command": command_text}
+                with open(COMMAND_LOG_FILE, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(log_entry) + "\n")
+            except IOError as e:
+                print(f"Erro ao registrar comando para aprendizado: {e}")
+
+def _analyze_and_learn():
+            """Analyzes the command log to find frequent sequential patterns."""
+            global LEARNED_PATTERNS
+            try:
+                with open(COMMAND_LOG_FILE, "r", encoding="utf-8") as f:
+                    logs = [json.loads(line) for line in f]
+            except (IOError, json.JSONDecodeError):
+                return # Log file doesn't exist or is empty/corrupt
+
+            if len(logs) < 2:
+                return
+
+            # Sort logs by timestamp just in case
+            logs.sort(key=lambda x: x["timestamp"])
+
+            # Use an iterator to create pairs of consecutive commands (cmd1, cmd2)
+            a, b = tee(logs)
+            next(b, None)
+            command_pairs = zip(a, b)
+
+            temp_patterns = defaultdict(lambda: defaultdict(int))
+
+            for cmd1_log, cmd2_log in command_pairs:
+                t1 = datetime.fromisoformat(cmd1_log["timestamp"])
+                t2 = datetime.fromisoformat(cmd2_log["timestamp"])
+                
+                # Check if the second command happened within the time window of the first
+                if (t2 - t1).total_seconds() <= PATTERN_TIME_WINDOW_SECONDS:
+                    first_cmd = cmd1_log["command"]
+                    second_cmd = cmd2_log["command"]
+                    temp_patterns[first_cmd][second_cmd] += 1
+            
+            # Update the global learned patterns, keeping only frequent ones
+            LEARNED_PATTERNS.clear()
+            for first_cmd, next_cmds in temp_patterns.items():
+                for second_cmd, count in next_cmds.items():
+                    if count >= MIN_PATTERN_FREQUENCY:
+                        LEARNED_PATTERNS[first_cmd][second_cmd] = count
+            
+            if LEARNED_PATTERNS:
+                print(f"Aprendizado concluído. Padrões atualizados: {dict(LEARNED_PATTERNS)}")
+
+
+def suggest_routine(last_command):
+            """
+            Based on the last command, suggests the next most likely command.
+            This function is meant to be called by the main loop.
+            """
+            _analyze_and_learn() # Update patterns before suggesting
+
+            if last_command in LEARNED_PATTERNS:
+                # Find the most likely next command
+                potential_next_commands = LEARNED_PATTERNS[last_command]
+                if potential_next_commands:
+                    # Sort by frequency and get the most common one
+                    suggestion = max(potential_next_commands, key=potential_next_commands.get)
+                    
+                    speak(f"Percebi que você sempre executa '{suggestion}' depois de '{last_command}'.")
+                    speak("Gostaria de executar agora?")
+                    # The main loop would need to handle the user's "sim" or "não" response
+                    # and execute the `suggestion` if confirmed.
+                    return suggestion # Return the suggestion for the main loop to handle
+            return None

@@ -3,30 +3,28 @@ import pyttsx3
 
 import webbrowser
 import datetime
-from comandos import abrir, aumentar_volume, buscar_temperatura, data, definir_volume, desligar_computador, diminuir_volume, escreva, finish_day, get_system_info, pausar, pesquisar, pesquisar_gemini, play, reiniciar_computador, start_day, tirar_print, tocar, verificar_internet
+from comandos import _analyze_and_learn, abrir, aumentar_volume, buscar_temperatura, data, definir_volume, desligar_computador, diminuir_volume, escreva, finish_day, get_system_info, log_command_for_learning, pausar, pesquisar, pesquisar_gemini, play, reiniciar_computador, start_day, suggest_routine, tirar_print, tocar, verificar_internet
 from jarvis_ui import JarvisUI
 from PyQt6.QtWidgets import QApplication
 import threading
 
 import ctypes
 
-try:
-    ctypes.windll.user32.SetProcessDpiAwarenessContext(-4)  # DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
-except Exception as e:
-    print(f"Could not set DPI awareness: {e}")
-
 app = QApplication([])
+
 ui = JarvisUI()
 ui.show()
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[0].id)
-engine.setProperty('rate', 150)  # Ajuste a taxa de fala conforme necessário
 engine.setProperty('input', 'pt-BR')  # Definindo o idioma para português do Brasil
 
 def speak(audio_text):
+    """ Converte texto em fala com uma taxa de fala ajustada para soar mais natural. """
+    engine.setProperty('rate', 180)  # Ajuste este valor para alterar a velocidade da fala
     engine.say(audio_text)
     engine.runAndWait()
+
 
 def greet_user():
     hour = datetime.datetime.now().hour
@@ -40,10 +38,14 @@ def greet_user():
 
 def listen_for_wake_word():
     r = sr.Recognizer()
+    r.dynamic_energy_threshold = True
+
     with sr.Microphone() as source:
         print("Aguardando palavra de ativação ('Jarvis')...")
-        #r.pause_threshold = 0.5
-        audio = r.listen(source)
+        try:
+            audio = r.listen(source)
+        except sr.WaitTimeoutError:
+            return False
     try:
         query = r.recognize_google(audio, language='pt-BR')
         print(f"Ouvi: {query}")
@@ -55,11 +57,15 @@ def listen_for_wake_word():
 
 def take_query():
     r = sr.Recognizer()
+    r.dynamic_energy_threshold = True
     with sr.Microphone() as source:
         speak("Estou ouvindo seu comando.")
         print("Ouvindo comando...")
-        r.pause_threshold = 1
-        audio = r.listen(source)
+        try:
+            audio = r.listen(source)
+        except sr.WaitTimeoutError:
+            speak("Não ouvi nada. Tente novamente.")
+            return "None"
     try:
         print("Reconhecendo...")
         query = r.recognize_google(audio, language='pt-BR')
@@ -79,7 +85,8 @@ def process_commands():
             query = take_query()
             if query == "None":
                 continue
-
+            log_command_for_learning(query)
+            _analyze_and_learn()
             # Lógica para executar tarefas
             if 'abrir google' in query:
                 speak("Abrindo o Google...")
@@ -140,25 +147,22 @@ def process_commands():
             elif 'que dia é hoje' in query:
                 data()
                 ui.showMinimized()
-            elif 'reiniciar computador' in query:
+            elif 'reiniciar' in query:
                 speak("Reiniciando o computador em 10 segundos.")
-                if ctypes.windll.shell32.IsUserAnAdmin():
-                    reiniciar_computador()
-                else:
-                    speak("Você precisa de privilégios de administrador para reiniciar o computador.")
+                reiniciar_computador()
                 ui.showMinimized()
-            elif 'desligar computador' in query:
+            elif 'desligar' in query:
                 speak("Desligando o computador em 10 segundos.")
-                if ctypes.windll.shell32.IsUserAnAdmin():
-                    desligar_computador()
-            
-                else:
-                    speak("Você precisa de privilégios de administrador para desligar o computador.")
+                #if ctypes.windll.shell32.IsUserAnAdmin():
+                desligar_computador()
                 ui.showMinimized()
+                break
+               
             elif 'tirar print' in query:
                 try:
-                    tirar_print()
                     ui.showMinimized()
+                    tirar_print()
+                   
                 except Exception as e:
                     print(f"Erro ao tirar print: {e}")
                     speak("Desculpe, não consegui tirar a captura de tela.")
@@ -176,4 +180,5 @@ def process_commands():
 if __name__ == '__main__':
     command_thread = threading.Thread(target=process_commands, daemon=True)
     command_thread.start()
+
     app.exec()
