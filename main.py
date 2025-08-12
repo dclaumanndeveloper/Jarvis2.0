@@ -44,7 +44,6 @@ def listen_for_wake_word():
     r = sr.Recognizer()
 
     with sr.Microphone() as source:
-        r.adjust_for_ambient_noise(source, duration=1)
         print("Aguardando palavra de ativação ('Jarvis').")
         try:
             audio = r.listen(source, timeout=10)
@@ -66,7 +65,6 @@ def take_query():
     with sr.Microphone() as source:
         speak("Estou ouvindo seu comando.")
         print("Ouvindo comando...")
-        r.pause_threshold = 0.5
         audio = r.listen(source)
     try:
         print("Reconhecendo...")
