@@ -1,4 +1,4 @@
-# Jarvis 2.0
+# Jarvis 2.0 
 
 Jarvis 2.0 é um assistente virtual pessoal desenvolvido em Python, com interface gráfica moderna e comandos de voz em português. Inspirado no assistente do universo Marvel, o objetivo do projeto é facilitar a automação de tarefas diárias no computador, integrando reconhecimento de voz, automação desktop e acesso rápido a informações e aplicativos.
 
