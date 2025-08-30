@@ -1,8 +1,15 @@
 import sys
 import datetime
+import os
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
 from PyQt6.QtGui import QMovie, QFontDatabase
 from PyQt6.QtCore import Qt, QTimer, QPoint
+
+def resource_path(relative_path):
+    """Retorna o caminho absoluto para recursos, compatível com PyInstaller."""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 class JarvisUI(QWidget):
     def __init__(self):
@@ -40,7 +47,8 @@ class JarvisUI(QWidget):
             self.font_family = "Arial"
             
         self.central_gif_label = QLabel()
-        self.movie = QMovie("jarvis.gif") 
+        gif_path = resource_path("jarvis.gif")
+        self.movie = QMovie(gif_path) 
         screen = QApplication.primaryScreen()
         rect = screen.availableGeometry()
         self.central_gif_label.setScaledContents(True)
@@ -134,4 +142,4 @@ if __name__ == '__main__':
     ui = JarvisUI()
     ui.show()
     
-    sys.exit(app.exec())    
+    sys.exit(app.exec())

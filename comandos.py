@@ -6,7 +6,7 @@ import webbrowser
 import platform
 import os
 import subprocess
-import speedtest
+import subprocess
 import psutil
 import geocoder
 import google.generativeai as genai
@@ -423,16 +423,16 @@ def verificar_internet():
     """Verifica e informa a velocidade da internet."""
     speak("Calculando a velocidade da internet, isso pode levar um momento.")
     try:
-        st = speedtest.Speedtest()
-        st.get_best_server()
-        download_speed = round(st.download() / 1_000_000, 2)
-        upload_speed = round(st.upload() / 1_000_000, 2)
-        
-        print(f"Velocidade de Download: {download_speed} Mbps")
-        print(f"Velocidade de Upload: {upload_speed} Mbps")
-        speak(f"A velocidade de download é de {download_speed} megabits.")
-        speak(f"A velocidade de upload é de {upload_speed} megabits.")
-    except speedtest.ConfigRetrievalError:
+        # Executa o speedtest-cli via subprocess e captura a saída
+        result = subprocess.run(["speedtest-cli", "--simple"], capture_output=True, text=True, check=True)
+        output = result.stdout
+        print(output)
+        # Fala os resultados principais
+        for line in output.splitlines():
+            if "Download:" in line or "Upload:" in line:
+                speak(line)
+    except Exception as e:
+        print(f"Erro ao executar speedtest-cli: {e}")
         speak("Não foi possível conectar para medir a velocidade. Verifique sua conexão com a internet.")
     
 def get_system_info():
