@@ -1,0 +1,24 @@
+2025-08-30 12:38:50,717 - __main__ - INFO - ============================================================
+2025-08-30 12:38:50,718 - __main__ - INFO - STARTING JARVIS 2.0 - ENHANCED VERSION
+2025-08-30 12:38:50,719 - __main__ - INFO - ============================================================
+2025-08-30 12:38:50,719 - __main__ - INFO - Phase 1: System Setup
+2025-08-30 12:38:50,719 - __main__ - INFO - DPI awareness set to Per-Monitor V2
+2025-08-30 12:38:50,757 - __main__ - INFO - Created new QApplication instance
+2025-08-30 12:38:50,758 - __main__ - INFO - Phase 2: UI Initialization
+2025-08-30 12:38:50,758 - __main__ - INFO - Attempting to initialize Enhanced UI...
+2025-08-30 12:38:51,154 - __main__ - INFO - Using Enhanced interface
+2025-08-30 12:38:51,157 - __main__ - INFO - Phase 3: Component Initialization
+2025-08-30 12:38:51,530 - comtypes.client._code_cache - INFO - Imported existing <module 'comtypes.gen' from 'C:\\Users\\diego\\OneDrive - New Music Brasil\\Documentos\\GitHub\\PESSOAL\\Jarvis2.0\\.venv\\Lib\\site-packages\\comtypes\\gen\\__init__.py'>
+2025-08-30 12:38:51,531 - comtypes.client._code_cache - INFO - Using writeable comtypes cache directory: 'C:\Users\diego\OneDrive - New Music Brasil\Documentos\GitHub\PESSOAL\Jarvis2.0\.venv\Lib\site-packages\comtypes\gen'
+2025-08-30 12:38:54,657 - __main__ - INFO - Phase 4: UI Display
+2025-08-30 12:38:54,795 - __main__ - INFO - Phase 5: Post-startup
+2025-08-30 12:39:02,345 - __main__ - INFO - User greeted: Boa tarde! Eu sou Jarvis. Sistema iniciado e pronto para uso.
+2025-08-30 12:39:02,346 - __main__ - INFO - Phase 6: Background Services
+2025-08-30 12:39:02,406 - __main__ - INFO - ============================================================
+2025-08-30 12:39:02,407 - __main__ - INFO - STARTUP SUMMARY
+2025-08-30 12:39:02,407 - __main__ - INFO - ============================================================
+2025-08-30 12:39:02,407 - __main__ - INFO - Interface Type: Enhanced
+2025-08-30 12:39:02,408 - __main__ - INFO - Speech Available: True
+2025-08-30 12:39:02,408 - __main__ - INFO - Commands Available: True
+2025-08-30 12:39:02,409 - __main__ - INFO - Error Count: 0
+2025-08-30 12:39:02,419 - __main__ - INFO - ============================================================

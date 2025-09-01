@@ -447,6 +447,7 @@ def get_system_info():
         'Memória Usada': f'{round(memory_info.used / (1024 ** 3), 2)} GB ({memory_info.percent}%)',
         'Memória Total': f'{round(memory_info.total / (1024 ** 3), 2)} GB',
     }
+    speak(system_info)
     return system_info 
 
 def escreva(command):
