@@ -21,7 +21,7 @@ Js2Py==0.74
 MarkupSafe==3.0.2
 MouseInfo==0.1.3
 packaging==25.0
-pillow==11.2.0
+pillow==11.3.0
 pipwin==0.5.2
 psutil==7.0.0
 PyAudio==0.2.14
@@ -56,20 +56,20 @@ tk==0.1.0
 typing_extensions==4.14.0
 tzdata==2025.2
 tzlocal==5.3.1
-urllib3==2.4.0
+urllib3==2.5.0
 Werkzeug==3.1.3
 wheel==0.45.1
 wikipedia==1.4.0
 
 # Enhanced Speech Processing
 openai-whisper==20231117
-transformers==4.35.0
-torch==2.1.0
+transformers==4.53.0
+torch==2.8.0
 torchaudio==2.1.0
 
 # Advanced NLP and Machine Learning
-scikit-learn==1.3.2
-nltk==3.8.1
+scikit-learn==1.5.0
+nltk==3.9
 sentence-transformers==2.2.2
 google-generativeai==0.8.3
 
