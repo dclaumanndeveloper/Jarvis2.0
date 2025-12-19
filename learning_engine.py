@@ -28,8 +28,9 @@ import joblib
 from conversation_manager import ConversationTurn, IntentType, ConversationContext
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO) # Controlled by main.py
 logger = logging.getLogger(__name__)
+
 
 class LearningType(Enum):
     """Types of learning patterns"""

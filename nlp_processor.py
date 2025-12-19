@@ -18,8 +18,9 @@ import google.generativeai as genai
 from conversation_manager import IntentType, ConversationContext
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO) # Controlled by main.py
 logger = logging.getLogger(__name__)
+
 
 class ProcessingMode(Enum):
     """NLP Processing modes"""
@@ -343,7 +344,7 @@ Responda apenas em português e mantenha o tom profissional mas amigável do Jar
     async def _generate_response(self, prompt: str) -> str:
         """Generate response from Gemini AI"""
         try:
-            response = self.model.generate_content(prompt)
+            response = await self.model.generate_content_async(prompt)
             return response.text
         except Exception as e:
             logger.error(f"Gemini generation error: {e}")
@@ -390,8 +391,9 @@ class ContextualIntentAnalyzer:
                 r'\b(novamente|de novo|outra vez)\b'
             ],
             'clarification': [
-                r'\b(não entendi|repita|como assim|o que|que)\b',
-                r'\b(explique melhor|não compreendi)\b'
+                r'\b(não entendi|repita|como assim|explique melhor|não compreendi)\b',
+                r'\b(o que você disse|o que você falou|pode repetir)\b',
+                r'^(que|o que|hein)\?$'
             ]
         }
     

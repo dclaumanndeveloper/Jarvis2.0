@@ -17,8 +17,9 @@ from collections import deque
 import re
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO) # Controlled by main.py
 logger = logging.getLogger(__name__)
+
 
 class ConversationMode(Enum):
     """Different conversation modes"""

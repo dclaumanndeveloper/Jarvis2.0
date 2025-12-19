@@ -1,0 +1,634 @@
+2025-12-18 22:46:17,080 - __main__ - INFO - Jarvis system initialized
+2025-12-18 22:46:17,086 - jarvis_ui - INFO - Voice database initialized successfully
+2025-12-18 22:46:17,118 - jarvis_ui - INFO - Voice profile loaded successfully
+2025-12-18 22:46:17,118 - jarvis_ui - INFO - Unified Jarvis UI initialized
+2025-12-18 22:46:17,119 - __main__ - WARNING - Standard Microphone failed (Could not find PyAudio; check installation). Attempting SoundDevice fallback...
+2025-12-18 22:46:17,246 - __main__ - INFO - Voice initialized using SoundDevice fallback.
+2025-12-18 22:46:17,246 - __main__ - INFO - Voice recognition thread initialized
+2025-12-18 22:46:17,261 - services.audio_service - INFO - AudioService initialized successfully (Windows)
+2025-12-18 22:46:17,261 - services.command_executor - INFO - CommandExecutor initialized with all commands registered
+2025-12-18 22:46:17,262 - services.audio_device_monitor - INFO - AudioDeviceMonitor initialized
+2025-12-18 22:46:17,262 - services.audio_device_monitor - INFO - AudioDeviceManager initialized
+2025-12-18 22:46:17,263 - services.audio_device_monitor - INFO - Device monitoring started
+2025-12-18 22:46:17,268 - services.tts_service - INFO - TTS Service: COM initialized, starting loop
+2025-12-18 22:46:17,269 - __main__ - INFO - System tray initialized
+2025-12-18 22:46:17,839 - __main__ - INFO - Jarvis system initialized successfully
+2025-12-18 22:46:17,839 - __main__ - INFO - Jarvis 2.0 started successfully
+2025-12-18 22:46:17,839 - __main__ - INFO - Voice recognition thread started
+2025-12-18 22:46:17,839 - nlp_processor - INFO - Gemini AI configured successfully
+2025-12-18 22:46:17,843 - learning_engine - INFO - Loaded 0 learned patterns
+2025-12-18 22:46:17,844 - learning_engine - INFO - Loaded user preferences: []
+2025-12-18 22:46:17,844 - services.ai_service - INFO - LearningModule initialized successfully
+2025-12-18 22:46:17,845 - learning_engine - INFO - Starting learning engine...
+2025-12-18 22:46:17,846 - services.ai_service - INFO - AI Service initialized successfully
+2025-12-18 22:46:17,899 - services.audio_device_monitor - INFO - Initial output device: Dispositivo de Áudio Padrão
+2025-12-18 22:46:17,899 - services.audio_device_monitor - INFO - Initial input device: Microfone (Realtek(R) Audio)
+2025-12-18 22:46:18,205 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:46:18,839 - __main__ - INFO - Main: Requesting TTS: Boa noite! Eu sou Jarvis. Sistema inicializado e pronto para comandos.
+2025-12-18 22:46:18,839 - services.tts_service - INFO - TTS: Queued: Boa noite! Eu sou Jarvis. Sistema inicializado e p...
+2025-12-18 22:46:18,840 - services.tts_service - INFO - TTS: Speaking: Boa noite! Eu sou Jarvis. Sistema inicializado e p...
+2025-12-18 22:46:18,841 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:46:18,885 - comtypes.client._code_cache - INFO - Imported existing <module 'comtypes.gen' from 'C:\\Users\\New Music\\Documents\\Git\\PESSOAL\\Jarvis2.0\\.venv\\Lib\\site-packages\\comtypes\\gen\\__init__.py'>
+2025-12-18 22:46:18,887 - comtypes.client._code_cache - INFO - Using writeable comtypes cache directory: 'C:\Users\New Music\Documents\Git\PESSOAL\Jarvis2.0\.venv\Lib\site-packages\comtypes\gen'
+2025-12-18 22:46:19,004 - services.tts_service - INFO - TTS: Using voice: Microsoft Maria Desktop - Portuguese(Brazil)
+2025-12-18 22:46:24,271 - __main__ - INFO - Command recognized: boa noite (confidence: 0.8)
+2025-12-18 22:46:24,272 - __main__ - INFO - Processing command: boa noite (confidence: 0.80)
+2025-12-18 22:46:24,291 - services.ai_service - INFO - AIService: Processing command task: boa noite
+2025-12-18 22:46:24,295 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.CONVERSATIONAL_QUERY
+2025-12-18 22:46:24,297 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='boa noite', processed_text='boa noite', intent=<IntentType.CONVERSATIONAL_QUERY: 'conversational_query'>, confidence=0.7, entities={'datetime': {'values': ['noite'], 'type': 'temporal', 'count': 1}}, context_relevance=0.0, response_suggestion='Vou buscar essas informações.', processing_time=0.003105640411376953, gemini_response=None, sentiment='positive', complexity_score=0.2)
+2025-12-18 22:46:24,298 - __main__ - INFO - AI Processing Result: Intent=IntentType.CONVERSATIONAL_QUERY, Confidence=0.7
+2025-12-18 22:46:24,298 - __main__ - INFO - Main: Speaking response: Vou buscar essas informações.
+2025-12-18 22:46:24,299 - __main__ - INFO - Main: Requesting TTS: Vou buscar essas informações.
+2025-12-18 22:46:24,299 - services.tts_service - INFO - TTS: Queued: Vou buscar essas informações....
+2025-12-18 22:46:24,653 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:46:27,381 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:46:27,384 - services.tts_service - INFO - TTS: Speaking: Vou buscar essas informações....
+2025-12-18 22:46:27,384 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:46:27,386 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:46:29,657 - __main__ - INFO - Command recognized: vou buscar (confidence: 0.8)
+2025-12-18 22:46:29,657 - __main__ - INFO - Processing command: vou buscar (confidence: 0.80)
+2025-12-18 22:46:29,746 - services.ai_service - INFO - AIService: Processing command task: vou buscar
+2025-12-18 22:46:29,747 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.CONVERSATIONAL_QUERY
+2025-12-18 22:46:29,747 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='vou buscar', processed_text='vou buscar', intent=<IntentType.CONVERSATIONAL_QUERY: 'conversational_query'>, confidence=0.7, entities={'actions': {'values': ['buscar'], 'type': 'command', 'count': 1}}, context_relevance=0.0, response_suggestion='Vou buscar essas informações.', processing_time=0.00011086463928222656, gemini_response=None, sentiment='neutral', complexity_score=0.2)
+2025-12-18 22:46:29,748 - __main__ - INFO - AI Processing Result: Intent=IntentType.CONVERSATIONAL_QUERY, Confidence=0.7
+2025-12-18 22:46:29,748 - __main__ - INFO - Main: Speaking response: Vou buscar essas informações.
+2025-12-18 22:46:29,748 - __main__ - INFO - Main: Requesting TTS: Vou buscar essas informações.
+2025-12-18 22:46:29,748 - services.tts_service - INFO - TTS: Queued: Vou buscar essas informações....
+2025-12-18 22:46:30,027 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:46:30,877 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:46:30,878 - services.tts_service - INFO - TTS: Speaking: Vou buscar essas informações....
+2025-12-18 22:46:30,880 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:46:30,882 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:46:34,115 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:46:34,115 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:46:35,211 - __main__ - INFO - Command recognized: vou buscar essas informações (confidence: 0.8)
+2025-12-18 22:46:35,212 - __main__ - INFO - Processing command: vou buscar essas informações (confidence: 0.80)
+2025-12-18 22:46:35,212 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:46:35,304 - services.ai_service - INFO - AIService: Processing command task: vou buscar essas informações
+2025-12-18 22:46:35,329 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.CONVERSATIONAL_QUERY
+2025-12-18 22:46:35,331 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='vou buscar essas informações', processed_text='vou buscar essas informações', intent=<IntentType.CONVERSATIONAL_QUERY: 'conversational_query'>, confidence=0.7, entities={'actions': {'values': ['buscar'], 'type': 'command', 'count': 1}}, context_relevance=0.6, response_suggestion='Vou buscar essas informações.', processing_time=0.00018167495727539062, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:46:35,332 - __main__ - INFO - AI Processing Result: Intent=IntentType.CONVERSATIONAL_QUERY, Confidence=0.7
+2025-12-18 22:46:35,332 - __main__ - INFO - Main: Speaking response: Vou buscar essas informações.
+2025-12-18 22:46:35,333 - __main__ - INFO - Main: Requesting TTS: Vou buscar essas informações.
+2025-12-18 22:46:35,333 - services.tts_service - INFO - TTS: Queued: Vou buscar essas informações....
+2025-12-18 22:46:35,333 - services.tts_service - INFO - TTS: Speaking: Vou buscar essas informações....
+2025-12-18 22:46:35,719 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:46:38,937 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:46:38,938 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:46:40,847 - __main__ - INFO - Command recognized: vou buscar essas informações (confidence: 0.8)
+2025-12-18 22:46:40,848 - __main__ - INFO - Processing command: vou buscar essas informações (confidence: 0.80)
+2025-12-18 22:46:40,848 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:46:40,887 - services.ai_service - INFO - AIService: Processing command task: vou buscar essas informações
+2025-12-18 22:46:40,888 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.CONVERSATIONAL_QUERY
+2025-12-18 22:46:40,888 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='vou buscar essas informações', processed_text='vou buscar essas informações', intent=<IntentType.CONVERSATIONAL_QUERY: 'conversational_query'>, confidence=0.7, entities={'actions': {'values': ['buscar'], 'type': 'command', 'count': 1}}, context_relevance=0.6, response_suggestion='Vou buscar essas informações.', processing_time=0.0001461505889892578, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:46:40,889 - __main__ - INFO - AI Processing Result: Intent=IntentType.CONVERSATIONAL_QUERY, Confidence=0.7
+2025-12-18 22:46:40,889 - __main__ - INFO - Main: Speaking response: Vou buscar essas informações.
+2025-12-18 22:46:40,889 - __main__ - INFO - Main: Requesting TTS: Vou buscar essas informações.
+2025-12-18 22:46:40,889 - services.tts_service - INFO - TTS: Queued: Vou buscar essas informações....
+2025-12-18 22:46:40,890 - services.tts_service - INFO - TTS: Speaking: Vou buscar essas informações....
+2025-12-18 22:46:41,402 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:46:44,489 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:46:44,490 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:46:46,530 - __main__ - INFO - Command recognized: vou buscar essas informações (confidence: 0.8)
+2025-12-18 22:46:46,530 - __main__ - INFO - Processing command: vou buscar essas informações (confidence: 0.80)
+2025-12-18 22:46:46,531 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:46:46,535 - services.ai_service - INFO - AIService: Processing command task: vou buscar essas informações
+2025-12-18 22:46:46,536 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.CONVERSATIONAL_QUERY
+2025-12-18 22:46:46,539 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='vou buscar essas informações', processed_text='vou buscar essas informações', intent=<IntentType.CONVERSATIONAL_QUERY: 'conversational_query'>, confidence=0.7, entities={'actions': {'values': ['buscar'], 'type': 'command', 'count': 1}}, context_relevance=0.6, response_suggestion='Vou buscar essas informações.', processing_time=9.1552734375e-05, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:46:46,539 - __main__ - INFO - AI Processing Result: Intent=IntentType.CONVERSATIONAL_QUERY, Confidence=0.7
+2025-12-18 22:46:46,540 - __main__ - INFO - Main: Speaking response: Vou buscar essas informações.
+2025-12-18 22:46:46,540 - __main__ - INFO - Main: Requesting TTS: Vou buscar essas informações.
+2025-12-18 22:46:46,540 - services.tts_service - INFO - TTS: Queued: Vou buscar essas informações....
+2025-12-18 22:46:46,540 - services.tts_service - INFO - TTS: Speaking: Vou buscar essas informações....
+2025-12-18 22:46:47,079 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:46:50,182 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:46:50,184 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:46:52,256 - __main__ - INFO - Command recognized: buscar essas informações (confidence: 0.8)
+2025-12-18 22:46:52,256 - __main__ - INFO - Processing command: buscar essas informações (confidence: 0.80)
+2025-12-18 22:46:52,257 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:46:52,282 - services.ai_service - INFO - AIService: Processing command task: buscar essas informações
+2025-12-18 22:46:52,283 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.CONVERSATIONAL_QUERY
+2025-12-18 22:46:52,283 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='buscar essas informações', processed_text='buscar essas informações', intent=<IntentType.CONVERSATIONAL_QUERY: 'conversational_query'>, confidence=0.7, entities={'actions': {'values': ['buscar'], 'type': 'command', 'count': 1}}, context_relevance=0.6, response_suggestion='Vou buscar essas informações.', processing_time=9.1552734375e-05, gemini_response=None, sentiment='neutral', complexity_score=0.25)
+2025-12-18 22:46:52,284 - __main__ - INFO - AI Processing Result: Intent=IntentType.CONVERSATIONAL_QUERY, Confidence=0.7
+2025-12-18 22:46:52,284 - __main__ - INFO - Main: Speaking response: Vou buscar essas informações.
+2025-12-18 22:46:52,284 - __main__ - INFO - Main: Requesting TTS: Vou buscar essas informações.
+2025-12-18 22:46:52,284 - services.tts_service - INFO - TTS: Queued: Vou buscar essas informações....
+2025-12-18 22:46:52,285 - services.tts_service - INFO - TTS: Speaking: Vou buscar essas informações....
+2025-12-18 22:46:52,817 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:46:55,892 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:46:55,893 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:46:58,418 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:03,499 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:08,585 - __main__ - INFO - Command recognized: calcular 5 + 3 (confidence: 0.8)
+2025-12-18 22:47:08,586 - __main__ - INFO - Processing command: calcular 5 + 3 (confidence: 0.80)
+2025-12-18 22:47:08,586 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:47:08,621 - services.ai_service - INFO - AIService: Processing command task: calcular 5 + 3
+2025-12-18 22:47:08,622 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:47:08,622 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:47:08,623 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='calcular 5 + 3', processed_text='calcular 5 + 3', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'numbers': {'values': ['5', '3'], 'type': 'numeric', 'count': 2, 'converted': [5, 3]}}, context_relevance=0.0, response_suggestion='Comando reconhecido. Executando...', processing_time=0.0001392364501953125, gemini_response=None, sentiment='neutral', complexity_score=0.4)
+2025-12-18 22:47:08,623 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:47:08,623 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:47:08,623 - services.command_executor - INFO - CommandExecutor: Executing with entities={'numbers': {'values': ['5', '3'], 'type': 'numeric', 'count': 2, 'converted': [5, 3]}}, text='calcular 5 + 3'
+2025-12-18 22:47:08,623 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'target': '5 + 3', '_text': 'calcular 5 + 3'}
+2025-12-18 22:47:08,624 - __main__ - INFO - CommandExecutor: Action executed successfully - Calcula uma expressão
+2025-12-18 22:47:08,624 - __main__ - INFO - Main: Speaking response: O resultado é 8.
+2025-12-18 22:47:08,624 - __main__ - INFO - Main: Requesting TTS: O resultado é 8.
+2025-12-18 22:47:08,625 - services.tts_service - INFO - TTS: Queued: O resultado é 8....
+2025-12-18 22:47:08,625 - services.tts_service - INFO - TTS: Speaking: O resultado é 8....
+2025-12-18 22:47:09,161 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:11,566 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:47:11,567 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:47:14,375 - __main__ - INFO - Command recognized: conte uma piada (confidence: 0.8)
+2025-12-18 22:47:14,376 - __main__ - INFO - Processing command: conte uma piada (confidence: 0.80)
+2025-12-18 22:47:14,376 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:47:14,471 - services.ai_service - INFO - AIService: Processing command task: conte uma piada
+2025-12-18 22:47:14,471 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:47:14,471 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:47:14,472 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='conte uma piada', processed_text='conte uma piada', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={}, context_relevance=0.0, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00011467933654785156, gemini_response=None, sentiment='neutral', complexity_score=0.15)
+2025-12-18 22:47:14,472 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:47:14,472 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:47:14,472 - services.command_executor - INFO - CommandExecutor: Executing with entities={}, text='conte uma piada'
+2025-12-18 22:47:14,472 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'conte uma piada'}
+2025-12-18 22:47:14,804 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:14,932 - __main__ - INFO - CommandExecutor: Action executed successfully - Conta uma piada
+2025-12-18 22:47:14,933 - __main__ - INFO - Main: Speaking response: O que o pato disse para a pata? Vem quá!
+2025-12-18 22:47:14,933 - __main__ - INFO - Main: Requesting TTS: O que o pato disse para a pata? Vem quá!
+2025-12-18 22:47:14,933 - services.tts_service - INFO - TTS: Queued: O que o pato disse para a pata? Vem quá!...
+2025-12-18 22:47:14,934 - services.tts_service - INFO - TTS: Speaking: O que o pato disse para a pata? Vem quá!...
+2025-12-18 22:47:19,660 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:47:19,661 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:47:20,542 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:25,149 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:47:25,150 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:47:25,151 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:47:25,152 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:47:25,154 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:47:25,156 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:47:25,157 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.0, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00013494491577148438, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:47:25,157 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:47:25,158 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:47:25,158 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:47:25,158 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:47:25,260 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:47:25,260 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:47:25,260 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:47:25,261 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:47:25,261 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:47:25,544 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:27,887 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:47:27,887 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:47:30,831 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:47:30,831 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:47:30,832 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:47:30,906 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:47:30,906 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:47:30,907 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:47:30,907 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00012159347534179688, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:47:30,907 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:47:30,907 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:47:30,908 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:47:30,908 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:47:31,009 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:47:31,010 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:47:31,010 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:47:31,010 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:47:31,011 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:47:31,216 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:33,548 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:47:33,549 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:47:36,449 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:47:36,450 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:47:36,450 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:47:36,462 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:47:36,462 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:47:36,463 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:47:36,463 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00014472007751464844, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:47:36,463 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:47:36,464 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:47:36,464 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:47:36,464 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:47:36,566 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:47:36,566 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:47:36,566 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:47:36,566 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:47:36,567 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:47:36,925 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:39,257 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:47:39,257 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:47:42,807 - __main__ - INFO - Command recognized: próxima música Canta uma música carai (confidence: 0.8)
+2025-12-18 22:47:42,808 - __main__ - INFO - Processing command: próxima música canta uma música carai (confidence: 0.80)
+2025-12-18 22:47:42,808 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:47:42,908 - services.ai_service - INFO - AIService: Processing command task: próxima música canta uma música carai
+2025-12-18 22:47:42,908 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:47:42,909 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:47:42,909 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música canta uma música carai', processed_text='próxima música canta uma música carai', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música', 'música'], 'type': 'software', 'count': 2}, 'system': {'values': ['música', 'música'], 'type': 'system_component', 'count': 2}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00016260147094726562, gemini_response=None, sentiment='neutral', complexity_score=0.6)
+2025-12-18 22:47:42,910 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:47:42,910 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:47:42,910 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música', 'música'], 'type': 'software', 'count': 2}, 'system': {'values': ['música', 'música'], 'type': 'system_component', 'count': 2}}, text='próxima música canta uma música carai'
+2025-12-18 22:47:42,911 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música canta uma música carai'}
+2025-12-18 22:47:43,012 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:47:43,013 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:47:43,013 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:47:43,013 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:47:43,013 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:47:43,252 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:45,597 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:47:45,598 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:47:47,613 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:47:47,614 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:47:47,614 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:47:47,645 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:47:47,645 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:47:47,646 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:47:47,646 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00037670135498046875, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:47:47,647 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:47:47,647 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:47:47,648 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:47:47,648 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:47:47,749 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:47:47,750 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:47:47,751 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:47:47,751 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:47:47,751 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:47:48,020 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:50,376 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:47:50,376 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:47:53,790 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:47:53,791 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:47:53,792 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:47:53,799 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:47:53,800 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:47:53,802 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:47:53,802 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00020241737365722656, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:47:53,803 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:47:53,803 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:47:53,803 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:47:53,803 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:47:53,905 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:47:53,906 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:47:53,906 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:47:53,907 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:47:53,907 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:47:54,205 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:47:56,537 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:47:56,537 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:47:58,898 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:47:58,899 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:47:58,899 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:47:58,945 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:47:58,946 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:47:58,946 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:47:58,946 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=8.416175842285156e-05, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:47:58,947 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:47:58,947 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:47:58,947 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:47:58,947 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:47:59,049 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:47:59,049 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:47:59,050 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:47:59,050 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:47:59,050 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:47:59,299 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:01,631 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:01,631 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:04,464 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:04,465 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:04,466 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:04,517 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:04,521 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:04,522 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:04,524 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.0001595020294189453, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:04,524 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:04,525 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:04,525 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:04,525 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:04,627 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:04,628 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:04,628 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:04,628 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:04,629 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:04,891 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:07,207 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:07,208 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:10,053 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:10,055 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:10,055 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:10,082 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:10,083 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:10,083 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:10,084 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00011801719665527344, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:10,084 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:10,084 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:10,084 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:10,084 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:10,186 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:10,187 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:10,187 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:10,187 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:10,188 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:10,481 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:12,814 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:12,815 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:15,680 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:15,680 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:15,680 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:15,733 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:15,733 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:15,735 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:15,736 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=8.678436279296875e-05, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:15,736 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:15,736 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:15,737 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:15,737 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:15,838 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:15,838 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:15,838 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:15,839 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:15,839 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:16,072 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:18,427 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:18,427 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:21,304 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:21,305 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:21,305 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:21,378 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:21,378 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:21,378 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:21,379 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.0001239776611328125, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:21,379 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:21,379 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:21,379 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:21,380 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:21,481 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:21,481 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:21,482 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:21,482 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:21,482 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:21,781 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:24,119 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:24,119 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:26,897 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:26,898 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:26,898 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:26,920 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:26,920 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:26,921 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:26,921 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=9.846687316894531e-05, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:26,922 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:26,922 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:26,922 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:26,922 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:27,024 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:27,025 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:27,025 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:27,025 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:27,026 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:27,323 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:29,663 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:29,663 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:32,497 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:32,498 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:32,498 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:32,578 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:32,578 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:32,579 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:32,579 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=8.082389831542969e-05, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:32,579 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:32,579 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:32,580 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:32,580 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:32,681 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:32,681 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:32,682 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:32,682 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:32,682 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:32,919 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:35,257 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:35,258 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:38,076 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:38,077 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:38,077 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:38,125 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:38,125 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:38,125 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:38,126 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=7.915496826171875e-05, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:38,126 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:38,126 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:38,126 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:38,127 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:38,228 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:38,228 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:38,229 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:38,229 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:38,229 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:38,516 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:40,859 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:40,860 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:43,739 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:43,740 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:43,740 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:43,769 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:43,769 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:43,770 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:43,770 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=9.083747863769531e-05, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:43,771 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:43,771 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:43,771 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:43,771 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:43,873 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:43,874 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:43,874 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:43,875 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:43,875 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:44,175 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:46,510 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:46,510 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:49,307 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:49,307 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:49,308 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:49,319 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:49,319 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:49,319 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:49,320 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=7.605552673339844e-05, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:49,320 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:49,320 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:49,320 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:49,320 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:49,422 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:49,423 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:49,423 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:49,423 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:49,423 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:49,753 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:52,109 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:52,109 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:48:54,951 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:48:54,952 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:48:54,952 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:48:54,973 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:48:54,973 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:48:54,973 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:48:54,974 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=7.963180541992188e-05, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:48:54,974 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:48:54,975 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:48:54,975 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:48:54,975 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:48:55,076 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:48:55,077 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:48:55,077 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:48:55,077 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:48:55,077 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:48:55,371 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:48:57,702 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:48:57,703 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:49:00,557 - __main__ - INFO - Command recognized: próxima música desligar (confidence: 0.8)
+2025-12-18 22:49:00,558 - __main__ - INFO - Processing command: próxima música desligar (confidence: 0.80)
+2025-12-18 22:49:00,558 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:49:00,619 - services.ai_service - INFO - AIService: Processing command task: próxima música desligar
+2025-12-18 22:49:00,619 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:49:00,620 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:49:00,620 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música desligar', processed_text='próxima música desligar', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=8.082389831542969e-05, gemini_response=None, sentiment='neutral', complexity_score=0.35)
+2025-12-18 22:49:00,620 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:49:00,620 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:49:00,620 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música desligar'
+2025-12-18 22:49:00,621 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música desligar'}
+2025-12-18 22:49:00,722 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:49:00,722 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:49:00,723 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:49:00,723 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:49:00,723 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:49:00,973 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:49:03,331 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:49:03,332 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:49:06,261 - __main__ - INFO - Command recognized: próxima música desligar (confidence: 0.8)
+2025-12-18 22:49:06,264 - __main__ - INFO - Processing command: próxima música desligar (confidence: 0.80)
+2025-12-18 22:49:06,264 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:49:06,295 - services.ai_service - INFO - AIService: Processing command task: próxima música desligar
+2025-12-18 22:49:06,295 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:49:06,296 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:49:06,296 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música desligar', processed_text='próxima música desligar', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.0001666545867919922, gemini_response=None, sentiment='neutral', complexity_score=0.35)
+2025-12-18 22:49:06,296 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:49:06,297 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:49:06,297 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música desligar'
+2025-12-18 22:49:06,297 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música desligar'}
+2025-12-18 22:49:06,399 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:49:06,400 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:49:06,400 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:49:06,401 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:49:06,401 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:49:06,689 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:49:09,036 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:49:09,037 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:49:11,747 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:49:11,747 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:49:11,748 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:49:11,842 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:49:11,842 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:49:11,843 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:49:11,843 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.000125885009765625, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:49:11,843 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:49:11,843 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:49:11,843 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:49:11,844 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:49:11,945 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:49:11,946 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:49:11,946 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:49:11,946 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:49:11,946 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:49:12,170 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:49:14,525 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:49:14,526 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:49:17,320 - __main__ - INFO - Command recognized: próxima música desligar (confidence: 0.8)
+2025-12-18 22:49:17,321 - __main__ - INFO - Processing command: próxima música desligar (confidence: 0.80)
+2025-12-18 22:49:17,322 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:49:17,383 - services.ai_service - INFO - AIService: Processing command task: próxima música desligar
+2025-12-18 22:49:17,383 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:49:17,383 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:49:17,384 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música desligar', processed_text='próxima música desligar', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=9.059906005859375e-05, gemini_response=None, sentiment='neutral', complexity_score=0.35)
+2025-12-18 22:49:17,384 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:49:17,384 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:49:17,385 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música desligar'
+2025-12-18 22:49:17,385 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música desligar'}
+2025-12-18 22:49:17,487 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:49:17,487 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:49:17,488 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:49:17,488 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:49:17,488 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:49:17,795 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:49:20,127 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:49:20,128 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:49:22,999 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:49:23,000 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:49:23,001 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:49:23,031 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:49:23,031 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:49:23,031 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:49:23,032 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00011849403381347656, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:49:23,032 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:49:23,032 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:49:23,033 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:49:23,033 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:49:23,135 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:49:23,135 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:49:23,136 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:49:23,136 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:49:23,137 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:49:23,397 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:49:25,714 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:49:25,715 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:49:28,556 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:49:28,557 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:49:28,557 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:49:28,578 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:49:28,578 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:49:28,579 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:49:28,579 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00010037422180175781, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:49:28,580 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:49:28,580 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:49:28,580 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:49:28,580 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:49:28,682 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:49:28,683 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:49:28,683 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:49:28,683 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:49:28,683 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:49:28,995 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:49:31,394 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:49:31,395 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:49:34,140 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:49:34,140 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:49:34,141 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:49:34,225 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:49:34,225 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:49:34,226 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:49:34,226 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00012254714965820312, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:49:34,226 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:49:34,226 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:49:34,227 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:49:34,227 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:49:34,329 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:49:34,329 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:49:34,329 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:49:34,330 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:49:34,330 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:49:34,573 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:49:36,912 - services.tts_service - INFO - TTS: Speech completed
+2025-12-18 22:49:36,912 - services.audio_service - INFO - Restoring audio: -> 1.00
+2025-12-18 22:49:41,123 - __main__ - INFO - Command recognized: próxima música (confidence: 0.8)
+2025-12-18 22:49:41,123 - __main__ - INFO - Processing command: próxima música (confidence: 0.80)
+2025-12-18 22:49:41,124 - services.audio_service - INFO - Ducking audio: 1.00 -> 0.50
+2025-12-18 22:49:41,186 - services.ai_service - INFO - AIService: Processing command task: próxima música
+2025-12-18 22:49:41,186 - services.ai_service - INFO - AIService: Detected potential command keyword, setting base_intent to IntentType.DIRECT_COMMAND
+2025-12-18 22:49:41,187 - services.ai_service - INFO - AIService: Processing finished, emitting result: IntentType.DIRECT_COMMAND
+2025-12-18 22:49:41,187 - __main__ - INFO - Main: Received AI result: NLPResult(original_text='próxima música', processed_text='próxima música', intent=<IntentType.DIRECT_COMMAND: 'direct_command'>, confidence=0.7, entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, context_relevance=0.3, response_suggestion='Comando reconhecido. Executando...', processing_time=0.00012755393981933594, gemini_response=None, sentiment='neutral', complexity_score=0.30000000000000004)
+2025-12-18 22:49:41,188 - __main__ - INFO - AI Processing Result: Intent=IntentType.DIRECT_COMMAND, Confidence=0.7
+2025-12-18 22:49:41,188 - __main__ - INFO - Main: Executing via CommandExecutor
+2025-12-18 22:49:41,188 - services.command_executor - INFO - CommandExecutor: Executing with entities={'applications': {'values': ['música'], 'type': 'software', 'count': 1}, 'system': {'values': ['música'], 'type': 'system_component', 'count': 1}}, text='próxima música'
+2025-12-18 22:49:41,188 - services.command_executor - INFO - CommandExecutor: Found command handler, executing with params={'_text': 'próxima música'}
+2025-12-18 22:49:41,289 - __main__ - INFO - CommandExecutor: Action executed successfully - Pula para próxima música
+2025-12-18 22:49:41,290 - __main__ - INFO - Main: Speaking response: Próxima música.
+2025-12-18 22:49:41,290 - __main__ - INFO - Main: Requesting TTS: Próxima música.
+2025-12-18 22:49:41,290 - services.tts_service - INFO - TTS: Queued: Próxima música....
+2025-12-18 22:49:41,291 - services.tts_service - INFO - TTS: Speaking: Próxima música....
+2025-12-18 22:49:41,548 - __main__ - INFO - Listening via SoundDevice...
+2025-12-18 22:49:43,006 - jarvis_ui - INFO - Unified Jarvis UI closed
