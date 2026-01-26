@@ -6,6 +6,7 @@ intelligent Iron Man's Jarvis-like experience.
 """
 
 import asyncio
+import aiofiles
 import pickle
 import json
 import time
@@ -555,7 +556,7 @@ class LearningModule:
         
         try:
             # Update interaction history
-            self._add_interaction_to_history(turn)
+            await self._add_interaction_to_history(turn)
             
             # Immediate learning for important patterns
             if self._should_trigger_immediate_learning(turn):
@@ -636,13 +637,13 @@ class LearningModule:
             except Exception as e:
                 logger.error(f"Error in continuous learning loop: {e}")
     
-    def _add_interaction_to_history(self, turn: ConversationTurn):
+    async def _add_interaction_to_history(self, turn: ConversationTurn):
         """Add interaction to learning history"""
         # Simple file-based storage for now
         history_file = self.data_dir / "interaction_history.jsonl"
         
         try:
-            with open(history_file, 'a', encoding='utf-8') as f:
+            async with aiofiles.open(history_file, 'a', encoding='utf-8') as f:
                 interaction_data = {
                     'timestamp': turn.timestamp.isoformat(),
                     'user_input': turn.user_input,
@@ -652,7 +653,7 @@ class LearningModule:
                     'confidence_score': turn.confidence_score,
                     'satisfaction_score': turn.satisfaction_score
                 }
-                f.write(json.dumps(interaction_data, ensure_ascii=False) + '\n')
+                await f.write(json.dumps(interaction_data, ensure_ascii=False) + '\n')
         except Exception as e:
             logger.error(f"Error saving interaction history: {e}")
     
