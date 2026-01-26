@@ -44,5 +44,11 @@ class TestLearningEngine(unittest.IsolatedAsyncioTestCase):
         # This shouldn't raise errors
         await self.learning_module.generate_proactive_suggestions(context)
 
+    async def test_get_recent_interactions(self):
+        """Test the async get_recent_interactions method"""
+        # It should return a list (empty in this case as we just started)
+        interactions = await self.learning_module._get_recent_interactions()
+        self.assertIsInstance(interactions, list)
+
 if __name__ == '__main__':
     unittest.main()

@@ -626,7 +626,7 @@ class LearningModule:
                 await asyncio.sleep(self.auto_learn_interval)
                 
                 # Get recent interactions
-                recent_interactions = self._get_recent_interactions()
+                recent_interactions = await self._get_recent_interactions()
                 
                 if len(recent_interactions) >= self.pattern_update_threshold:
                     await self._process_batch_learning(recent_interactions)
@@ -714,7 +714,11 @@ class LearningModule:
         except Exception as e:
             logger.error(f"Error in batch learning: {e}")
     
-    def _get_recent_interactions(self) -> List[ConversationTurn]:
+    async def _get_recent_interactions(self) -> List[ConversationTurn]:
+        """Get recent interactions from history (asynchronously)"""
+        return await asyncio.to_thread(self._get_recent_interactions_sync)
+
+    def _get_recent_interactions_sync(self) -> List[ConversationTurn]:
         """Get recent interactions from history"""
         interactions = []
         history_file = self.data_dir / "interaction_history.jsonl"
