@@ -552,31 +552,46 @@ class ConversationManager:
             'timestamp': datetime.now().isoformat()
         }
     
+    def _write_history_to_file(self, filename: str, session_data: Dict[str, Any], turns: List[ConversationTurn]):
+        """Write history data to file synchronously"""
+        # Construct history_data here to offload CPU work
+        history_data = {
+            **session_data,
+            'end_time': datetime.now().isoformat(),
+            'turns': [
+                {
+                    'timestamp': turn.timestamp.isoformat(),
+                    'user_input': turn.user_input,
+                    'intent': turn.intent.value,
+                    'entities': turn.entities,
+                    'response': turn.response,
+                    'confidence': turn.confidence_score
+                }
+                for turn in turns
+            ]
+        }
+
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(history_data, f, ensure_ascii=False, indent=2)
+
     async def _save_conversation_history(self):
         """Save conversation history for learning purposes"""
         try:
-            history_data = {
+            # Prepare basic session data
+            session_data = {
                 'session_id': self.state.session_id,
                 'start_time': self.state.start_time.isoformat(),
-                'end_time': datetime.now().isoformat(),
                 'mode': self.state.mode.value,
-                'turns': [
-                    {
-                        'timestamp': turn.timestamp.isoformat(),
-                        'user_input': turn.user_input,
-                        'intent': turn.intent.value,
-                        'entities': turn.entities,
-                        'response': turn.response,
-                        'confidence': turn.confidence_score
-                    }
-                    for turn in self.state.turn_history
-                ]
             }
             
             # Save to file (can be enhanced to use database)
             filename = f"conversation_{self.state.session_id}.json"
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump(history_data, f, ensure_ascii=False, indent=2)
+
+            # Create a shallow copy of turns to ensure thread safety
+            turns_copy = list(self.state.turn_history)
+
+            # Run blocking I/O and data processing in a separate thread
+            await asyncio.to_thread(self._write_history_to_file, filename, session_data, turns_copy)
             
             logger.info(f"Conversation history saved: {filename}")
             
