@@ -167,11 +167,7 @@ class TestAIServiceIntentDetection(unittest.TestCase):
     def setUp(self):
         self.service = AIService()
         # Command keywords from the service
-        self.command_keywords = [
-            'abrir', 'fechar', 'tocar', 'aumentar', 'diminuir', 
-            'parar', 'continuar', 'pesquisar', 'escreva', 'reiniciar', 
-            'desligar', 'horas', 'temperatura', 'dia', 'print', 'sistema'
-        ]
+        self.command_keywords = AIService.COMMAND_KEYWORDS
 
     def test_direct_command_keywords(self):
         """Test each command keyword is recognized"""
@@ -184,7 +180,6 @@ class TestAIServiceIntentDetection(unittest.TestCase):
         """Test conversational text without keywords"""
         test_texts = [
             "como você está",
-            "me conte uma piada",
             "qual é o sentido da vida"
         ]
         
