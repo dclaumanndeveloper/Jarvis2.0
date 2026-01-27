@@ -28,7 +28,8 @@ class TestTTSServiceInit(unittest.TestCase):
         
         self.assertIsInstance(service.queue, queue.Queue)
         self.assertTrue(service.running)
-        self.assertIsNone(service.engine)
+        # engine is not initialized in __init__
+        self.assertFalse(hasattr(service, 'engine'))
 
     def test_signals_defined(self):
         """Test all signals are defined"""
