@@ -27,6 +27,7 @@ from sklearn.decomposition import PCA
 import joblib
 
 from conversation_manager import ConversationTurn, IntentType, ConversationContext
+from services.path_manager import PathManager
 
 # Configure logging
 # logging.basicConfig(level=logging.INFO) # Controlled by main.py
@@ -504,8 +505,11 @@ class LearningModule:
     """
     
     def __init__(self, data_dir: str = "learning_data"):
-        self.data_dir = Path(data_dir)
-        self.data_dir.mkdir(exist_ok=True)
+        if data_dir == "learning_data":
+            self.data_dir = PathManager.get_learning_dir()
+        else:
+            self.data_dir = Path(data_dir)
+            self.data_dir.mkdir(exist_ok=True)
         
         # Initialize components
         self.pattern_recognizer = PatternRecognizer()

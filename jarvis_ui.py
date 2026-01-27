@@ -18,6 +18,7 @@ from typing import Optional, Dict, Any, List, Callable
 from enum import Enum
 from dataclasses import dataclass
 from pathlib import Path
+from services.path_manager import PathManager
 
 # PyQt6 imports
 from PyQt6.QtWidgets import (
@@ -1124,7 +1125,7 @@ class UnifiedJarvisUI(QWidget):
     def init_voice_database(self):
         """Initialize voice profile database"""
         try:
-            db_path = Path("jarvis_voice_profiles.db")
+            db_path = PathManager.get_voice_profile_db()
             self.voice_db = sqlite3.connect(str(db_path), check_same_thread=False)
             
             # Create voice profiles table
