@@ -1,4 +1,4 @@
-name: Build Windows Installer
+name: Build Jarvis
 
 on:
   push:
@@ -11,54 +11,57 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+          cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install System Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libespeak1 portaudio19-dev python3-dev
+
+      - name: Install System Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install portaudio
+
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
+          # Try installing pyaudio explicitly if needed, though requirements might not list it
+          pip install pyaudio || echo "PyAudio installation failed, continuing (using sounddevice fallback)..."
 
-      - name: Build .exe with PyInstaller
+      - name: Build with PyInstaller
         run: |
-          pyinstaller --onefile main.py
+          pyinstaller main.spec
 
-      - name: Download Inno Setup
+      - name: Rename Output
+        shell: bash
         run: |
-          curl -L -o innosetup.exe https://jrsoftware.org/download.php/is.exe
-          Start-Process -Wait -FilePath ".\innosetup.exe" -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-"
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            mv dist/main.exe dist/Jarvis-Windows.exe
+          elif [ "${{ runner.os }}" == "Linux" ]; then
+            mv dist/main dist/Jarvis-Linux
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            mv dist/main dist/Jarvis-macOS
+          fi
 
-      - name: Download NSSM
-        run: |
-          curl -L -o nssm.zip https://nssm.cc/release/nssm-2.24.zip
-          tar -xf nssm.zip
-
-      - name: Prepare Inno Setup script
-        run: |
-          echo [Setup] > installer.iss
-          echo AppName=Jarvis >> installer.iss
-          echo AppVersion=1.0 >> installer.iss
-          echo DefaultDirName="{pf}\Jarvis" >> installer.iss
-          echo [Files] >> installer.iss
-          echo "Source: \"dist\main.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
-          echo "Source: \"nssm-2.24\win64\nssm.exe\"; DestDir: \"{app}\"; Flags: ignoreversion" >> installer.iss
-          echo [Run] >> installer.iss
-          echo "Filename: \"{app}\\nssm.exe\"; Parameters: \"install Jarvis \\\"{app}\\main.exe\\\"\"; Flags: runhidden" >> installer.iss
-
-      - name: Build Windows Installer
-        run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer.iss"
-
-      - name: Upload Installer
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
-          path: Output/*.exe
+          name: Jarvis-${{ matrix.os }}
+          path: dist/Jarvis-*

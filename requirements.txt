@@ -16,9 +16,9 @@ audioread>=3.0.0                  # Audio file reading (librosa dependency)
 numpy>=1.24.0                     # Numerical operations
 
 # === Windows Audio Control ===
-pycaw>=20240210                   # Windows Core Audio API (volume control)
-comtypes>=1.4.0                   # COM interface (Windows)
-pywin32>=310                      # Windows extensions
+pycaw>=20240210; sys_platform == 'win32' # Windows Core Audio API (volume control)
+comtypes>=1.4.0; sys_platform == 'win32' # COM interface (Windows)
+pywin32>=310; sys_platform == 'win32'    # Windows extensions
 
 # === GUI ===
 PyQt6>=6.5.0                      # Modern Qt6 GUI framework
@@ -54,4 +54,4 @@ aiosqlite>=0.19.0                 # Async SQLite for learning engine
 aiofiles>=23.2.1                  # Async file I/O
 
 # === Standard Library Backports (Python 3.13+) ===
-audioop-lts>=0.2.1                # Python 3.13+ compatibility
+audioop-lts>=0.2.1; python_version >= '3.13' # Python 3.13+ compatibility
