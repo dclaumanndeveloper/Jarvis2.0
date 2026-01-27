@@ -144,6 +144,10 @@ class IntentClassifier:
                 r'\b(ruim|péssimo|não gostei|irritante)\b'
             ]
         }
+
+        # Compile patterns for performance
+        for intent_type, patterns in self.intent_patterns.items():
+            self.intent_patterns[intent_type] = [re.compile(p) for p in patterns]
     
     def classify_intent(self, text: str, context: ConversationContext) -> IntentType:
         """Classify user intent based on text and context"""
@@ -167,7 +171,7 @@ class IntentClassifier:
     def _matches_patterns(self, text: str, intent_type: IntentType) -> bool:
         """Check if text matches intent patterns"""
         patterns = self.intent_patterns.get(intent_type, [])
-        return any(re.search(pattern, text) for pattern in patterns)
+        return any(pattern.search(text) for pattern in patterns)
     
     def _has_recent_context(self, context: ConversationContext) -> bool:
         """Check if there's recent conversation context"""
