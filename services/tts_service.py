@@ -1,8 +1,13 @@
 
 import logging
 import queue
+import platform
 import pyttsx3
-import pythoncom
+try:
+    import pythoncom
+except ImportError:
+    pythoncom = None
+
 from PyQt6.QtCore import QThread, pyqtSignal
 
 logger = logging.getLogger(__name__)
@@ -25,11 +30,19 @@ class TTSService(QThread):
 
     def _init_engine(self):
         """Initialize a fresh pyttsx3 engine"""
-        engine = pyttsx3.init('sapi5')
+        # Select driver based on OS
+        if platform.system() == "Windows":
+             engine = pyttsx3.init('sapi5')
+        else:
+             # Let pyttsx3 choose the best driver (nsss for Mac, espeak for Linux)
+             engine = pyttsx3.init()
         
         # Set voice if we have a cached ID, otherwise find one
         if self._voice_id:
-            engine.setProperty('voice', self._voice_id)
+            try:
+                engine.setProperty('voice', self._voice_id)
+            except Exception as e:
+                logger.warning(f"TTS: Failed to restore voice ID: {e}")
         else:
             try:
                 voices = engine.getProperty('voices')
@@ -50,8 +63,11 @@ class TTSService(QThread):
         """Main thread loop"""
         try:
             # Initialize COM for this thread (Crucial for SAPI5 on Windows)
-            pythoncom.CoInitialize()
-            logger.info("TTS Service: COM initialized, starting loop")
+            if pythoncom:
+                pythoncom.CoInitialize()
+                logger.info("TTS Service: COM initialized (Windows)")
+
+            logger.info("TTS Service: Starting loop")
             
             while self.running:
                 try:
@@ -88,7 +104,8 @@ class TTSService(QThread):
             logger.error(f"TTS Service crashed: {e}")
             self.error_occurred.emit(str(e))
         finally:
-            pythoncom.CoUninitialize()
+            if pythoncom:
+                pythoncom.CoUninitialize()
             logger.info("TTS Service: Shutdown complete")
 
     def speak(self, text: str):
