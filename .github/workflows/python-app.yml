@@ -49,19 +49,24 @@ jobs:
         run: |
           pyinstaller main.spec
 
-      - name: Rename Output
+      - name: Prepare Package
         shell: bash
         run: |
+          mkdir -p dist/package
+          cp README.md dist/package/ || echo "README.md not found"
+
           if [ "${{ runner.os }}" == "Windows" ]; then
-            mv dist/main.exe dist/Jarvis-Windows.exe
+            mv dist/main.exe dist/package/Jarvis.exe
           elif [ "${{ runner.os }}" == "Linux" ]; then
-            mv dist/main dist/Jarvis-Linux
+            mv dist/main dist/package/Jarvis
+            chmod +x dist/package/Jarvis
           elif [ "${{ runner.os }}" == "macOS" ]; then
-            mv dist/main dist/Jarvis-macOS
+            mv dist/main dist/package/Jarvis
+            chmod +x dist/package/Jarvis
           fi
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Jarvis-${{ matrix.os }}
-          path: dist/Jarvis-*
+          path: dist/package/

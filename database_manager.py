@@ -17,6 +17,7 @@ from contextlib import contextmanager
 
 from conversation_manager import ConversationTurn, IntentType, ConversationContext
 from learning_engine import UserPattern, LearningType
+from services.path_manager import PathManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -39,7 +40,12 @@ class DatabaseManager:
     
     def __init__(self, config: DatabaseConfig = None):
         self.config = config or DatabaseConfig()
-        self.db_path = Path(self.config.db_path)
+
+        if self.config.db_path == "jarvis_data.db":
+            self.db_path = PathManager.get_database_path()
+        else:
+            self.db_path = Path(self.config.db_path)
+
         self.lock = threading.RLock()
         
         # Initialize database

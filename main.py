@@ -29,6 +29,7 @@ from services.audio_service import AudioService
 from services.tts_service import TTSService
 from services.audio_device_monitor import AudioDeviceManager
 from services.command_executor import CommandExecutor, CommandResult
+from services.path_manager import PathManager
 from conversation_manager import IntentType
 
 
@@ -47,7 +48,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('jarvis_unified.log', mode='w'),
+        logging.FileHandler(str(PathManager.get_log_file()), mode='w'),
         logging.StreamHandler(sys.stdout)
     ],
     force=True
