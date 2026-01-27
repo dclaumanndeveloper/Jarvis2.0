@@ -3,6 +3,7 @@ import os
 import asyncio
 import logging
 import threading
+import uuid
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
@@ -144,7 +145,10 @@ class AIService(QThread):
             self.context.conversation_history.append({
                 'user_input': text,
                 'intent': result.intent.value,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'entities': result.entities,
+                'response': result.response_suggestion,
+                'confidence': result.confidence
             })
             
             # 4. Emit Result for UI/Execution
@@ -162,8 +166,38 @@ class AIService(QThread):
                 
         elif task_type == 'feedback':
             # Implement Learning from feedback
-            # TODO: Create ConversationTurn object and feed to learning_module
-            pass
+            success = data
+            logger.info(f"AIService: Processing feedback task: success={success}")
+
+            if self.learning_module and self.context.conversation_history:
+                try:
+                    last_interaction = self.context.conversation_history[-1]
+
+                    # Reconstruct intent enum
+                    try:
+                        intent = IntentType(last_interaction.get('intent'))
+                    except ValueError:
+                        intent = IntentType.UNKNOWN
+
+                    turn = ConversationTurn(
+                        id=str(uuid.uuid4()),
+                        timestamp=datetime.fromisoformat(last_interaction['timestamp']),
+                        user_input=last_interaction['user_input'],
+                        recognized_text=last_interaction['user_input'],
+                        confidence_score=last_interaction.get('confidence', 0.0),
+                        intent=intent,
+                        entities=last_interaction.get('entities', {}),
+                        context={},  # Current context is passed separately
+                        response=last_interaction.get('response', ""),
+                        response_time=0.0,  # Not tracked in history currently
+                        satisfaction_score=1.0 if success else 0.0
+                    )
+
+                    await self.learning_module.learn_from_interaction(turn, self.context)
+                    logger.info("AIService: Feedback processed and sent to learning module")
+
+                except Exception as e:
+                    logger.error(f"Error processing feedback: {e}")
     
     def clear_pending_tasks(self):
         """Clear any pending tasks from the queue"""

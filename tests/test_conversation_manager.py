@@ -1,4 +1,3 @@
-
 import unittest
 import asyncio
 import os
@@ -9,7 +8,7 @@ from datetime import datetime
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from conversation_manager import ConversationManager, ConversationTurn, IntentType
+from conversation_manager import ConversationManager, ConversationTurn, IntentType, IntentClassifier, ConversationContext
 
 class TestConversationManager(unittest.IsolatedAsyncioTestCase):
     async def test_save_conversation_history(self):
@@ -44,11 +43,6 @@ class TestConversationManager(unittest.IsolatedAsyncioTestCase):
 
         # Cleanup
         os.remove(filename)
-=======
-
-import unittest
-from datetime import datetime
-from conversation_manager import IntentClassifier, ConversationContext, IntentType, ConversationTurn
 
 class TestIntentClassifier(unittest.TestCase):
     def setUp(self):
