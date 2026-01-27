@@ -30,6 +30,21 @@ class AIService(QThread):
     learning_insight = pyqtSignal(str)       # Emits proactive suggestions
     error_occurred = pyqtSignal(str)
 
+    COMMAND_KEYWORDS = [
+        # Original commands
+        'abrir', 'fechar', 'tocar', 'aumentar', 'diminuir', 'parar', 'continuar',
+        'pesquisar', 'escreva', 'reiniciar', 'desligar', 'horas', 'temperatura',
+        'dia', 'print', 'sistema',
+        # New media commands
+        'próxima', 'anterior', 'mutar', 'silenciar', 'desmutar',
+        # New system commands
+        'memória', 'cpu', 'disco', 'bloquear', 'lixeira',
+        # New utility commands
+        'timer', 'traduzir', 'dólar', 'bitcoin', 'calcular', 'quanto é',
+        # New file commands
+        'pasta', 'download', 'piada'
+    ]
+
     def __init__(self, gemini_key: Optional[str] = None):
         super().__init__()
         self.gemini_key = gemini_key
@@ -112,21 +127,8 @@ class AIService(QThread):
             
             # 1. Base Intent Analysis (Fast)
             # Simple keyword match to get started or rely on NLP for everything
-            command_keywords = [
-                # Original commands
-                'abrir', 'fechar', 'tocar', 'aumentar', 'diminuir', 'parar', 'continuar', 
-                'pesquisar', 'escreva', 'reiniciar', 'desligar', 'horas', 'temperatura', 
-                'dia', 'print', 'sistema',
-                # New media commands
-                'próxima', 'anterior', 'mutar', 'silenciar', 'desmutar',
-                # New system commands  
-                'memória', 'cpu', 'disco', 'bloquear', 'lixeira',
-                # New utility commands
-                'timer', 'traduzir', 'dólar', 'bitcoin', 'calcular', 'quanto é',
-                # New file commands
-                'pasta', 'download', 'piada'
-            ]
-            if any(kw in text.lower() for kw in command_keywords):
+            text_lower = text.lower()
+            if any(kw in text_lower for kw in self.COMMAND_KEYWORDS):
                 base_intent = IntentType.DIRECT_COMMAND
                 logger.info(f"AIService: Detected potential command keyword, setting base_intent to {base_intent}")
             else:

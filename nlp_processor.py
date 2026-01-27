@@ -117,6 +117,10 @@ class EntityExtractor:
             }
         }
         
+        # Compile regex patterns for performance
+        for config in self.entity_patterns.values():
+            config['compiled'] = [re.compile(p) for p in config['patterns']]
+
         # Portuguese number mapping
         self.number_map = {
             'zero': 0, 'um': 1, 'dois': 2, 'três': 3, 'quatro': 4,
@@ -134,8 +138,8 @@ class EntityExtractor:
         # Extract all entity types
         for entity_category, config in self.entity_patterns.items():
             matches = []
-            for pattern in config['patterns']:
-                found_matches = re.findall(pattern, text_lower)
+            for pattern in config['compiled']:
+                found_matches = pattern.findall(text_lower)
                 if found_matches:
                     matches.extend(found_matches)
             
