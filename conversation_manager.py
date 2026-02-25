@@ -36,6 +36,9 @@ class IntentType(Enum):
     CLARIFICATION_REQUEST = "clarification_request"
     EMOTIONAL_EXPRESSION = "emotional_expression"
     FOLLOW_UP = "follow_up"
+    TIME_QUERY = "time_query"
+    DATE_QUERY = "date_query"
+    VISION_QUERY = "vision_query"
     UNKNOWN = "unknown"
 
 class ContextType(Enum):
@@ -72,6 +75,7 @@ class ConversationContext:
     conversation_history: deque = field(default_factory=lambda: deque(maxlen=50))
     active_variables: Dict[str, Any] = field(default_factory=dict)
     pending_clarifications: List[str] = field(default_factory=list)
+    long_term_memory: str = ""
 
 class ConversationState:
     """Manages the current state of conversation"""
@@ -142,6 +146,11 @@ class IntentClassifier:
             IntentType.EMOTIONAL_EXPRESSION: [
                 r'\b(obrigado|valeu|legal|ótimo|perfeito)\b',
                 r'\b(ruim|péssimo|não gostei|irritante)\b'
+            ],
+            IntentType.VISION_QUERY: [
+                r'\b(o que tem na tela|descreva a tela|o que está na minha tela)\b',
+                r'\b(o que você está vendo|olhe para isso|descreva o que está vendo)\b',
+                r'\b(o que tem na câmera|analise a imagem|veja isso)\b'
             ]
         }
 

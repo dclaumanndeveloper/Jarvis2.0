@@ -4,6 +4,7 @@ import asyncio
 import logging
 import threading
 import uuid
+import time
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
@@ -12,9 +13,10 @@ from PyQt6.QtCore import QThread, pyqtSignal, QObject
 # Add project root to path to import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from nlp_processor import NLPProcessor, NLPResult
+from nlp_processor import NLPProcessor, NLPResult, ProcessingMode
 from learning_engine import LearningModule
 from conversation_manager import ConversationContext, ConversationTurn, IntentType
+from services.memory_service import MemoryService
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +48,8 @@ class AIService(QThread):
         'pasta', 'download', 'piada'
     ]
 
-    def __init__(self, gemini_key: Optional[str] = None):
+    def __init__(self):
         super().__init__()
-        self.gemini_key = gemini_key
         self.loop = None
         self.running = True
         
@@ -71,13 +72,15 @@ class AIService(QThread):
             self.loop = asyncio.new_event_loop()
             asyncio.set_event_loop(self.loop)
             
-            # Initialize NLP Processor
-            self.nlp_processor = NLPProcessor(gemini_api_key=self.gemini_key)
+            # Initialize Memory and NLP Processor
+            self.memory_service = MemoryService()
+            self.nlp_processor = NLPProcessor()
             try:
-                self.learning_module = LearningModule()
-                logger.info("LearningModule initialized successfully")
+                # self.learning_module = LearningModule()
+                # logger.info("LearningModule initialized successfully")
                 # Start background learning
-                self.loop.run_until_complete(self.learning_module.start_learning())
+                # self.loop.run_until_complete(self.learning_module.start_learning())
+                pass
             except Exception as e:
                 logger.error(f"Failed to initialize LearningModule: {e}")
                 self.learning_module = None
@@ -129,18 +132,41 @@ class AIService(QThread):
             # 1. Base Intent Analysis (Fast)
             # Simple keyword match to get started or rely on NLP for everything
             text_lower = text.lower()
-            if any(kw in text_lower for kw in self.COMMAND_KEYWORDS):
+            if any(kw in text_lower for kw in ['horas', 'que horas', 'horário']):
+                base_intent = IntentType.TIME_QUERY
+            elif any(kw in text_lower for kw in ['data', 'dia é hoje', 'que dia']):
+                base_intent = IntentType.DATE_QUERY
+            elif any(kw in text_lower for kw in self.COMMAND_KEYWORDS):
                 base_intent = IntentType.DIRECT_COMMAND
-                logger.info(f"AIService: Detected potential command keyword, setting base_intent to {base_intent}")
             else:
                 base_intent = IntentType.CONVERSATIONAL_QUERY # Default
             
-            # 2. Advanced NLP Processing
+            logger.info(f"AIService: Analysis results: detected base_intent as {base_intent}")
+            
+            # 2. Retrieve Past Context/Facts via RAG
+            if hasattr(self, 'memory_service') and self.memory_service:
+                self.context.long_term_memory = self.memory_service.retrieve_relevant_context(text)
+            
+            # 3. Advanced NLP Processing
+            # Skip the 30-second LLM timeout block for simple local commands
+            process_mode = ProcessingMode.FAST if base_intent in [
+                IntentType.TIME_QUERY, IntentType.DATE_QUERY, IntentType.DIRECT_COMMAND
+            ] else ProcessingMode.DETAILED
+            
             result = await self.nlp_processor.process_text(
-                text, base_intent, self.context
+                text, base_intent, self.context, mode=process_mode
             )
             
-            # 3. Update Context
+            # 4. Store memory
+            if hasattr(self, 'memory_service') and self.memory_service:
+                self.memory_service.store_interaction(
+                    user_text=text,
+                    ai_response=result.response_suggestion,
+                    intent=result.intent.name,
+                    timestamp=str(time.time())
+                )
+            
+            # 5. Update Context
             self.context.last_command = text
             self.context.conversation_history.append({
                 'user_input': text,
@@ -152,7 +178,6 @@ class AIService(QThread):
             })
             
             # 4. Emit Result for UI/Execution
-            logger.info(f"AIService: Processing finished, emitting result: {result.intent}")
             self.processing_finished.emit(result)
             
             # 5. Check for Proactive Suggestions (Learning)

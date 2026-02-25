@@ -1,4 +1,3 @@
-
 import logging
 import queue
 import platform
@@ -75,21 +74,26 @@ class TTSService(QThread):
                     text = self.queue.get(timeout=0.5)
                     
                     if text:
+                        print(f"HUD: TTS Processing request: {text[:50]}")
                         logger.info(f"TTS: Speaking: {text[:50]}...")
                         self.speaking_started.emit(text)
                         
                         try:
                             # Create fresh engine for each speech
+                            print("HUD: TTS Initializing engine...")
                             engine = self._init_engine()
+                            print(f"HUD: TTS Speaking text...")
                             engine.say(text)
                             engine.runAndWait()
                             
                             # Clean up engine
+                            print("HUD: TTS Speech chunk finished.")
                             engine.stop()
                             del engine
                             
                             logger.info("TTS: Speech completed")
                         except Exception as e:
+                            print(f"HUD: TTS Engine internal error: {e}")
                             logger.error(f"TTS Engine error: {e}")
                         
                         self.speaking_finished.emit()

@@ -196,18 +196,21 @@ class StatusIndicator(QWidget):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(120, 120)  # Larger size for detail
+        self.setFixedSize(220, 220)
         self.state = UIState.IDLE
         self.animation_timer = QTimer()
         self.animation_timer.timeout.connect(self.update)
-        self.animation_timer.start(16)  # ~60 FPS for smooth animation
-        
+        self.animation_timer.start(16)  # ~60 FPS
+
         # Animation variables
         self.pulse_value = 0.0
         self.rotation_angle_1 = 0.0
         self.rotation_angle_2 = 0.0
         self.rotation_angle_3 = 0.0
         self.glow_intensity = 0.8
+        self.sonar_rings: list = []
+        self.strobe_alpha: int = 255
+        self.strobe_dir: int = -1
         
     def set_state(self, state: UIState):
         """Set the indicator state and adjust animation parameters"""
@@ -230,170 +233,187 @@ class StatusIndicator(QWidget):
         return colors.get(self.state, (QColor(100, 100, 100), QColor(50, 50, 50)))
 
     def paintEvent(self, event):
-        """Render the Ultra-High-Fidelity Iron Man HUD"""
+        """Render the Ultra-High-Fidelity Iron Man Arc Reactor HUD"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
+
         w, h = self.width(), self.height()
         cx, cy = w // 2, h // 2
-        
-        # Colors - Strict HUD Palette
-        cyan_core = QColor(0, 255, 255)
-        cyan_dim = QColor(0, 100, 100)
+        R = min(w, h) // 2 - 4
+
+        primary, secondary = self.get_state_colors()
         holo_white = QColor(220, 255, 255)
-        alert_red = QColor(255, 50, 50)
-        
-        # Speed calc
-        speed = 2.0 if self.state == UIState.PROCESSING else 0.5
-        
-        # Update angles
-        self.rotation_angle_1 = (self.rotation_angle_1 + 0.8 * speed) % 360
-        self.rotation_angle_2 = (self.rotation_angle_2 - 1.2 * speed) % 360
-        self.rotation_angle_3 = (self.rotation_angle_3 + 0.2 * speed) % 360
-        
-        # Pulse
-        self.pulse_value += 0.05
-        pulse = 1.0 + 0.05 * np.sin(self.pulse_value)
-        
-        # --- LAYER 1: The Reactor Core (Chest Piece Influence) ---
-        # 10 Trapezoidal Light segments (The "Palladium" look)
+
+        speed = (3.0 if self.state == UIState.PROCESSING else
+                 1.8 if self.state == UIState.LISTENING else
+                 0.5 if self.state == UIState.IDLE else 1.0)
+
+        self.rotation_angle_1 = (self.rotation_angle_1 + 0.6 * speed) % 360
+        self.rotation_angle_2 = (self.rotation_angle_2 - 1.0 * speed) % 360
+        self.rotation_angle_3 = (self.rotation_angle_3 + 0.18 * speed) % 360
+        self.pulse_value += 0.06
+        pulse = 1.0 + 0.06 * np.sin(self.pulse_value)
+
+        pr, pg, pb = primary.red(), primary.green(), primary.blue()
+
+        # ── LAYER 0: Outer aura glow ──
+        aura = QRadialGradient(cx, cy, R)
+        aura.setColorAt(0,   QColor(pr, pg, pb, 0))
+        aura.setColorAt(0.7, QColor(pr, pg, pb, 20))
+        aura.setColorAt(1,   QColor(pr, pg, pb, 60))
+        painter.setBrush(QBrush(aura))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(QPoint(cx, cy), R, R)
+
+        # ── LAYER 1: 12-segment outer ring ──
         painter.save()
         painter.translate(cx, cy)
-        
-        reactor_radius = 45 * pulse
-        num_segments = 10
-        angle_step = 360 / num_segments
-        
-        for i in range(num_segments):
+        painter.rotate(self.rotation_angle_3)
+        outer_r = int(R * 0.94)
+        num_arcs = 12
+        seg = 360 // num_arcs
+        for i in range(num_arcs):
+            alpha = 200 if i % 3 != 0 else 90
+            painter.setPen(QPen(QColor(pr, pg, pb, alpha), 2))
+            painter.drawArc(-outer_r, -outer_r, outer_r * 2, outer_r * 2,
+                            (i * seg + 4) * 16, (seg - 8) * 16)
+        painter.restore()
+
+        # ── LAYER 2: Tick ring (counter-rotating) ──
+        painter.save()
+        painter.translate(cx, cy)
+        painter.rotate(-self.rotation_angle_1)
+        tr = int(R * 0.82)
+        for i in range(0, 360, 3):
+            is_maj = (i % 30 == 0)
+            is_med = (i % 10 == 0)
+            length = 8 if is_maj else (5 if is_med else 2)
+            alpha  = 200 if is_maj else (130 if is_med else 55)
+            rad = np.radians(i)
+            painter.setPen(QPen(QColor(pr, pg, pb, alpha), 1))
+            p1 = QPoint(int(tr * np.cos(rad)), int(tr * np.sin(rad)))
+            p2 = QPoint(int((tr + length) * np.cos(rad)), int((tr + length) * np.sin(rad)))
+            painter.drawLine(p1, p2)
+        painter.restore()
+
+        # ── LAYER 3: Dashed secondary ring ──
+        painter.save()
+        painter.translate(cx, cy)
+        painter.rotate(self.rotation_angle_2 * 1.5)
+        r2 = int(R * 0.70)
+        painter.setPen(QPen(QColor(pr, pg, pb, 110), 1, Qt.PenStyle.DashLine))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawEllipse(QPoint(0, 0), r2, r2)
+        painter.setPen(QPen(holo_white, 1.5))
+        for _ in range(3):
+            painter.rotate(120)
+            painter.drawLine(0, -r2 + 4, 0, -r2 + 13)
+        painter.restore()
+
+        # ── LAYER 4: Reactor paddles (trapezoidal segments) ──
+        painter.save()
+        painter.translate(cx, cy)
+        seg_r = int(R * 0.50 * pulse)
+        for i in range(12):
             painter.save()
-            painter.rotate(i * angle_step)
-            
-            # Segment path
+            painter.rotate(i * 30)
             path = QPainterPath()
-            path.moveTo(-6, -reactor_radius)
-            path.lineTo(6, -reactor_radius)
-            path.lineTo(8, -reactor_radius - 12)
-            path.lineTo(-8, -reactor_radius - 12)
+            path.moveTo(-5, -seg_r)
+            path.lineTo(5,  -seg_r)
+            path.lineTo(7,  -seg_r - 14)
+            path.lineTo(-7, -seg_r - 14)
             path.closeSubpath()
-            
-            # Fill with glow
-            grad = QLinearGradient(0, -reactor_radius, 0, -reactor_radius-12)
-            grad.setColorAt(0, cyan_core)
+            grad = QLinearGradient(0, -seg_r, 0, -seg_r - 14)
+            grad.setColorAt(0, primary)
             grad.setColorAt(1, Qt.GlobalColor.transparent)
             painter.setBrush(QBrush(grad))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawPath(path)
-            
-            # Wireframe outline
             painter.setBrush(Qt.BrushStyle.NoBrush)
-            painter.setPen(QPen(QColor(0, 255, 255, 100), 1))
+            painter.setPen(QPen(QColor(pr, pg, pb, 70), 1))
             painter.drawPath(path)
-            
             painter.restore()
         painter.restore()
 
-        # --- LAYER 2: Inner Spinners (HUD Data) ---
+        # ── LAYER 5: Inner quad-arc ring ──
         painter.save()
         painter.translate(cx, cy)
-        
-        # 2a. Fast Spinner (Thin dashed ring)
-        painter.rotate(self.rotation_angle_2 * 2)
-        pen = QPen(cyan_dim)
-        pen.setWidthF(1.0)
-        pen.setStyle(Qt.PenStyle.DashLine)
-        painter.setPen(pen)
-        painter.drawEllipse(QPoint(0, 0), 30, 30)
-        
-        # 2b. Triangle Markers (Aperture)
-        painter.rotate(-self.rotation_angle_2 * 2.5)
-        painter.setPen(QPen(holo_white, 1))
-        for _ in range(3):
-            painter.rotate(120)
-            painter.drawLine(0, -25, 0, -35)
-            
-        painter.restore()
-
-        # --- LAYER 3: Complex Outer HUD Rings ---
-        painter.save()
-        painter.translate(cx, cy)
-        painter.rotate(self.rotation_angle_3)
-        
-        # Ring 1: Sector Arcs
-        painter.setPen(QPen(cyan_core, 1.5))
+        painter.rotate(self.rotation_angle_1 * 2)
+        ir = int(R * 0.38)
         for i in range(4):
-            painter.drawArc(-70, -70, 140, 140, i*90*16 + 10*16, 60*16)
-        
-        # Ring 2: Tiny Scale Ticks
-        painter.rotate(-self.rotation_angle_1)
-        tick_pen = QPen(QColor(0, 200, 200, 150), 1)
-        painter.setPen(tick_pen)
-        for i in range(0, 360, 5):
-            is_major = (i % 30 == 0)
-            length = 6 if is_major else 3
-            r_inner = 80
-            
-            # Draw tick
-            rad = np.radians(i)
-            p1 = QPoint(int(r_inner * np.cos(rad)), int(r_inner * np.sin(rad)))
-            p2 = QPoint(int((r_inner + length) * np.cos(rad)), int((r_inner + length) * np.sin(rad)))
-            painter.drawLine(p1, p2)
-            
+            painter.setPen(QPen(primary, 2))
+            painter.drawArc(-ir, -ir, ir * 2, ir * 2, (i * 90 + 8) * 16, 74 * 16)
         painter.restore()
 
-        # --- LAYER 4: Holographic Text Stream ---
-        # Rotating text ring
+        # ── LAYER 6: Fast inner spinner ──
         painter.save()
         painter.translate(cx, cy)
-        painter.rotate(-self.rotation_angle_1 * 0.5)
-        
-        text_pen = QPen(QColor(0, 255, 255, 180))
-        painter.setPen(text_pen)
-        font = QFont(TECH_FONT_FALLBACK, 5)
-        font.setBold(True)
-        painter.setFont(font)
-        
-        tech_text = "JARVIS.SYSTEM.V2  //  TARGET.LOCK  //  BIO.SCAN.ACTIVE  //  PWR.STABLE  //  "
-        path = QPainterPath()
-        # Drawing text along a circular path is hard in basic Qt, so we approximate with placement
-        # For true HUD feel, we just place text blocks at cardinal directions that rotate
-        r_text = 95
-        painter.drawText(0, -r_text, "SYS.CORE")
-        painter.rotate(90)
-        painter.drawText(0, -r_text, "MEM.ALLOC")
-        painter.rotate(90)
-        painter.drawText(0, -r_text, "NET.LINK")
-        painter.rotate(90)
-        painter.drawText(0, -r_text, "PWR.CELL")
-        
+        painter.rotate(-self.rotation_angle_2 * 2.5)
+        sr = int(R * 0.27)
+        painter.setPen(QPen(QColor(pr, pg, pb, 150), 1, Qt.PenStyle.DashLine))
+        painter.drawEllipse(QPoint(0, 0), sr, sr)
         painter.restore()
-        
-        # --- LAYER 5: Central Plasma Bloom ---
-        # The bright white center
-        glow = QRadialGradient(cx, cy, 15)
-        glow.setColorAt(0, QColor(255, 255, 255, 255))
-        glow.setColorAt(0.5, QColor(0, 255, 255, 200))
-        glow.setColorAt(1, Qt.GlobalColor.transparent)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QBrush(glow))
-        painter.drawEllipse(QPoint(cx, cy), 20, 20)
 
-        # --- LAYER 6: State Specific Overlays ---
+        # ── LAYER 7: Holographic label ring ──
+        painter.save()
+        painter.translate(cx, cy)
+        painter.rotate(-self.rotation_angle_1 * 0.4)
+        lbl_r = int(R * 0.61)
+        painter.setPen(QPen(QColor(pr, pg, pb, 130)))
+        fnt = QFont(TECH_FONT_FALLBACK, 5, QFont.Weight.Bold)
+        painter.setFont(fnt)
+        for i, lbl in enumerate(["SYS.CORE", "BIO.SCAN", "NET.LINK", "AI.ENGINE"]):
+            painter.save()
+            painter.rotate(i * 90)
+            painter.drawText(-20, -lbl_r, lbl)
+            painter.restore()
+        painter.restore()
+
+        # ── LAYER 8: Central plasma bloom ──
+        br = int(R * 0.17)
+        bloom = QRadialGradient(cx, cy, br * 2)
+        bloom.setColorAt(0,   QColor(255, 255, 255, 255))
+        bloom.setColorAt(0.4, primary)
+        bloom.setColorAt(1,   Qt.GlobalColor.transparent)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(bloom))
+        painter.drawEllipse(QPoint(cx, cy), br * 2, br * 2)
+
+        # ── LAYER 9: State-specific overlays ──
         if self.state == UIState.LISTENING:
-            painter.setPen(QPen(cyan_core, 1))
-            painter.setBrush(Qt.BrushStyle.NoBrush)
-            # Audio wave simulation ring
-            radius = 60 + np.sin(self.pulse_value * 10) * 5
-            painter.drawEllipse(QPoint(cx, cy), int(radius), int(radius))
-            
+            if np.random.random() < 0.06:
+                self.sonar_rings.append({'r': br * 2, 'alpha': 190})
+            new_rings = []
+            for ring in self.sonar_rings:
+                ring['r'] += 2
+                ring['alpha'] = max(0, ring['alpha'] - 7)
+                if ring['alpha'] > 0:
+                    painter.setPen(QPen(QColor(pr, pg, pb, ring['alpha']), 1))
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
+                    painter.drawEllipse(QPoint(cx, cy), ring['r'], ring['r'])
+                    new_rings.append(ring)
+            self.sonar_rings = new_rings
+
         elif self.state == UIState.PROCESSING:
-            # Rotating brackets
             painter.save()
             painter.translate(cx, cy)
             painter.rotate(self.rotation_angle_2 * 4)
-            painter.setPen(QPen(QColor(255, 200, 0), 2)) # Gold for processing
-            painter.drawArc(-30, -30, 60, 60, 0, 60*16)
-            painter.drawArc(-30, -30, 60, 60, 180*16, 60*16)
+            gold = QColor(255, 180, 0, 200)
+            painter.setPen(QPen(gold, 2))
+            bk = int(R * 0.33)
+            painter.drawArc(-bk, -bk, bk * 2, bk * 2, 0, 80 * 16)
+            painter.drawArc(-bk, -bk, bk * 2, bk * 2, 180 * 16, 80 * 16)
             painter.restore()
+
+        elif self.state == UIState.ERROR:
+            self.strobe_alpha += self.strobe_dir * 15
+            if self.strobe_alpha <= 60 or self.strobe_alpha >= 255:
+                self.strobe_dir *= -1
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QBrush(QColor(255, 0, 0, self.strobe_alpha // 5)))
+            painter.drawEllipse(QPoint(cx, cy), R, R)
+
+
 
 class TechGaugeWidget(QWidget):
     """Circular Tech Gauge for simulations (CPU/RAM/NET)"""
@@ -989,6 +1009,196 @@ class LearningProgressWidget(QFrame):
         else:
             self.setFixedHeight(100)
 
+class WaveformWidget(QWidget):
+    """Audio waveform spectrum visualizer — Iron Man voice-pulse style"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedHeight(60)
+        self.num_bars = 64
+        self.bar_values = [10 + int(np.random.random() * 15) for _ in range(self.num_bars)]
+        self.active = False
+        self.pulse = 0.0
+
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._update_bars)
+        self._timer.start(50)
+
+    def set_active(self, active: bool):
+        self.active = active
+
+    def _update_bars(self):
+        self.pulse += 0.15
+        amplitude = 50 if self.active else 12
+        for i in range(self.num_bars):
+            center = int(amplitude * (0.5 + 0.5 * abs(np.sin(self.pulse + i * 0.3))))
+            noise = int((np.random.random() - 0.5) * 10)
+            self.bar_values[i] = max(4, min(55, self.bar_values[i] + noise))
+            self.bar_values[i] += (center - self.bar_values[i]) // 8
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.fillRect(self.rect(), QColor(0, 6, 14, 200))
+
+        w, h = self.width(), self.height()
+        bar_w = max(2, w // self.num_bars - 1)
+        gap = 1
+        for i, val in enumerate(self.bar_values):
+            x = i * (bar_w + gap)
+            bar_h = int(val)
+            y = h - bar_h
+            grad = QLinearGradient(x, h, x, y)
+            grad.setColorAt(0,   QColor(0, 160, 210, 170))
+            grad.setColorAt(0.6, QColor(0, 255, 255, 220))
+            grad.setColorAt(1,   QColor(255, 255, 255, 240))
+            painter.setBrush(QBrush(grad))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawRect(x, y, bar_w, bar_h)
+
+
+class ResponsePanel(QFrame):
+    """Typewriter response readout — Iron Man HUD style"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("""
+            QFrame {
+                background: rgba(0, 8, 20, 200);
+                border: 1px solid rgba(0, 255, 255, 45);
+            }
+        """)
+        self._full_text = ""
+        self._shown_chars = 0
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 5, 10, 5)
+        layout.setSpacing(2)
+
+        header = QLabel("[ J.A.R.V.I.S. RESPONSE READOUT ]")
+        header.setStyleSheet(f"""
+            color: rgba(0,255,255,100);
+            font-family: {TECH_FONT_FAMILY};
+            font-size: 7px;
+            letter-spacing: 2px;
+        """)
+        self.text_label = QLabel(">> SYSTEM READY_")
+        self.text_label.setStyleSheet("""
+            color: #00FFFF;
+            font-family: 'Consolas', monospace;
+            font-size: 11px;
+        """)
+        self.text_label.setWordWrap(True)
+
+        layout.addWidget(header)
+        layout.addWidget(self.text_label)
+        layout.addStretch()
+
+        self._type_timer = QTimer(self)
+        self._type_timer.timeout.connect(self._reveal_char)
+        self._blink_timer = QTimer(self)
+        self._blink_timer.timeout.connect(self._blink_cursor)
+        self._blink_timer.start(500)
+
+    def display_response(self, text: str):
+        """Start typewriter animation with new response text"""
+        self._full_text = text
+        self._shown_chars = 0
+        self._type_timer.start(22)
+
+    def _reveal_char(self):
+        self._shown_chars += 1
+        if self._shown_chars >= len(self._full_text):
+            self._type_timer.stop()
+            self._shown_chars = len(self._full_text)
+        self.text_label.setText(self._full_text[:self._shown_chars] + "_")
+
+    def _blink_cursor(self):
+        if self._type_timer.isActive():
+            return
+        txt = self.text_label.text()
+        if txt.endswith("_"):
+            self.text_label.setText(txt[:-1] + " ")
+        else:
+            self.text_label.setText((txt[:-1] if txt else "") + "_")
+
+
+class ScanLineOverlay(QWidget):
+    """Animated scan-line overlay — mouse-event transparent"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground)
+        self.setAutoFillBackground(False)
+        self.y_pos = 0.0
+
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._advance)
+        self._timer.start(16)
+
+    def _advance(self):
+        self.y_pos += 1.8
+        if self.y_pos > self.height():
+            self.y_pos = 0
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        w = self.width()
+        y = int(self.y_pos)
+        painter.setPen(QPen(QColor(0, 255, 255, 50), 2))
+        painter.drawLine(0, y, w, y)
+        for i in range(1, 18):
+            alpha = max(0, 42 - i * 3)
+            painter.setPen(QPen(QColor(0, 255, 255, alpha), 1))
+            painter.drawLine(0, y - i, w, y - i)
+
+
+class SideDataPanel(QFrame):
+    """Vertical side panel with live system gauges"""
+
+    def __init__(self, gauge_configs, live=True, parent=None):
+        super().__init__(parent)
+        self.live = live
+        self.setStyleSheet("""
+            QFrame { background: rgba(0,8,20,100); border: none; }
+        """)
+        self.gauges = []
+        layout = QVBoxLayout(self)
+        layout.setSpacing(6)
+        layout.setContentsMargins(4, 8, 4, 8)
+
+        for label, color in gauge_configs:
+            g = TechGaugeWidget(label, color)
+            self.gauges.append(g)
+            layout.addWidget(g, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addStretch()
+
+        self._utimer = QTimer(self)
+        self._utimer.timeout.connect(self._update_live)
+        self._utimer.start(1500)
+
+    def _update_live(self):
+        if self.live:
+            try:
+                import psutil
+                vals = [
+                    int(psutil.cpu_percent()),
+                    int(psutil.virtual_memory().percent),
+                    min(99, int(np.random.random() * 60) + 15),
+                    int(psutil.disk_usage('/').percent),
+                ]
+            except Exception:
+                vals = [int(np.random.random() * 60) + 20 for _ in range(4)]
+        else:
+            vals = [int(np.random.random() * 80) + 10 for _ in range(4)]
+        for i, g in enumerate(self.gauges):
+            if i < len(vals):
+                g.value = vals[i]
+
+
 class ContinuousConversationEngine:
     """Manages continuous conversation state and context"""
     
@@ -1092,7 +1302,11 @@ class UnifiedJarvisUI(QWidget):
         self.current_state = UIState.STARTUP
         self.conversation_mode = ConversationMode.CONTINUOUS
         self.voice_authenticated = False
-        
+
+        # HUD animation state
+        self._ticker_offset = 0.0
+        self._hex_offset = 0.0
+
         # UI components
         self.status_indicator = None
         self.conversation_widget = None
@@ -1163,79 +1377,105 @@ class UnifiedJarvisUI(QWidget):
     
     def init_ui(self):
         """Initialize the unified UI components"""
-        # Set window properties
         self.setWindowTitle("Jarvis 2.0 - Assistente Inteligente")
         self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint | 
+            Qt.WindowType.FramelessWindowHint |
             Qt.WindowType.WindowStaysOnTopHint
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        
-        # Apply futuristic stylesheet
+        self.resize(880, 700)
+
         self.apply_global_stylesheet()
-        
-        # Create main layout
+
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 10, 10, 10)
-        self.main_layout.setSpacing(5)
-        
-        # Header with status indicator and title
+        self.main_layout.setContentsMargins(12, 12, 12, 12)
+        self.main_layout.setSpacing(6)
+
         self.create_header()
-        
-        # Main content area
         self.create_content_area()
-        
-        # Footer with controls
         self.create_footer()
-        
-        # Connect resize events
+
+        # Scan-line overlay on top of everything
+        self.scan_overlay = ScanLineOverlay(self)
+        self.scan_overlay.setGeometry(self.rect())
+        self.scan_overlay.raise_()
+
         self.resizeEvent = self.on_resize
-        
         self.center_on_screen()
 
     def paintEvent(self, event):
-        """Render the Holographic Grid Background"""
+        """Render the Iron Man HUD Background"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
-        # Draw Mesh Grid
+
         w, h = self.width(), self.height()
-        step = 40
-        
-        pen = QPen(QColor(0, 255, 255, 15)) # Very faint cyan
-        pen.setWidth(1)
-        painter.setPen(pen)
-        
-        # Vertical lines
-        for x in range(0, w, step):
-            painter.drawLine(x, 0, x, h)
-            
-        # Horizontal lines
-        for y in range(0, h, step):
-            painter.drawLine(0, y, w, y)
-            
-        # Draw Corner Brackets (The "Frame")
-        bracket_len = 30
-        thick_pen = QPen(QColor(0, 255, 255, 150))
-        thick_pen.setWidth(2)
-        painter.setPen(thick_pen)
-        
-        # Top-Left
-        painter.drawLine(10, 10, 10 + bracket_len, 10)
-        painter.drawLine(10, 10, 10, 10 + bracket_len)
-        
-        # Top-Right
-        painter.drawLine(w-10, 10, w-10-bracket_len, 10)
-        painter.drawLine(w-10, 10, w-10, 10 + bracket_len)
-        
-        # Bottom-Left
-        painter.drawLine(10, h-10, 10 + bracket_len, h-10)
-        painter.drawLine(10, h-10, 10, h-10-bracket_len)
-        
-        # Bottom-Right
-        painter.drawLine(w-10, h-10, w-10-bracket_len, h-10)
-        painter.drawLine(w-10, h-10, w-10, h-10-bracket_len)
-        
+
+        # ── Deep background fill ──
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(QColor(0, 7, 16)))
+        painter.drawRect(0, 0, w, h)
+
+        # ── Radial glow behind Arc Reactor ──
+        cx_r, cy_r = w // 2, int(h * 0.46)
+        glow_bg = QRadialGradient(cx_r, cy_r, 260)
+        glow_bg.setColorAt(0,   QColor(0, 60, 100, 55))
+        glow_bg.setColorAt(0.5, QColor(0, 30,  60, 25))
+        glow_bg.setColorAt(1,   Qt.GlobalColor.transparent)
+        painter.setBrush(QBrush(glow_bg))
+        painter.drawEllipse(QPoint(cx_r, cy_r), 320, 280)
+
+        # ── Hex grid overlay ──
+        hsz = 26
+        hex_h = int(hsz * 1.732)
+        col_w = hsz * 3 // 2
+        ox = int(getattr(self, '_hex_offset', 0)) % col_w
+        oy = int(getattr(self, '_hex_offset', 0) * 0.6) % hex_h
+        pen_hex = QPen(QColor(0, 212, 255, 10), 1)
+        painter.setPen(pen_hex)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        for col in range(-1, w // col_w + 2):
+            for row in range(-1, h // hex_h + 2):
+                hcx = col * col_w + ox
+                hcy = row * hex_h + (hex_h // 2 if col % 2 else 0) + oy
+                path = QPainterPath()
+                for k in range(6):
+                    ang = np.radians(60 * k - 30)
+                    px = hcx + hsz * np.cos(ang)
+                    py = hcy + hsz * np.sin(ang)
+                    if k == 0:
+                        path.moveTo(px, py)
+                    else:
+                        path.lineTo(px, py)
+                path.closeSubpath()
+                painter.drawPath(path)
+
+        # ── Corner brackets (Iron Man frame) ──
+        blen, margin = 42, 12
+        bp = QPen(QColor(0, 255, 255, 170), 2)
+        painter.setPen(bp)
+        for (sx, sy, dx, dy) in [
+            (margin, margin, 1, 1),
+            (w - margin, margin, -1, 1),
+            (margin, h - margin, 1, -1),
+            (w - margin, h - margin, -1, -1),
+        ]:
+            painter.drawLine(sx, sy, sx + dx * blen, sy)
+            painter.drawLine(sx, sy, sx, sy + dy * blen)
+
+        # ── Scrolling bottom HUD ticker ──
+        ticker_str = ("  ●  SYS.CORE: ONLINE   ●  NEURAL.NET: ACTIVE   "
+                      "●  THREAT.LVL: NIL   ●  AI.ENGINE: READY   "
+                      "●  PWR.CELL: STABLE   ●  BIO.SCAN: OK   "
+                      "●  NET.UPLINK: CONNECTED   ") * 3
+        tfnt = QFont(TECH_FONT_FALLBACK, 7)
+        painter.setFont(tfnt)
+        painter.setPen(QPen(QColor(0, 255, 255, 90)))
+        fm = painter.fontMetrics()
+        tw = fm.horizontalAdvance(ticker_str)
+        off = int(getattr(self, '_ticker_offset', 0)) % max(tw, 1)
+        painter.drawText(-off, h - 6, ticker_str)
+        painter.drawText(-off + tw, h - 6, ticker_str)
+
         super().paintEvent(event)
     def apply_global_stylesheet(self):
         """Apply Iron Man HUD stylesheet - Minimalist, Bracketed, High-Tech"""
@@ -1380,64 +1620,68 @@ class UnifiedJarvisUI(QWidget):
         self.main_layout.addLayout(header_layout)
     
     def create_content_area(self):
-        """Create main content area with Dense Iron Man HUD Layout"""
-        # We use a Grid Layout to position elements around the Core
+        """Create main content area with Iron Man HUD layout"""
         content_container = QWidget()
         content_layout = QGridLayout(content_container)
-        content_layout.setSpacing(10)
-        
-        # --- Top Row ---
-        # 1. CPU Gauge (Top-Left)
-        self.cpu_gauge = TechGaugeWidget("CPU CORE", QColor(0, 255, 255))
-        content_layout.addWidget(self.cpu_gauge, 0, 0, Qt.AlignmentFlag.AlignCenter)
-        
-        # 2. Conversation Widget (Top-Center)
-        # Compact style to fit
+        content_layout.setSpacing(8)
+        content_layout.setContentsMargins(4, 4, 4, 4)
+
+        # === LEFT DATA PANEL (live psutil) ===
+        self.left_panel = SideDataPanel([
+            ("CPU",    QColor(0,   255, 255)),
+            ("MEMORY", QColor(0,   200, 255)),
+            ("NETWORK",QColor(0,   255, 150)),
+            ("DISK",   QColor(100, 200, 255)),
+        ], live=True)
+        content_layout.addWidget(self.left_panel, 0, 0, 3, 1)
+
+        # === CENTER TOP: Conversation state ===
         self.conversation_widget = ConversationStateWidget()
-        self.conversation_widget.setFixedHeight(80)
+        self.conversation_widget.setFixedHeight(88)
         content_layout.addWidget(self.conversation_widget, 0, 1)
-        
-        # 3. RAM Gauge (Top-Right)
-        self.ram_gauge = TechGaugeWidget("MEM BANK", QColor(0, 200, 255))
-        content_layout.addWidget(self.ram_gauge, 0, 2, Qt.AlignmentFlag.AlignCenter)
-        
-        # --- Middle Row ---
-        # 4. Network Gauge (Left)
-        self.net_gauge = TechGaugeWidget("NET UPLINK", QColor(0, 255, 100))
-        content_layout.addWidget(self.net_gauge, 1, 0, Qt.AlignmentFlag.AlignCenter)
-        
-        # 5. THE ARC REACTOR (Centerpiece)
+
+        # === CENTER MID: Arc Reactor ===
         reactor_container = QWidget()
         r_layout = QVBoxLayout(reactor_container)
+        r_layout.setContentsMargins(0, 0, 0, 0)
         self.status_indicator = StatusIndicator()
-        self.status_indicator.setFixedSize(220, 220)
         r_layout.addWidget(self.status_indicator, 0, Qt.AlignmentFlag.AlignCenter)
         content_layout.addWidget(reactor_container, 1, 1, Qt.AlignmentFlag.AlignCenter)
-        
-        # 6. Power Gauge (Right)
-        self.pwr_gauge = TechGaugeWidget("PWR CELL", QColor(255, 100, 100))
-        content_layout.addWidget(self.pwr_gauge, 1, 2, Qt.AlignmentFlag.AlignCenter)
-        
-        # --- Bottom Row ---
-        # 7. Empty/Filler (Bottom-Left)
-        filler_left = TechGaugeWidget("AUX SYS", QColor(0, 255, 255))
-        content_layout.addWidget(filler_left, 2, 0, Qt.AlignmentFlag.AlignCenter)
-        
-        # 8. Learning Widget (Bottom-Center)
-        # We restore the learning widget here as a graph display
-        self.learning_widget = LearningProgressWidget()
-        self.learning_widget.setFixedHeight(80) # Force compact height
-        content_layout.addWidget(self.learning_widget, 2, 1)
-        
-        # 9. Empty/Filler (Bottom-Right)
-        filler_right = TechGaugeWidget("SECURITY", QColor(255, 200, 0))
-        content_layout.addWidget(filler_right, 2, 2, Qt.AlignmentFlag.AlignCenter)
-        
-        # Add the whole grid to main layout
+
+        # === CENTER BOTTOM: Response typewriter panel ===
+        self.response_panel = ResponsePanel()
+        self.response_panel.setFixedHeight(88)
+        content_layout.addWidget(self.response_panel, 2, 1)
+
+        # === RIGHT DATA PANEL (simulated AI metrics) ===
+        self.right_panel = SideDataPanel([
+            ("AI.PROC", QColor(255, 200,   0)),
+            ("PWR.CELL",QColor(255, 100,  50)),
+            ("THREAT",  QColor(255,  50,  50)),
+            ("SESSION", QColor(200,   0, 255)),
+        ], live=False)
+        content_layout.addWidget(self.right_panel, 0, 2, 3, 1)
+
+        # Column stretch: side panels narrow, center wide
+        content_layout.setColumnStretch(0, 1)
+        content_layout.setColumnStretch(1, 2)
+        content_layout.setColumnStretch(2, 1)
+
         self.main_layout.addWidget(content_container)
-        
-        # System Info Area (Bottom Strip)
+
+        # === WAVEFORM BAR (below the grid) ===
+        self.waveform_widget = WaveformWidget()
+        self.main_layout.addWidget(self.waveform_widget)
+
+        # Keep legacy learning_widget hidden (API used by main.py)
+        self.learning_widget = LearningProgressWidget()
+        self.learning_widget.hide()
+
         self.create_system_info_area()
+
+
+
+
     
     def create_system_info_area(self):
         """Create system information display area with HUD styling"""
@@ -1643,29 +1887,40 @@ class UnifiedJarvisUI(QWidget):
         if self.current_state != new_state:
             old_state = self.current_state
             self.current_state = new_state
-            
+
             # Update status indicator
             self.status_indicator.set_state(new_state)
-            
+
+            # Toggle waveform activity
+            if hasattr(self, 'waveform_widget'):
+                self.waveform_widget.set_active(
+                    new_state in (UIState.LISTENING, UIState.RESPONDING)
+                )
+
             # Update system status label
             state_texts = {
-                UIState.STARTUP: "Inicializando...",
-                UIState.IDLE: "Aguardando comando",
-                UIState.LISTENING: "Ouvindo...",
-                UIState.PROCESSING: "Processando...",
-                UIState.RESPONDING: "Respondendo...",
-                UIState.LEARNING: "Aprendendo...",
-                UIState.VOICE_REGISTRATION: "Registrando voz...",
+                UIState.STARTUP:              "Inicializando...",
+                UIState.IDLE:                 "Aguardando comando",
+                UIState.LISTENING:            "Ouvindo...",
+                UIState.PROCESSING:           "Processando...",
+                UIState.RESPONDING:           "Respondendo...",
+                UIState.LEARNING:             "Aprendendo...",
+                UIState.VOICE_REGISTRATION:   "Registrando voz...",
                 UIState.VOICE_AUTHENTICATION: "Autenticando...",
-                UIState.ERROR: "Erro do sistema"
+                UIState.ERROR:                "Erro do sistema"
             }
-            
-            self.system_status_label.setText(f"Sistema: {state_texts.get(new_state, 'Desconhecido')}")
-            
-            # Emit state change signal
+            self.system_status_label.setText(
+                f"Sistema: {state_texts.get(new_state, 'Desconhecido')}"
+            )
+
             self.state_changed.emit(new_state)
-            
             logger.debug(f"State changed from {old_state.value} to {new_state.value}")
+
+    def display_response(self, text: str):
+        """Display Jarvis response in the typewriter panel"""
+        if hasattr(self, 'response_panel'):
+            self.response_panel.display_response(text)
+
     
     def toggle_conversation_mode(self):
         """Toggle between conversation modes"""
@@ -1739,8 +1994,12 @@ class UnifiedJarvisUI(QWidget):
             self.change_state(UIState.IDLE)
     
     def update_display(self):
-        """Update display elements periodically"""
+        """Update display elements and HUD animation offsets periodically"""
         self.update_time_display()
+        self._ticker_offset += 0.7
+        self._hex_offset += 0.12
+        self.update()  # repaint background with new offsets
+
     
     def update_time_display(self):
         """Update time display in header"""
@@ -1750,15 +2009,14 @@ class UnifiedJarvisUI(QWidget):
     def on_resize(self, event):
         """Handle window resize for responsive layout"""
         new_size = event.size()
-        screen_size = self.layout_manager.update_screen_size(new_size)
-        
-        # Adapt components to new size
+        self.layout_manager.update_screen_size(new_size)
         self.adapt_components_to_size()
-        
-        # Update font sizes
         self.update_responsive_fonts()
-        
+        if hasattr(self, 'scan_overlay'):
+            self.scan_overlay.setGeometry(self.rect())
+            self.scan_overlay.raise_()
         super().resizeEvent(event)
+
     
     def adapt_components_to_size(self):
         """Adapt UI components to current screen size"""

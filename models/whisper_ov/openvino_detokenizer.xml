@@ -1,0 +1,271 @@
+<?xml version="1.0"?>
+<net name="detokenizer" version="11">
+	<layers>
+		<layer id="0" name="Parameter_19799" type="Parameter" version="opset1">
+			<data shape="?,?" element_type="i64" />
+			<output>
+				<port id="0" precision="I64" names="Parameter_19799">
+					<dim>-1</dim>
+					<dim>-1</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="1" name="Convert_19994" type="Convert" version="opset1">
+			<data destination_type="i32" />
+			<input>
+				<port id="0" precision="I64">
+					<dim>-1</dim>
+					<dim>-1</dim>
+				</port>
+			</input>
+			<output>
+				<port id="1" precision="I32">
+					<dim>-1</dim>
+					<dim>-1</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="2" name="Constant_19801" type="Const" version="opset1">
+			<data element_type="i32" shape="51865" offset="0" size="207460" />
+			<output>
+				<port id="0" precision="I32">
+					<dim>51865</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="3" name="Constant_19803" type="Const" version="opset1">
+			<data element_type="i32" shape="51865" offset="207460" size="207460" />
+			<output>
+				<port id="0" precision="I32">
+					<dim>51865</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="4" name="Constant_19805" type="Const" version="opset1">
+			<data element_type="u8" shape="320780" offset="414920" size="320780" />
+			<output>
+				<port id="0" precision="U8">
+					<dim>320780</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="5" name="Slice_19810" type="Const" version="opset1">
+			<data element_type="i32" shape="107" offset="735700" size="428" />
+			<output>
+				<port id="0" precision="I32">
+					<dim>107</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="6" name="VocabDecoder_19812" type="VocabDecoder" version="extension">
+			<data skip_tokens="" />
+			<input>
+				<port id="0" precision="I32">
+					<dim>-1</dim>
+					<dim>-1</dim>
+				</port>
+				<port id="1" precision="I32">
+					<dim>51865</dim>
+				</port>
+				<port id="2" precision="I32">
+					<dim>51865</dim>
+				</port>
+				<port id="3" precision="U8">
+					<dim>320780</dim>
+				</port>
+				<port id="4" precision="I32">
+					<dim>107</dim>
+				</port>
+			</input>
+			<output>
+				<port id="5" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="6" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="7" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="8" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="9" precision="U8">
+					<dim>-1</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="7" name="FuzeRagged_19813" type="FuzeRagged" version="extension">
+			<input>
+				<port id="0" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="1" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="2" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="3" precision="I32">
+					<dim>-1</dim>
+				</port>
+			</input>
+			<output>
+				<port id="4" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="5" precision="I32">
+					<dim>-1</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="8" name="UTF8Validate_19814" type="UTF8Validate" version="extension">
+			<data replace_mode="true" />
+			<input>
+				<port id="0" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="1" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="2" precision="U8">
+					<dim>-1</dim>
+				</port>
+			</input>
+			<output>
+				<port id="3" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="4" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="5" precision="U8">
+					<dim>-1</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="9" name="Constant_19816" type="Const" version="opset1">
+			<data element_type="u8" shape="51" offset="736128" size="51" />
+			<output>
+				<port id="0" precision="U8">
+					<dim>51</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="10" name="Constant_19818" type="Const" version="opset1">
+			<data element_type="u8" shape="2" offset="736179" size="2" />
+			<output>
+				<port id="0" precision="U8">
+					<dim>2</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="11" name="RegexNormalization_19819" type="RegexNormalization" version="extension">
+			<data global_replace="true" />
+			<input>
+				<port id="0" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="1" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="2" precision="U8">
+					<dim>-1</dim>
+				</port>
+				<port id="3" precision="U8">
+					<dim>51</dim>
+				</port>
+				<port id="4" precision="U8">
+					<dim>2</dim>
+				</port>
+			</input>
+			<output>
+				<port id="5" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="6" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="7" precision="U8">
+					<dim>-1</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="12" name="StringTensorPack_19820" type="StringTensorPack" version="opset15">
+			<input>
+				<port id="0" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="1" precision="I32">
+					<dim>-1</dim>
+				</port>
+				<port id="2" precision="U8">
+					<dim>-1</dim>
+				</port>
+			</input>
+			<output>
+				<port id="3" precision="STRING" names="Result_19821,string_output">
+					<dim>-1</dim>
+				</port>
+			</output>
+		</layer>
+		<layer id="13" name="Result_19821" type="Result" version="opset1" output_names="Result_19821,string_output">
+			<input>
+				<port id="0" precision="STRING">
+					<dim>-1</dim>
+				</port>
+			</input>
+		</layer>
+	</layers>
+	<edges>
+		<edge from-layer="0" from-port="0" to-layer="1" to-port="0" />
+		<edge from-layer="1" from-port="1" to-layer="6" to-port="0" />
+		<edge from-layer="2" from-port="0" to-layer="6" to-port="1" />
+		<edge from-layer="3" from-port="0" to-layer="6" to-port="2" />
+		<edge from-layer="4" from-port="0" to-layer="6" to-port="3" />
+		<edge from-layer="5" from-port="0" to-layer="6" to-port="4" />
+		<edge from-layer="6" from-port="5" to-layer="7" to-port="0" />
+		<edge from-layer="6" from-port="6" to-layer="7" to-port="1" />
+		<edge from-layer="6" from-port="7" to-layer="7" to-port="2" />
+		<edge from-layer="6" from-port="8" to-layer="7" to-port="3" />
+		<edge from-layer="6" from-port="9" to-layer="8" to-port="2" />
+		<edge from-layer="7" from-port="5" to-layer="8" to-port="1" />
+		<edge from-layer="7" from-port="4" to-layer="8" to-port="0" />
+		<edge from-layer="8" from-port="3" to-layer="11" to-port="0" />
+		<edge from-layer="8" from-port="4" to-layer="11" to-port="1" />
+		<edge from-layer="8" from-port="5" to-layer="11" to-port="2" />
+		<edge from-layer="9" from-port="0" to-layer="11" to-port="3" />
+		<edge from-layer="10" from-port="0" to-layer="11" to-port="4" />
+		<edge from-layer="11" from-port="5" to-layer="12" to-port="0" />
+		<edge from-layer="11" from-port="6" to-layer="12" to-port="1" />
+		<edge from-layer="11" from-port="7" to-layer="12" to-port="2" />
+		<edge from-layer="12" from-port="3" to-layer="13" to-port="0" />
+	</edges>
+	<rt_info>
+		<add_attention_mask value="True" />
+		<add_prefix_space />
+		<add_special_tokens value="True" />
+		<bos_token_id value="50257" />
+		<clean_up_tokenization_spaces />
+		<detokenizer_input_type value="i64" />
+		<eos_token_id value="50257" />
+		<handle_special_tokens_with_re />
+		<max_length />
+		<number_of_inputs value="1" />
+		<openvino_tokenizers_version value="2025.2.0.0-565-130827ab189" />
+		<openvino_version value="2025.2.0-19120-87425bc78ca-releases/2025/2" />
+		<original_post_processor_template value="{&quot;type&quot;: &quot;TemplateProcessing&quot;, &quot;single&quot;: [{&quot;SpecialToken&quot;: {&quot;id&quot;: &quot;&lt;|startoftranscript|>&quot;, &quot;type_id&quot;: 0}}, {&quot;SpecialToken&quot;: {&quot;id&quot;: &quot;&lt;|notimestamps|>&quot;, &quot;type_id&quot;: 0}}, {&quot;Sequence&quot;: {&quot;id&quot;: &quot;A&quot;, &quot;type_id&quot;: 0}}, {&quot;SpecialToken&quot;: {&quot;id&quot;: &quot;&lt;|endoftext|>&quot;, &quot;type_id&quot;: 0}}], &quot;pair&quot;: [{&quot;SpecialToken&quot;: {&quot;id&quot;: &quot;&lt;|startoftranscript|>&quot;, &quot;type_id&quot;: 0}}, {&quot;SpecialToken&quot;: {&quot;id&quot;: &quot;&lt;|notimestamps|>&quot;, &quot;type_id&quot;: 0}}, {&quot;Sequence&quot;: {&quot;id&quot;: &quot;A&quot;, &quot;type_id&quot;: 0}}, {&quot;Sequence&quot;: {&quot;id&quot;: &quot;B&quot;, &quot;type_id&quot;: 1}}, {&quot;SpecialToken&quot;: {&quot;id&quot;: &quot;&lt;|endoftext|>&quot;, &quot;type_id&quot;: 1}}], &quot;special_tokens&quot;: {&quot;&lt;|endoftext|>&quot;: {&quot;id&quot;: &quot;&lt;|endoftext|>&quot;, &quot;ids&quot;: [50257], &quot;tokens&quot;: [&quot;&lt;|endoftext|>&quot;]}, &quot;&lt;|notimestamps|>&quot;: {&quot;id&quot;: &quot;&lt;|notimestamps|>&quot;, &quot;ids&quot;: [50363], &quot;tokens&quot;: [&quot;&lt;|notimestamps|>&quot;]}, &quot;&lt;|startoftranscript|>&quot;: {&quot;id&quot;: &quot;&lt;|startoftranscript|>&quot;, &quot;ids&quot;: [50258], &quot;tokens&quot;: [&quot;&lt;|startoftranscript|>&quot;]}}}" />
+		<original_tokenizer_class value="&lt;class 'transformers.models.whisper.tokenization_whisper_fast.WhisperTokenizerFast'>" />
+		<pad_token_id value="50257" />
+		<processed_post_processor_template value="{&quot;single&quot;: {&quot;ids&quot;: [50258, 50363, -1, 50257], &quot;type_ids&quot;: [0, 0, 0, 0]}, &quot;pair&quot;: {&quot;ids&quot;: [50258, 50363, -1, -2, 50257], &quot;type_ids&quot;: [0, 0, 0, 1, 1]}}" />
+		<skip_special_tokens value="True" />
+		<streaming_detokenizer value="False" />
+		<tokenizer_output_type value="i64" />
+		<tokenizers_version value="0.21.1" />
+		<transformers_version value="4.51.3" />
+		<use_max_padding value="False" />
+		<use_sentencepiece_backend value="False" />
+		<utf8_replace_mode value="replace" />
+		<with_detokenizer value="True" />
+	</rt_info>
+</net>

@@ -9,7 +9,6 @@ import os
 import subprocess
 import psutil
 import geocoder
-import google.generativeai as genai
 import json
 import threading
 from collections import defaultdict
@@ -17,14 +16,19 @@ from itertools import tee
 from typing import Optional, Tuple, Dict, List, Any
 from dotenv import load_dotenv
 
+# Import the new registry
+from services.action_controller import registry
+from services.vision_service import VisionService
+from conversation_manager import IntentType
+
 # --- Configuration & Initialization ---
 load_dotenv()
 
 # Helper to get env vars with default fallback
 def get_env_var(key: str, default: Any = None) -> Any:
     return os.getenv(key, default)
-
-GEMINI_API_KEY = get_env_var("GEMINI_API_KEY")
+# Gemini removido para execução 100% offline
+GEMINI_API_KEY = None
 
 # Initialize Text-to-Speech Engine
 # engine = pyttsx3.init()  <-- Disabled to avoid conflict with main.py
@@ -53,18 +57,9 @@ if IS_WINDOWS:
         print(f"Volume control initialization warning: {e}")
         volume = None
 
-# --- Gemini AI Model Initialization (Global) ---
-# Initialize once to avoid overhead on every request
-model: Optional[genai.GenerativeModel] = None
-
-if GEMINI_API_KEY:
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel('gemini-2.0-flash')
-    except Exception as e:
-        print(f"Error initializing Gemini AI: {e}")
-else:
-    print("Warning: GEMINI_API_KEY not found in environment variables.")
+# --- Local AI Model Initialization (Global) ---
+# Modelo offline processado via LocalAIProcessor
+model = None
 
 # --- Dictionaries ---
 SITES: Dict[str, str] = {
@@ -194,6 +189,7 @@ def buscar_temperatura() -> str:
     else:
         return "Não foi possível obter a localização para verificar a temperatura."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Tocar música no YouTube")
 def tocar(query: str = None, *, song: str = None) -> str:
     """Plays a song on YouTube.
     
@@ -214,6 +210,7 @@ def tocar(query: str = None, *, song: str = None) -> str:
     else:
         return "O que você gostaria de tocar?"
 
+@registry.register(intents=[IntentType.TIME_QUERY], description="Verificar hora atual")
 def horas() -> str:
     """Returns the current time string."""
     now = datetime.now()
@@ -229,6 +226,7 @@ def play() -> str:
     pyautogui.press("playpause")
     return "Continuando a mídia."
 
+@registry.register(intents=[IntentType.DATE_QUERY], description="Verificar data atual")
 def data() -> Optional[str]:
     """Announces the current date."""
     meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", 
@@ -258,6 +256,7 @@ def get_desktop_path() -> str:
     else:
         return os.path.join(home, "Desktop")
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Captura de tela")
 def tirar_print() -> str:
     """Takes a screenshot and saves it to the desktop."""
     try:
@@ -296,6 +295,7 @@ def reiniciar_computador(confirmado: bool = False) -> str:
         os.system("reboot")
     return "Reiniciando o computador em 10 segundos."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Pesquisar no Google")
 def pesquisar(command: str = None, *, query: str = None) -> str:
     """Searches Google for a term.
     
@@ -371,6 +371,7 @@ def diminuir_volume() -> str:
     else:
         return "Desculpe, não consigo controlar o volume neste sistema."
     
+@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Definir volume do sistema")
 def definir_volume(command: str = None, *, level: int = None) -> str:
     """Sets volume based on voice command.
     
@@ -398,6 +399,7 @@ def definir_volume(command: str = None, *, level: int = None) -> str:
     except ValueError:
         return "Não entendi o valor do volume. Por favor, diga um número entre 0 e 100."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Abrir aplicativos ou sites")
 def abrir(query: str = None, *, target: str = None) -> Optional[str]:
     """Opens a website or application.
     
@@ -464,6 +466,7 @@ def abrir(query: str = None, *, target: str = None) -> Optional[str]:
 
     return f"Não consegui encontrar {query_lower}, mas tentei abrir."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Fechar aplicativos")
 def fechar(command: str = None, *, target: str = None) -> str:
     """Closes an application.
     
@@ -692,44 +695,10 @@ def criar_timer(command: str = None, *, duration: int = None, unit: str = None) 
     return f"Timer de {amount} {time_unit} criado. Vou te avisar quando terminar."
 
 def traduzir(command: str = None, *, text: str = None, target_lang: str = None) -> Optional[str]:
-    """Translates text using Gemini AI.
-    
-    Args:
-        command: Legacy string command (e.g., "traduzir olá para inglês")
-        text: Text to translate
-        target_lang: Target language
-    """
-    if not model:
-        return "Desculpe, a tradução não está disponível sem o Gemini."
-    
-    # Use structured entities if available
-    if text and target_lang:
-        text_to_translate = text
-        target_language = target_lang
-    elif command:
-        # Parse command: "traduzir olá mundo para inglês"
-        import re
-        pattern = r'traduzir\s+(.+?)\s+para\s+(\w+)'
-        match = re.search(pattern, command.lower())
-        
-        if not match:
-            return "Por favor, diga: traduzir [texto] para [idioma]."
-        
-        text_to_translate = match.group(1)
-        target_language = match.group(2)
-    else:
-        return "Por favor, diga: traduzir [texto] para [idioma]."
-    
-    try:
-        prompt = f"Traduza '{text_to_translate}' para {target_language}. Responda apenas com a tradução, sem explicações."
-        response = model.generate_content(prompt)
-        if response and response.text:
-            translation = response.text.strip()
-            return f"Tradução: {translation}"
-        return "Não foi possível traduzir."
-    except Exception as e:
-        return f"Erro na tradução: {e}"
+    """Translates text (Offline fallback)."""
+    return "Desculpe, o módulo de tradução local avançada ainda não está ativo."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Cotação do Dólar")
 def cotacao_dolar() -> str:
     """Gets the current USD to BRL exchange rate."""
     try:
@@ -937,40 +906,38 @@ def escreva(command: str = None, *, text: str = None) -> str:
 
 def pesquisar_gemini(command: str) -> Optional[str]:
     """
-    Queries Gemini AI and returns the response.
-    Uses the globally initialized 'model' instance.
+    Offline fallback for natural language queries.
     """
-    if not model:
-        return "Desculpe, a função de pesquisa com o Gemini não está disponível no momento."
+    return "Módulo de IA em nuvem desativado. Jarvis operando em rede neural local."
 
-    # Cleanup input
-    # Ex: "gemini qual a capital do brasil" -> "qual a capital do brasil"
-    clean_prompt = command.lower().replace('gemini', '').strip()
+
+# --- NEW COMMANDS: Local AI Vision ---
+
+vision_service_instance = VisionService()
+
+@registry.register(intents=[IntentType.VISION_QUERY], description="Analisar conteúdo da tela ou câmera")
+def analisar_visao(command: str = None, **kwargs) -> str:
+    """Uses Ollama Vision to see the screen or camera."""
+    is_camera = False
     
-    if not clean_prompt:
-         return "Qual é a sua pergunta para o Gemini?"
-
-    try:
-        # Generate content
-        response = model.generate_content(clean_prompt)
-        
-        # Parse and speak response
-        if response and response.text:
-            answer = response.text
-            # Basic cleanup for speech
-            for char in ['*', '<', '>', '**']:
-                answer = answer.replace(char, '')
+    if command:
+        cmd_lower = command.lower()
+        if "câmera" in cmd_lower or "camera" in cmd_lower or "você está vendo" in cmd_lower or "olhe" in cmd_lower:
+            is_camera = True
             
-            print(f"Resposta do Gemini: {answer}")
-            return answer
+    try:
+        if is_camera:
+            img_b64 = vision_service_instance.capture_camera_base64()
+            if not img_b64:
+                return "Não consegui acessar a câmera. Ela pode estar em uso ou não conectada."
+            return vision_service_instance.analyze_image(img_b64, "Descreva o que você está vendo na imagem capturada pela webcam.")
         else:
-            return "O Gemini não retornou nenhuma resposta."
-
+            img_b64 = vision_service_instance.capture_screen_base64()
+            if not img_b64:
+                return "Houve um problema ao capturar a sua tela."
+            return vision_service_instance.analyze_image(img_b64, "Me descreva em detalhes o que está aparecendo nesta captura da minha tela de computador.")
     except Exception as e:
-        error_message = f"Erro ao contatar o Gemini: {e}"
-        print(error_message)
-        return "Desculpe, ocorreu um erro ao contatar o Gemini."
-
+        return f"Erro ao processar imagem para o motor de visão: {e}"
 
 # --- Machine Learning / Pattern Recognition ---
 COMMAND_LOG_FILE = "command_log.json"

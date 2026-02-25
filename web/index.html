@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS HUD</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <!-- Three.js and GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+
+<body>
+    <div id="hud-container">
+        <!-- Background Scanlines & Noise -->
+        <div class="scanlines"></div>
+        <div class="noise"></div>
+        <div class="hex-grid"></div>
+
+        <!-- 3D Arc Reactor Layer -->
+        <div id="reactor-canvas-container"></div>
+
+        <!-- HUD Corners -->
+        <div class="corner top-left"></div>
+        <div class="corner top-right"></div>
+        <div class="corner bottom-left"></div>
+        <div class="corner bottom-right"></div>
+
+        <!-- Top Status Bar -->
+        <header id="hud-header">
+            <div class="system-title">J.A.R.V.I.S. <span class="version">v2.0</span></div>
+            <div id="current-time">00:00:00</div>
+            <div onclick="document.title='CLOSE_HUD'"
+                style="cursor: pointer; position: absolute; right: 20px; color: #ff3333; font-family: 'Share Tech Mono'; font-size: 20px; font-weight: bold; border: 1px solid #ff3333; padding: 2px 8px; border-radius: 4px; z-index: 1000; text-shadow: 0 0 5px #ff3333; background: rgba(255,0,0,0.1); width: 15px; text-align: center; height: 25px; line-height: 25px;">
+                X</div>
+        </header>
+
+        <!-- Sidebar Panels -->
+        <aside class="panel left-panel">
+            <div class="panel-header">SYSTEM ANALYTICS</div>
+            <div class="metrics-container" id="left-metrics">
+                <!-- Metrics injected by JS -->
+            </div>
+        </aside>
+
+        <aside class="panel right-panel">
+            <div class="panel-header">NEURAL STATUS</div>
+            <div class="metrics-container" id="right-metrics">
+                <!-- Metrics injected by JS -->
+            </div>
+        </aside>
+
+        <!-- Bottom Interface -->
+        <footer id="hud-footer">
+            <canvas id="voice-visualizer"></canvas>
+            <div id="response-box">
+                <div class="label">>> SYSTEM RESPONSE:</div>
+                <div id="response-text">INITIALIZING HUD...</div>
+            </div>
+            <div id="ticker-wrap">
+                <div id="ticker">
+                    SYSTEMS ONLINE // TARGET LOCK: NIL // POWER STABLE: 100% // NETWORK UPLINK: VERIFIED // BIO-SCAN:
+                    ACTIVE
+                </div>
+            </div>
+        </footer>
+
+        <!-- Overlays -->
+        <div id="status-overlay">
+            <div id="status-text">INITIALIZING</div>
+        </div>
+    </div>
+
+    <script src="hud.js"></script>
+</body>
+
+</html>

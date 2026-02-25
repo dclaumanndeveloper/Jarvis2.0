@@ -14,12 +14,92 @@ from enum import Enum
 import logging
 from datetime import datetime
 
-import google.generativeai as genai
-from conversation_manager import IntentType, ConversationContext
-
+import aiohttp
+import os
+from conversation_manager import ConversationContext, IntentType
 # Configure logging
 # logging.basicConfig(level=logging.INFO) # Controlled by main.py
 logger = logging.getLogger(__name__)
+
+class LocalAIProcessor:
+    """Processor for local AI using Ollama API"""
+    def __init__(self, model_name: str = "llama3"):
+        self.base_url = "http://localhost:11434/api/generate"
+        self.model = model_name
+
+    async def process_complex_query(self, text: str, context: ConversationContext) -> Dict[str, Any]:
+        """Process query using local Ollama instance"""
+        prompt = self._build_contextual_prompt(text, context)
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                payload = {
+                    "model": self.model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "format": "json"
+                }
+                async with session.post(self.base_url, json=payload, timeout=30) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        response_text = data.get('response', '')
+                        return self._parse_local_response(response_text)
+                    else:
+                        logger.error(f"Ollama error: {response.status}")
+                        return {'error': f'Local AI error: {response.status}', 'suggested_response': "Desculpe, senhor. Tive um erro no processador local."}
+        except Exception as e:
+            logger.error(f"Local AI connection error: {e}")
+            return {'error': str(e), 'suggested_response': "Não consegui conectar ao processador neural local."}
+
+    def _build_contextual_prompt(self, text: str, context: ConversationContext) -> str:
+        """Slightly different prompt for local models to ensure JSON output"""
+        context_str = f"Topic: {context.current_topic}, Last: {context.last_command}"
+        intents = ", ".join([i.value for i in IntentType])
+        return f"""
+        System: You are J.A.R.V.I.S., an intelligent AI assistant inspired by Iron Man's assistant.
+        Past Context & Known Facts (RAG Memory): {context.long_term_memory}
+        Recent Context: {context_str}
+        User: {text}
+        
+        Task: Analyze the user input and return a JSON object.
+        Choose the most appropriate intent from: {intents}
+        
+        JSON Structure:
+        {{
+            "intent_classification": "string",
+            "confidence": float,
+            "suggested_response": "string in Portuguese",
+            "parameters": {{
+                "target": "object or app name if applicable",
+                "level": "numeric value if applicable (e.g volume)",
+                "action": "specific sub-action"
+            }}
+        }}
+        
+        Response:
+        """
+
+    def _parse_local_response(self, response_text: str) -> Dict[str, Any]:
+        """Parse JSON response, handling potential markdown wrapping"""
+        try:
+            # Try direct parse
+            return json.loads(response_text)
+        except json.JSONDecodeError:
+            # Try extracting from markdown/text
+            json_match = re.search(r'(\{.*\})', response_text, re.DOTALL)
+            if json_match:
+                try:
+                    return json.loads(json_match.group(1))
+                except:
+                    pass
+            
+            # Fallback
+            logger.warning(f"Failed to parse AI JSON response: {response_text[:100]}...")
+            return {
+                'suggested_response': response_text, 
+                'intent_classification': 'conversational_query', 
+                'confidence': 0.8
+            }
 
 
 class ProcessingMode(Enum):
@@ -39,9 +119,14 @@ class NLPResult:
     context_relevance: float
     response_suggestion: str
     processing_time: float
-    gemini_response: Optional[str] = None
+    ai_response: Optional[str] = None
     sentiment: Optional[str] = None
     complexity_score: float = 0.0
+    parameters: Dict[str, Any] = None
+
+    def __post_init__(self):
+        if self.parameters is None:
+            self.parameters = {}
 
 class EntityExtractor:
     """Enhanced entity extraction with Portuguese language support"""
@@ -273,113 +358,7 @@ class SentimentAnalyzer:
             confidence = neutral_score / (total_score + 1)
             return 'neutral', confidence
 
-class GeminiProcessor:
-    """Enhanced Gemini AI processor for complex language understanding"""
-    
-    def __init__(self, api_key: str):
-        try:
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
-            self.is_configured = True
-            logger.info("Gemini AI configured successfully")
-        except Exception as e:
-            logger.error(f"Failed to configure Gemini AI: {e}")
-            self.is_configured = False
-    
-    async def process_complex_query(self, text: str, context: ConversationContext) -> Dict[str, Any]:
-        """Process complex queries using Gemini AI"""
-        if not self.is_configured:
-            return {'error': 'Gemini AI not configured'}
-        
-        try:
-            # Construct context-aware prompt
-            prompt = self._build_contextual_prompt(text, context)
-            
-            # Generate response
-            response = await self._generate_response(prompt)
-            
-            # Parse and structure response
-            structured_response = self._parse_gemini_response(response)
-            
-            return structured_response
-            
-        except Exception as e:
-            logger.error(f"Gemini processing error: {e}")
-            return {'error': str(e)}
-    
-    def _build_contextual_prompt(self, text: str, context: ConversationContext) -> str:
-        """Build a contextual prompt for Gemini"""
-        
-        context_info = ""
-        if context.current_topic:
-            context_info += f"Tópico atual da conversa: {context.current_topic}\n"
-        
-        if context.last_command:
-            context_info += f"Último comando executado: {context.last_command}\n"
-        
-        if context.conversation_history:
-            recent_history = list(context.conversation_history)[-3:]  # Last 3 turns
-            context_info += "Histórico recente:\n"
-            for turn in recent_history:
-                context_info += f"- Usuário: {turn.get('user_input', '')}\n"
-        
-        prompt = f"""
-Você é Jarvis, um assistente virtual inteligente similar ao do Homem de Ferro.
-Analise a entrada do usuário e forneça uma resposta estruturada em JSON.
 
-Contexto da conversa:
-{context_info}
-
-Entrada do usuário: "{text}"
-
-Forneça uma resposta em JSON com:
-1. "intent_classification": classificação da intenção (direct_command, conversational_query, contextual_reference, etc.)
-2. "confidence": nível de confiança (0.0 a 1.0)
-3. "suggested_response": resposta sugerida para o usuário
-4. "action_required": ação específica a ser executada (se aplicável)
-5. "context_usage": como o contexto influenciou a interpretação
-6. "followup_suggestions": sugestões de próximas ações
-
-Responda apenas em português e mantenha o tom profissional mas amigável do Jarvis.
-"""
-        
-        return prompt
-    
-    async def _generate_response(self, prompt: str) -> str:
-        """Generate response from Gemini AI"""
-        try:
-            response = await self.model.generate_content_async(prompt)
-            return response.text
-        except Exception as e:
-            logger.error(f"Gemini generation error: {e}")
-            raise
-    
-    def _parse_gemini_response(self, response_text: str) -> Dict[str, Any]:
-        """Parse and validate Gemini response"""
-        try:
-            # Try to extract JSON from response
-            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-            if json_match:
-                json_str = json_match.group()
-                parsed = json.loads(json_str)
-                return parsed
-            else:
-                # Fallback for non-JSON responses
-                return {
-                    'suggested_response': response_text,
-                    'intent_classification': 'conversational_query',
-                    'confidence': 0.7,
-                    'action_required': None,
-                    'context_usage': 'Limited context processing',
-                    'followup_suggestions': []
-                }
-        except json.JSONDecodeError:
-            # Handle malformed JSON
-            return {
-                'suggested_response': response_text,
-                'parsing_error': True,
-                'confidence': 0.5
-            }
 
 class ContextualIntentAnalyzer:
     """Analyzes intent with conversation context"""
@@ -438,19 +417,20 @@ class NLPProcessor:
     for enhanced natural language understanding in Jarvis 2.0
     """
     
-    def __init__(self, gemini_api_key: str = None):
+    def __init__(self):
         self.entity_extractor = EntityExtractor()
         self.sentiment_analyzer = SentimentAnalyzer()
         self.contextual_analyzer = ContextualIntentAnalyzer()
         
-        # Initialize Gemini processor if API key provided
-        self.gemini_processor = None
-        if gemini_api_key:
-            self.gemini_processor = GeminiProcessor(gemini_api_key)
+        # Provider selection mapped to Local AI always
+        self.local_model = os.getenv("LOCAL_MODEL_NAME", "llama3")
         
-        # Configuration
-        self.use_gemini_for_complex = True
-        self.complexity_threshold = 0.7
+        # Initialize selected processor
+        self.ai_engine = LocalAIProcessor(self.local_model)
+        logger.info(f"NLP initialized with Local AI ({self.local_model})")
+        
+        # Configuration - Aumentado para 0.9 para impedir chamadas de API desnecessárias
+        self.complexity_threshold = 0.9
         
     async def process_text(self, text: str, base_intent: IntentType, 
                           context: ConversationContext, 
@@ -478,20 +458,30 @@ class NLPProcessor:
             text, refined_intent, entities, context, complexity_score
         )
         
-        # Use Gemini for complex queries if available
-        gemini_response = None
-        if (self.gemini_processor and 
-            complexity_score > self.complexity_threshold and 
-            mode != ProcessingMode.FAST):
+        # Use selected AI Engine for complex queries or when fast mode is off
+        ai_response = None
+        ai_result = {}
+        if (self.ai_engine and 
+            (complexity_score > self.complexity_threshold or mode == ProcessingMode.DETAILED)):
             
-            gemini_result = await self.gemini_processor.process_complex_query(text, context)
-            gemini_response = gemini_result.get('suggested_response')
+            ai_result = await self.ai_engine.process_complex_query(text, context)
+            ai_response = ai_result.get('suggested_response')
             
-            # Override response if Gemini provides better suggestion
-            if gemini_response and 'error' not in gemini_result:
-                response_suggestion = gemini_response
-                intent_confidence = min(intent_confidence + 0.1, 1.0)
-        
+            # Override response and intent if engine provides better suggestion
+            if ai_response and 'error' not in ai_result:
+                response_suggestion = ai_response
+                
+                # Propagate intent from AI
+                ai_intent_str = ai_result.get('intent_classification')
+                if ai_intent_str:
+                    try:
+                        # Ensure it's a valid IntentType member
+                        refined_intent = IntentType(ai_intent_str)
+                        logger.info(f"NLP: AI refined intent to {refined_intent}")
+                    except ValueError:
+                        logger.warning(f"NLP: AI returned unknown intent string: {ai_intent_str}")
+                
+                intent_confidence = max(intent_confidence, ai_result.get('confidence', 0.0))
         processing_time = time.time() - start_time
         
         return NLPResult(
@@ -503,9 +493,10 @@ class NLPProcessor:
             context_relevance=self._calculate_context_relevance(text, context),
             response_suggestion=response_suggestion,
             processing_time=processing_time,
-            gemini_response=gemini_response,
+            ai_response=ai_response,
             sentiment=sentiment,
-            complexity_score=complexity_score
+            complexity_score=complexity_score,
+            parameters=ai_result.get('parameters', {}) if ai_result else {}
         )
     
     def _calculate_complexity(self, text: str, entities: Dict[str, Any]) -> float:
@@ -575,6 +566,12 @@ class NLPProcessor:
             else:
                 return "Comando reconhecido. Executando..."
         
+        elif intent == IntentType.TIME_QUERY:
+            return "Verificando o horário atual, senhor."
+            
+        elif intent == IntentType.DATE_QUERY:
+            return "Um momento, vou verificar a data de hoje."
+        
         elif intent == IntentType.CONVERSATIONAL_QUERY:
             if complexity > 0.6:
                 return "Deixe-me processar essa questão complexa para você."
@@ -606,8 +603,8 @@ class NLPProcessor:
 async def main():
     """Example usage of NLP Processor"""
     
-    # Initialize processor (use actual Gemini API key in production)
-    processor = NLPProcessor(gemini_api_key="AIzaSyBuOScNR-FI818vE_JIZTx3J0X8YVgVpKw")
+    # Initialize local processor 
+    processor = NLPProcessor()
     
     # Create sample context
     from conversation_manager import ConversationContext
@@ -638,8 +635,8 @@ async def main():
         print(f"🧮 Complexity: {result.complexity_score:.2f}")
         print(f"🔗 Context Relevance: {result.context_relevance:.2f}")
         print(f"💬 Response: {result.response_suggestion}")
-        if result.gemini_response:
-            print(f"🤖 Gemini: {result.gemini_response[:100]}...")
+        if result.ai_response:
+            print(f"🤖 Local AI: {result.ai_response[:100]}...")
         print(f"⏱️  Processing Time: {result.processing_time:.3f}s")
 
 if __name__ == "__main__":
