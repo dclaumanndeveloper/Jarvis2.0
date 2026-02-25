@@ -64,6 +64,12 @@ class LocalAIProcessor:
         Task: Analyze the user input and return a JSON object.
         Choose the most appropriate intent from: {intents}
         
+        CRITICAL MAPPING RULES:
+        - For explicit or implicit questions about the current time, moment of the day, or status of the clock (e.g., "como estamos de tempo?", "já é tarde?", "que horas"), strictly use "time_query".
+        - For explicit or implicit questions about the current date, day of the week, or year (e.g., "que dia é hoje?", "estamos em qual mês?"), strictly use "date_query".
+        - For asking the AI to perform a system action or open an app, use "direct_command".
+        - For questions requiring research or general knowledge, use "conversational_query".
+        
         JSON Structure:
         {{
             "intent_classification": "string",
