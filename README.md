@@ -1,8 +1,8 @@
 # 🤖 Jarvis 2.0
 
-Assistente virtual pessoal desenvolvido em Python, inspirado no Jarvis do Homem de Ferro. Interface gráfica futurista com comandos de voz em português e integração com **Gemini AI**.
+Assistente virtual pessoal avançado 100% offline desenvolvido em Python, inspirado no J.A.R.V.I.S. do universo Marvel. Possui uma interface gráfica futurista via HUD interativo, reconhecimento de voz contínuo e processamento descentralizado e inteligente via IA Local.
 
-![Interface Jarvis 2.0](interface_bg.webp)
+![Interface Jarvis 2.0](web/assets/hud_preview.png) *(Exemplo do painel de métricas e status)*
 
 ---
 
@@ -10,225 +10,122 @@ Assistente virtual pessoal desenvolvido em Python, inspirado no Jarvis do Homem 
 
 | Funcionalidade | Descrição |
 |----------------|-----------|
-| 🎤 **Comandos de voz** | Reconhecimento de voz em português brasileiro |
-| 🖥️ **Interface HUD** | UI futurista estilo Iron Man com PyQt6 |
-| 🤖 **IA Integrada** | Processamento de linguagem natural com Gemini 2.0 Flash |
-| 🔊 **Text-to-Speech** | Respostas faladas com voz sintetizada |
-| 📚 **Aprendizado** | Motor de aprendizado adaptativo |
-| 🎵 **Controle de mídia** | Tocar músicas, controlar volume |
-| 🌐 **Automação** | Abrir sites/apps, pesquisar na web |
+| 🎤 **Reconhecimento de Voz Offline** | Transcrição ultra-rápida usando modelos Whisper e detecção de wake word via Silero VAD. |
+| 🧠 **IA Neural Local** | Processamento de comandos complexos e contexto operando 100% offline via **Ollama** (Modelo otimizado: `qwen2:1.5b`). |
+| 🖥️ **Interface HUD Assíncrona** | Janela translúcida, sem bordas, com design futurista operando sobre o PyQt6 e WebEngine. |
+| 🔊 **Text-to-Speech Fluido** | Síntese de voz em português estruturada em Threads assíncronas (Thread-safe) para evitar bloqueios de UI. |
+| ⚡ **Action Controller Modular** | Execução rápida de comandos usando um sistema de rotas (Registry) e intenções (`IntentType`). |
+| 🎵 **Controles e Automação** | Automação de mídia corporativa, navegação web, sistema de arquivos e comandos nativos de OS (Windows otimizado). |
 
 ---
 
-## 🏗️ Arquitetura
+## 🏗️ Arquitetura do Sistema
 
-```
+O sistema difere de assistentes tradicionais por rodar serviços pesados localmente sem onerar a interface de usuário.
+
+```text
 Jarvis2.0/
-├── main.py                      # Ponto de entrada principal
-├── jarvis_ui.py                 # Interface gráfica (PyQt6)
-├── comandos.py                  # Módulo de comandos de voz
+├── main.py                      # Ponto de entrada; Inicializa UI HUD e delega as Threads.
+├── web/                         # Front-end da interface (HTML/CSS/JS renderizado via QtWebEngine).
+├── comandos.py                  # Registry de automações (Abrir sites, mídia, informações do sistema).
 ├── services/
-│   ├── ai_service.py            # Serviço de IA em background
-│   ├── tts_service.py           # Text-to-Speech em thread separada
-│   └── audio_service.py         # Controle de volume (ducking)
-├── nlp_processor.py             # Processador NLP com Gemini
-├── conversation_manager.py      # Gerenciador de contexto
-├── learning_engine.py           # Motor de aprendizado adaptativo
-├── enhanced_voice_recording.py  # Gravação de voz aprimorada
-└── tests/                       # Testes unitários
+│   ├── ai_service.py            # Orquestrador da IA Local; gerencia Memória e Aprendizado de máquina.
+│   ├── tts_service.py           # Gestor da Fila Falada de respostas.
+│   ├── voice_processor_v2.py    # Pipeline acústico avançado usando processamento nativo VAD.
+│   ├── optimized_voice_service.py # Lida com Listening-state assíncrono.
+│   └── action_controller.py     # Disparador final: Resolve Intenções para chamadas de sistema (Callables).
+├── nlp_processor.py             # Formata Prompts e comunica com Ollama/LocalAI API em formato JSON.
+├── conversation_manager.py      # Mantém janela de história contextual do usuário e os Enum Types.
+└── ...
 ```
 
 ---
 
-## 🎙️ Comandos Disponíveis
+## 🎙️ Exemplos de Comandos (Em Português)
 
-### Controle de Mídia
-```
-"Jarvis, tocar [nome da música]"    → Toca no YouTube
-"aumentar volume"                    → Aumenta volume do sistema
-"diminuir volume"                    → Diminui volume do sistema
-"pausar" / "continuar"               → Controla reprodução
-"próxima música"                     → Pula para próxima faixa
-"música anterior"                    → Volta para faixa anterior
-"mutar" / "silenciar"                → Muta o áudio
-"desmutar"                           → Desmuta o áudio
+O `AIService` classifica as requisições em Intenções para disparo rápido ou passa pela IA Local para processamento semântico complexo.
+
+### Utilitários e Sistema
+```text
+"Jarvis, que horas são?"               → `TIME_QUERY` (Responde instantaneamente)
+"Qual a data de hoje?"                 → `DATE_QUERY` (Responde sem chamar modelo LLM pesado)
+"Bloquear a tela."                     → Trava a sessão do Windows
+"Uso de memória / Espaço em disco."    → Obtém métricas via `psutil`
 ```
 
-### Aplicativos e Sites
-```
-"abrir [chrome/vscode/calculadora]"  → Abre aplicativos
-"abrir [youtube/github/whatsapp]"    → Abre sites
-"fechar [aplicativo]"                → Fecha aplicativos
-"abrir pasta [documentos/downloads]" → Abre pastas do usuário
-"último download"                    → Abre arquivo mais recente
-```
-
-### Informações
-```
-"que horas são"                      → Informa as horas
-"que dia é hoje"                     → Informa a data
-"temperatura"                        → Busca clima local
-"verificar sistema"                  → Info do sistema
-"verificar internet"                 → Velocidade da conexão
-"cotação do dólar"                   → Cotação USD/BRL
-"cotação do bitcoin"                 → Preço do Bitcoin
+### Automação (Zero-Shot & Registrados)
+```text
+"Abrir [Google Chrome / VSCode]."      → Dispara executáveis de sistema ou injeta busca via GUI.
+"Fechar [Aplicativo]."                 → Encerra processos no Task Manager silenciosamente.
+"Tocar [Nome da Música]."              → Abre o vídeo no YouTube automaticamente.
+"Criar timer de 5 minutos."             → Agenda processos background usando Regex e Threads.
+"Pesquisar sobre buracos negros."      → Encaminha buscas estruturadas web.
 ```
 
-### Produtividade
-```
-"pesquisar [termo]"                  → Pesquisa no Google
-"escreva [texto]"                    → Digita texto automaticamente
-"tirar print"                        → Captura tela
-"iniciar dia"                        → Rotina de início do dia
-"finalizar dia"                      → Rotina de fim do dia
-"criar timer 5 minutos"              → Cria um temporizador
-"traduzir [texto] para [idioma]"     → Traduz texto (via Gemini)
-"calcular 5 mais 3"                  → Calculadora por voz
-```
-
-### Sistema
-```
-"desligar computador"                → Desliga o PC
-"reiniciar computador"               → Reinicia o PC
-"minimizar"                          → Minimiza a interface
-"bloquear tela"                      → Bloqueia o Windows
-"limpar lixeira"                     → Esvazia a lixeira
-"uso de memória"                     → Mostra RAM em uso
-"uso do processador"                 → Mostra CPU em uso
-"espaço em disco"                    → Mostra armazenamento
-```
-
-### Entretenimento
-```
-"contar piada"                       → Conta uma piada
-"parar" / "sair"                     → Encerra conversa
-```
+### Inteligência Contextual (`CONVERSATIONAL_QUERY`)
+Qualquer pergunta complexa é redirecionada silenciosamente para o LLM. A API local retorna uma rota semântica do que fazer ou o que dizer de volta ao usuário.
 
 ---
 
-## 📋 Pré-requisitos
+## 📋 Pré-requisitos e Setup
 
-- **Python 3.9+**
-- **Windows 10/11** (otimizado para Windows)
-- **Microfone** funcional
-- **Chave API Gemini** (opcional, para IA avançada)
+### 1. Requisitos de Sistema
+- **Sistema Operacional:** Recomendado Windows 10/11 (Devido aos bindings de Audio/PyCAW otimizados).
+- **Processador local AI:** Placa de vídeo adequada ou CPU com boas threads (Recomendado OpenVINO support).
+- **Python:** 3.10+
+- **Motor Offline (Ollama):** O Ollama deve estar instalado globalmente e rodando o `qwen2:1.5b`.
 
----
+### 2. Preparando a IA
+Baixe o [Ollama](https://ollama.com/) e, no terminal de sua máquina, rode:
+```bash
+ollama run qwen2:1.5b
+```
 
-## 🚀 Instalação
-
-### 1. Clone o repositório
+### 3. Instalação do Projeto
+Clone e instale dependências via Virtual Environment (recomendado):
 ```bash
 git clone https://github.com/dclaumanndeveloper/Jarvis2.0.git
 cd Jarvis2.0
-```
-
-### 2. Crie o ambiente virtual
-```bash
 python -m venv .venv
-.venv\Scripts\activate  # Windows
-```
-
-### 3. Instale as dependências
-```bash
+.venv\Scripts\activate  # No macOS/Linux use: source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Configure as variáveis de ambiente
-Crie um arquivo `.env` na raiz do projeto:
+### 4. Variavéis de Ambiente (.env)
+Se for utilizar provedores em nuvem (Fallback fallback), configure seu `.env`. Caso contrário, o sistema focará na porta local `11434` (Ollama).
 ```env
-GEMINI_API_KEY=sua_chave_api_aqui
+LOCAL_MODEL_NAME=qwen2:1.5b
+# GEMINI_API_KEY=sua_chave (legado, opcional)
 ```
 
-### 5. Execute o Jarvis
+### 5. Execução
+Execute com o interpretador nativo da venv (não utilize terminais bloqueantes):
 ```bash
 python main.py
 ```
 
 ---
 
-## 🧪 Testes
+## ⚠️ Known Issues e Troubleshooting
 
-Execute os testes unitários:
-```bash
-# Todos os testes
-python -m pytest tests/ -v
-
-# Testes específicos
-python -m pytest tests/test_audio_service.py -v
-python -m pytest tests/test_tts_service.py -v
-python -m pytest tests/test_ai_service.py -v
-python -m pytest tests/test_comandos.py -v
-```
-
----
-
-## 📁 Estrutura de Serviços
-
-### AIService
-Serviço em background para processamento de IA:
-- Processamento de linguagem natural (NLP)
-- Integração com Gemini 2.0 Flash
-- Contexto de conversação
-- Aprendizado adaptativo
-
-### TTSService
-Serviço de Text-to-Speech em thread separada:
-- Fila de mensagens thread-safe
-- Configuração de voz em português
-- Integração COM para Windows (SAPI5)
-
-### AudioService
-Controle de volume do sistema:
-- Ducking automático durante fala
-- Restauração de volume original
-- Integração com Windows Core Audio API
-
----
-
-## 🔧 Tecnologias Utilizadas
-
-| Categoria | Tecnologia |
-|-----------|------------|
-| Interface | PyQt6 |
-| Reconhecimento de voz | SpeechRecognition, SoundDevice |
-| Text-to-Speech | pyttsx3 (SAPI5) |
-| IA | Google Gemini 2.0 Flash |
-| Automação | pyautogui, pywhatkit |
-| Áudio | pycaw, librosa |
-
----
-
-## ⚠️ Avisos
-
-- **Compatibilidade**: Desenvolvido para Windows. Algumas funções podem não funcionar em outros sistemas.
-- **Permissões**: Algumas automações requerem permissões administrativas.
-- **Microfone**: Certifique-se de que o microfone está configurado corretamente.
+- **Crash 0xc0000005 (Access Violation):** O projeto forçou o *import bypass* na `main.py` para injetar pacotes C++ da GPU `openvino_genai` antes das bibliotecas nativas do `PyQt6` para evitar colisão de alocadores de DLL no Windows.
+- **Portas e Microfone:** O script necessita usar a porta padrão de gravação `44100Hz`, libere permissões nas Configurações de Privacidade do microfone.
+- **Performance TTS:** Para prevenir loops de feedback (eco), a gravação entra automaticamente em estado *Paused* assíncrono via conexão de sinais Qt quando o serviço `TTS` entra na fila de fala.
 
 ---
 
 ## 🤝 Contribuindo
 
-1. Fork o repositório
-2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
-
----
+Ideias empolgantes ou correções? Abra um Pull Request! Modifique ou adicione comandos criando funções em `comandos.py` e marcando-as com:
+```python
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY)
+def seu_comando():
+    return "Resposta falada."
+```
 
 ## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
----
-
-## 👨‍💻 Autor
-
-Desenvolvido por [dclaumanndeveloper](https://github.com/dclaumanndeveloper)
-
----
+Licença MIT. Livre para uso pessoal, inspirar devkits neurais locais privados, mas modifique os reposiórios de origem se realizar um fork produtivo.
 
 <p align="center">
-  <b>⭐ Se este projeto te ajudou, deixe uma estrela!</b>
+  <b>⭐ Desenvolvido por <a href="https://github.com/dclaumanndeveloper">dclaumanndeveloper</a></b>
 </p>

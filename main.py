@@ -38,6 +38,7 @@ from conversation_manager import IntentType
 
 # Trigger command registration
 import comandos
+import skills
 
 
 
@@ -90,6 +91,7 @@ class JarvisHUD(QMainWindow):
         print("HUD: Starting AI Service...")
         self.ai_service = AIService() # Uses local provider from .env
         self.ai_service.processing_finished.connect(self.on_ai_finished)
+        self.ai_service.learning_insight.connect(self.on_learning_insight)
         self.ai_service.start()
         
         print("HUD: Starting Voice Thread (Whisper/Silero)...")
@@ -115,6 +117,18 @@ class JarvisHUD(QMainWindow):
         # Connect TTS to VoiceThread to prevent speaking-loop (Anti-Echo)
         self.tts_service.speaking_started.connect(lambda text: self.voice_thread.pause())
         self.tts_service.speaking_finished.connect(self.voice_thread.resume)
+        
+        # Connect TTS signals to HUD → React visually when Jarvis speaks
+        self.tts_service.speaking_started.connect(
+            lambda text: self.browser.page().runJavaScript(
+                "if(window.jarvis_hud) window.jarvis_hud.set_state('SPEAKING');"
+            )
+        )
+        self.tts_service.speaking_finished.connect(
+            lambda: self.browser.page().runJavaScript(
+                "if(window.jarvis_hud) window.jarvis_hud.set_state('IDLE');"
+            )
+        )
         
         print("HUD: All background services requested to start.")
 
@@ -201,6 +215,15 @@ class JarvisHUD(QMainWindow):
         self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.show_message('JARVIS: {execution_response}');")
         print(f"HUD: ActionController Response: {execution_response}")
         # VoiceThread resumes when TTS finishes speaking via the signal connection
+
+    def on_learning_insight(self, insight: str):
+        """Handle proactive learning suggestions from AI Service"""
+        print(f"HUD: 🧠 Learning Insight: {insight}")
+        # Speak the insight proactively 
+        self.tts_service.speak(insight)
+        
+        # Display on HUD
+        self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.show_message('🧠 INSIGHT: {insight}');")
 
     def on_audio_level(self, level: float):
         """Push audio amplitude to HUD for waveform visualization"""

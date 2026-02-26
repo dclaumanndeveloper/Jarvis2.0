@@ -4,7 +4,7 @@ import threading
 import random
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass
-from conversation_manager import IntentType
+from conversation_manager import IntentType, CommandCategory
 
 logger = logging.getLogger(__name__)
 
@@ -14,15 +14,16 @@ class CommandMetadata:
     intents: List[IntentType]
     description: str
     priority: int = 0
+    category: CommandCategory = CommandCategory.UTILITY
 
 class CommandRegistry:
     """Modular registry for Jarvis system commands using decorators."""
     def __init__(self):
         self._commands: Dict[IntentType, List[CommandMetadata]] = {}
 
-    def register(self, intents: List[IntentType], description: str = "", priority: int = 0):
+    def register(self, intents: List[IntentType], category: CommandCategory = CommandCategory.UTILITY, description: str = "", priority: int = 0):
         def decorator(func):
-            metadata = CommandMetadata(func, intents, description, priority)
+            metadata = CommandMetadata(func, intents, description, priority, category)
             for intent in intents:
                 if intent not in self._commands:
                     self._commands[intent] = []
@@ -78,7 +79,35 @@ class ActionController:
         
         logger.info(f"ActionController: Dispatching intent {intent}")
         
-        # 1. Look for a registered command
+        # 1. Handle Proactive Indirect Suggestions
+        if intent == IntentType.INDIRECT_SUGGESTION:
+            recommended_action = nlp_result.parameters.get("recommended_action") if hasattr(nlp_result, 'parameters') and nlp_result.parameters else None
+            
+            if recommended_action:
+                # Find the specific tool in the registry by function name
+                target_cmd_meta = None
+                for intent_key, cmds in registry._commands.items():
+                    for c in cmds:
+                        if c.func.__name__ == recommended_action:
+                            target_cmd_meta = c
+                            break
+                    if target_cmd_meta: break
+                
+                if target_cmd_meta:
+                    if self.tts:
+                        self.tts.speak(nlp_result.response_suggestion or "Acredito que precise disso.")
+                    
+                    thread = threading.Thread(
+                        target=self._run_command,
+                        args=(target_cmd_meta.func, nlp_result),
+                        daemon=True
+                    )
+                    thread.start()
+                    return nlp_result.response_suggestion
+                else:
+                    logger.warning(f"ActionController: Proactive action not found: {recommended_action}")
+        
+        # 2. Look for a directly registered command
         cmd_meta = registry.get_command(intent)
         
         if cmd_meta:

@@ -1,0 +1,124 @@
+﻿python : Traceback (most recent call 
+last):
+No linha:1 caractere:1
++ python run_chat_and_learn_test.py > 
+chat_test_output2.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecifie 
+   d: (Traceback (most recent call last)  
+  ::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeComma 
+   ndError
+ 
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client_
+reqrep.py", line 539, in start
+    message, payload = await 
+protocol.read()  # type: 
+ignore[union-attr]
+                       
+^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\streams
+.py", line 703, in read
+    await self._waiter
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause 
+of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\User\Documents\Projetos\J
+arvis2.0\nlp_processor.py", line 42, in 
+process_complex_query
+    async with 
+session.post(self.base_url, json=payload, 
+timeout=30) as response:
+               ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client.
+py", line 1510, in __aenter__
+    self._resp: _RetType = await 
+self._coro
+                           
+^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client.
+py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client.
+py", line 757, in 
+_connect_and_send_request
+    await resp.start(conn)
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client_
+reqrep.py", line 534, in start
+    with self._timer:
+         ^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\helpers
+.py", line 713, in __exit__
+    raise asyncio.TimeoutError from 
+exc_val
+TimeoutError
+Local AI connection error: TimeoutError()
+Traceback (most recent call last):
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client_
+reqrep.py", line 539, in start
+    message, payload = await 
+protocol.read()  # type: 
+ignore[union-attr]
+                       
+^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\streams
+.py", line 703, in read
+    await self._waiter
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause 
+of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\User\Documents\Projetos\J
+arvis2.0\nlp_processor.py", line 42, in 
+process_complex_query
+    async with 
+session.post(self.base_url, json=payload, 
+timeout=30) as response:
+               ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client.
+py", line 1510, in __aenter__
+    self._resp: _RetType = await 
+self._coro
+                           
+^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client.
+py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client.
+py", line 757, in 
+_connect_and_send_request
+    await resp.start(conn)
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\client_
+reqrep.py", line 534, in start
+    with self._timer:
+         ^^^^^^^^^^^
+  File "C:\Users\User\AppData\Roaming\Pyth
+on\Python314\site-packages\aiohttp\helpers
+.py", line 713, in __exit__
+    raise asyncio.TimeoutError from 
+exc_val
+TimeoutError
+Local AI connection error: TimeoutError()

@@ -1,0 +1,64 @@
+﻿­ƒºá Initializing J.A.R.V.I.S. Learning Module (Test Sandbox)...
+
+ÔÅ│ Simulating Temporal & Sequential Pattern...
+User Action: Opens 'Spotify' every day around 09:00 AM, and exactly 30 seconds later asks to play 'Playlist de Trabalho'.
+Simulating across 5 days...
+
+­ƒôè Collected 10 synthetic interactions in history.
+­ƒöä Forcing Batch Learning (Neural Network Processing)...
+
+====================================
+­ƒºá MACHINE LEARNING INSIGHTS
+====================================
+­ƒôî Pattern Formed: [ COMMAND_SEQUENCE ]
+   Frequency: 5x | Confidence: 50.00%
+   Sequence Discovered: ('jarvis abrir spotify', 'jarvis tocar playlist de trabalho')
+   Avg Interval Between Actions: 30.0 seconds
+
+­ƒôî Pattern Formed: [ TEMPORAL_PATTERN ]
+   Frequency: 10x | Confidence: 100.00%
+   Time Trigger Hour: 9:00
+   Typical Commands: ['jarvis abrir spotify', 'jarvis tocar playlist de trabalho']
+
+­ƒôî Pattern Formed: [ CONTEXT_PATTERN ]
+   Frequency: 10x | Confidence: 50.00%
+
+====================================
+ÔÜÖ´©Å USER PROFILING (PREFERENCES)
+====================================
+{
+  "response_style": {
+    "style": "professional",
+    "confidence": 0.7
+  },
+  "command_patterns": {
+    "most_used": {
+      "jarvis abrir spotify": 5,
+      "jarvis tocar playlist de trabalho": 5
+    },
+    "prefers_short_commands": false,
+    "average_command_length": 4.0
+  },
+  "timing": {
+    "peak_hours": [
+      9
+    ],
+    "usage_distribution": {
+      "9": 10
+    },
+    "prefers_morning": true,
+    "active_period": "morning"
+  },
+  "verbosity": {
+    "level": "concise",
+    "average_response_length": 3.0,
+    "confidence": 0.5
+  }
+}
+
+====================================
+­ƒùú´©Å SIMULATING PROACTIVE UI EVENT
+====================================
+User just spoke: 'jarvis abrir spotify'
+­ƒñû Jarvis HUD/Voice: Voc├¬ geralmente executa 'jarvis tocar playlist de trabalho' ap├│s 'jarvis abrir spotify'.
+­ƒñû Jarvis HUD/Voice: Seu comando mais usado ├® 'jarvis abrir spotify'.

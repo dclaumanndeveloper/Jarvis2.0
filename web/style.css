@@ -87,6 +87,23 @@ body {
     animation: reactor-pulse 1s infinite alternate ease-in-out;
 }
 
+/* Speaking state: brighter, faster pulse with warm electric tone */
+#reactor-canvas-container.speaking-active {
+    filter: drop-shadow(0 0 50px #4df) drop-shadow(0 0 20px #fff) brightness(1.9);
+    animation: reactor-speaking-pulse 0.5s infinite alternate ease-in-out;
+}
+
+@keyframes reactor-speaking-pulse {
+    from {
+        transform: translate(-50%, -50%) scale(1.0);
+        filter: drop-shadow(0 0 35px #0ff) brightness(1.7);
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1.08);
+        filter: drop-shadow(0 0 65px #fff) brightness(2.1);
+    }
+}
+
 @keyframes reactor-pulse {
     from {
         transform: translate(-50%, -50%) scale(1);

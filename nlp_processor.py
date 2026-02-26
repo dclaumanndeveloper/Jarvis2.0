@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 class LocalAIProcessor:
     """Processor for local AI using Ollama API"""
-    def __init__(self, model_name: str = "llama3"):
+    def __init__(self, model_name: str = "qwen2:1.5b"):
         self.base_url = "http://localhost:11434/api/generate"
         self.model = model_name
 
@@ -37,9 +37,16 @@ class LocalAIProcessor:
                     "model": self.model,
                     "prompt": prompt,
                     "stream": False,
-                    "format": "json"
+                    "format": "json",
+                    "options": {
+                        "temperature": 0.1,      # Deterministic → faster, no "creative" token sampling
+                        "num_predict": 80,       # Max output tokens — our JSON never needs more than 80
+                        "num_ctx": 512,          # Reduced context window: less KV cache → faster inference
+                        "top_k": 10,             # Narrow sampling → faster decision per token
+                        "repeat_penalty": 1.0    # No repeat penalty overhead
+                    }
                 }
-                async with session.post(self.base_url, json=payload, timeout=30) as response:
+                async with session.post(self.base_url, json=payload, timeout=120) as response:
                     if response.status == 200:
                         data = await response.json()
                         response_text = data.get('response', '')
@@ -47,43 +54,33 @@ class LocalAIProcessor:
                     else:
                         logger.error(f"Ollama error: {response.status}")
                         return {'error': f'Local AI error: {response.status}', 'suggested_response': "Desculpe, senhor. Tive um erro no processador local."}
+        except asyncio.TimeoutError:
+            logger.error("Local AI timeout: A resposta do Ollama demorou demais.")
+            return {'error': 'Timeout', 'suggested_response': "A conexão com o cérebro neural local expirou. Pode demorar na primeira vez que o modelo é carregado."}
         except Exception as e:
             logger.error(f"Local AI connection error: {e}")
             return {'error': str(e), 'suggested_response': "Não consegui conectar ao processador neural local."}
 
     def _build_contextual_prompt(self, text: str, context: ConversationContext) -> str:
-        """Slightly different prompt for local models to ensure JSON output"""
-        context_str = f"Topic: {context.current_topic}, Last: {context.last_command}"
-        intents = ", ".join([i.value for i in IntentType])
-        return f"""
-        System: You are J.A.R.V.I.S., an intelligent AI assistant inspired by Iron Man's assistant.
-        Past Context & Known Facts (RAG Memory): {context.long_term_memory}
-        Recent Context: {context_str}
-        User: {text}
-        
-        Task: Analyze the user input and return a JSON object.
-        Choose the most appropriate intent from: {intents}
-        
-        CRITICAL MAPPING RULES:
-        - For explicit or implicit questions about the current time, moment of the day, or status of the clock (e.g., "como estamos de tempo?", "já é tarde?", "que horas"), strictly use "time_query".
-        - For explicit or implicit questions about the current date, day of the week, or year (e.g., "que dia é hoje?", "estamos em qual mês?"), strictly use "date_query".
-        - For asking the AI to perform a system action or open an app, use "direct_command".
-        - For questions requiring research or general knowledge, use "conversational_query".
-        
-        JSON Structure:
-        {{
-            "intent_classification": "string",
-            "confidence": float,
-            "suggested_response": "string in Portuguese",
-            "parameters": {{
-                "target": "object or app name if applicable",
-                "level": "numeric value if applicable (e.g volume)",
-                "action": "specific sub-action"
-            }}
-        }}
-        
-        Response:
-        """
+        """Prompt for local models to ensure robust intent classification and JSON output."""
+        short_mem = str(context.long_term_memory)[:150] if context.long_term_memory else "None"
+        return f"""You are J.A.R.V.I.S., a smart AI assistant. Classify the user's intent and return ONLY a valid JSON object.
+
+EXAMPLES:
+User: "abrir youtube" -> {{"intent_classification": "direct_command", "confidence": 0.98, "suggested_response": "Abrindo YouTube agora.", "parameters": {{"target": "youtube", "action": "abrir"}}}}
+User: "que horas são?" -> {{"intent_classification": "time_query", "confidence": 0.99, "suggested_response": "Verificando o horário.", "parameters": {{}}}}
+User: "meu PC está lento" -> {{"intent_classification": "indirect_suggestion", "confidence": 0.85, "suggested_response": "Notei que mencionou lentidão. Posso verificar o uso de memória para você.", "parameters": {{"recommended_action": "uso_cpu_ram", "reason": "pc lento"}}}}
+User: "está muito barulhento aqui" -> {{"intent_classification": "indirect_suggestion", "confidence": 0.8, "suggested_response": "Posso diminuir o volume para você, senhor.", "parameters": {{"recommended_action": "diminuir_volume", "reason": "barulho"}}}}
+User: "o que é inteligência artificial?" -> {{"intent_classification": "conversational_query", "confidence": 0.92, "suggested_response": "IA é a simulação de inteligência humana por máquinas.", "parameters": {{}}}}
+
+MEMORY: {short_mem}
+TOPIC: {context.current_topic}
+
+Now classify:
+User: "{text}"
+
+JSON (ONLY output the JSON, nothing else):
+"""
 
     def _parse_local_response(self, response_text: str) -> Dict[str, Any]:
         """Parse JSON response, handling potential markdown wrapping"""

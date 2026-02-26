@@ -82,7 +82,11 @@ class VisionService:
                 "stream": False
             }
             
-            response = requests.post(self.ollama_url, json=payload, timeout=60)
+            # Increased timeout to 180s (3 minutes) because Vision LLMs (LLaVA/Moondream) 
+            # take a long time to load into RAM/VRAM on the first "cold start" via Ollama.
+            logger.info(f"VisionService: Sending image to {self.model}. This might take a while on cold start.")
+            response = requests.post(self.ollama_url, json=payload, timeout=180)
+            
             if response.status_code == 200:
                 data = response.json()
                 return data.get('response', 'A imagem foi processada, mas não obtive resposta clara.')

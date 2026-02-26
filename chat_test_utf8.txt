@@ -1,0 +1,33 @@
+﻿====================================
+­ƒùú´©Å TESTE 1: CONVERSA├ç├âO NATURAL (Ollama LLM)
+====================================
+
+­ƒæñ Usu├írio: Ol├í Jarvis, tudo bem com voc├¬ hoje?
+­ƒÄ» Inten├º├úo Detectada: conversational_query
+­ƒñû Jarvis (LLM Neural): N├úo consegui conectar ao processador neural local.
+
+­ƒæñ Usu├írio: Jarvis, me conte uma curiosidade r├ípida sobre o espa├ºo.
+­ƒÄ» Inten├º├úo Detectada: conversational_query
+­ƒñû Jarvis (LLM Neural): N├úo consegui conectar ao processador neural local.
+
+­ƒæñ Usu├írio: Como eu me sa├¡ no projeto de ontem?
+­ƒÄ» Inten├º├úo Detectada: conversational_query
+­ƒñû Jarvis (LLM Neural): N├úo consegui conectar ao processador neural local.
+
+­ƒæñ Usu├írio: Qual o sentido da vida, o universo e tudo mais?
+­ƒÄ» Inten├º├úo Detectada: conversational_query
+­ƒñû Jarvis (LLM Neural): N├úo consegui conectar ao processador neural local.
+
+====================================
+­ƒºá TESTE 2: APRENDIZADO PERSISTENTE (Gravando em Disco)
+====================================
+1. Criando primeiro M├│dulo de Aprendizagem e ensinando comandos...
+Ô£à Prefer├¬ncias aprendidas na Sess├úo 1: Prefere comandos curtos? True
+
+2. Fechando e 'Reiniciando' o PC...
+
+3. Ligando Jarvis novamente (Novo M├│dulo de Aprendizado)...
+Ô£à Mem├│ria Retida na Sess├úo 2: Prefere comandos curtos? True
+Ô£à Padr├Áes Retidos no Banco de Dados: 2 padr├Áes conhecidos.
+   -> TEMPORAL_PATTERN (Frequ├¬ncia: 10)
+   -> CONTEXT_PATTERN (Frequ├¬ncia: 10)

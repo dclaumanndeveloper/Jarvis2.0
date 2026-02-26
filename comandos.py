@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 # Import the new registry
 from services.action_controller import registry
 from services.vision_service import VisionService
-from conversation_manager import IntentType
+from conversation_manager import IntentType, CommandCategory
 
 # --- Configuration & Initialization ---
 load_dotenv()
@@ -179,6 +179,7 @@ def get_current_location() -> Tuple[Optional[str], Optional[str]]:
         print(f"Error getting location: {e}")
     return None, None
 
+@registry.register(intents=[IntentType.INFORMATION_QUERY], category=CommandCategory.INFORMATION, description="Busca a temperatura atual")
 def buscar_temperatura() -> str:
     """Opens browser searching for current location's temperature."""
     city, country = get_current_location()
@@ -190,43 +191,45 @@ def buscar_temperatura() -> str:
         return "Não foi possível obter a localização para verificar a temperatura."
 
 @registry.register(intents=[IntentType.DIRECT_COMMAND], description="Tocar música no YouTube")
-def tocar(query: str = None, *, song: str = None) -> str:
+def tocar(query: str = None, *, target: str = None) -> str:
     """Plays a song on YouTube.
     
     Args:
         query: Legacy string command (e.g., "tocar musica")
-        song: Direct song name entity
+        target: Direct song name entity
     """
-    if song:
-        target = song
+    if target:
+        item = target
     elif query:
-        target = query.replace('tocar', "").strip()
+        item = query.replace('tocar', "").strip()
     else:
         return "O que você gostaria de tocar?"
     
-    if target:
-        pywhatkit.playonyt(target)
-        return f"Tocando {target}"
+    if item:
+        pywhatkit.playonyt(item)
+        return f"Tocando {item}"
     else:
         return "O que você gostaria de tocar?"
 
-@registry.register(intents=[IntentType.TIME_QUERY], description="Verificar hora atual")
+@registry.register(intents=[IntentType.TIME_QUERY], category=CommandCategory.INFORMATION, description="Verificar hora atual")
 def horas() -> str:
     """Returns the current time string."""
     now = datetime.now()
     return f"Agora são {now.hour} horas e {now.minute} minutos."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.MEDIA, description="Pausa a mídia atual")
 def pausar() -> str:
     """Simulates play/pause media key."""
     pyautogui.press("playpause")
     return "Pausando a mídia."
     
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.MEDIA, description="Continua a mídia pausada")
 def play() -> str:
     """Simulates play/pause media key."""
     pyautogui.press("playpause")
     return "Continuando a mídia."
 
-@registry.register(intents=[IntentType.DATE_QUERY], description="Verificar data atual")
+@registry.register(intents=[IntentType.DATE_QUERY], category=CommandCategory.INFORMATION, description="Verificar data atual")
 def data() -> Optional[str]:
     """Announces the current date."""
     meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", 
@@ -256,7 +259,7 @@ def get_desktop_path() -> str:
     else:
         return os.path.join(home, "Desktop")
 
-@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Captura de tela")
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Captura de tela")
 def tirar_print() -> str:
     """Takes a screenshot and saves it to the desktop."""
     try:
@@ -275,6 +278,7 @@ def tirar_print() -> str:
         print(f"Error taking screenshot: {e}")
         return "Desculpe, não consegui tirar a captura de tela."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Desliga o computador")
 def desligar_computador() -> str:
     """Shuts down the computer."""
     if IS_WINDOWS:
@@ -285,6 +289,7 @@ def desligar_computador() -> str:
         os.system("shutdown now")
     return "Desligando o computador em 10 segundos."
                 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Reinicia o computador")
 def reiniciar_computador(confirmado: bool = False) -> str:
     """Restarts the computer."""
     if IS_WINDOWS:
@@ -295,7 +300,7 @@ def reiniciar_computador(confirmado: bool = False) -> str:
         os.system("reboot")
     return "Reiniciando o computador em 10 segundos."
 
-@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Pesquisar no Google")
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Pesquisar no Google")
 def pesquisar(command: str = None, *, query: str = None) -> str:
     """Searches Google for a term.
     
@@ -333,6 +338,7 @@ def set_volume(level: int) -> str:
     else:
         return "Desculpe, não consigo controlar o volume neste sistema."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.MEDIA, description="Aumenta o volume do sistema")
 def aumentar_volume() -> str:
     """Increases system volume."""
     if IS_WINDOWS and volume:
@@ -352,6 +358,7 @@ def aumentar_volume() -> str:
     else:
         return "Desculpe, não consigo controlar o volume neste sistema."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.MEDIA, description="Diminui o volume do sistema")
 def diminuir_volume() -> str:
     """Decreases system volume."""
     if IS_WINDOWS and volume:
@@ -371,7 +378,7 @@ def diminuir_volume() -> str:
     else:
         return "Desculpe, não consigo controlar o volume neste sistema."
     
-@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Definir volume do sistema")
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.MEDIA, description="Definir volume do sistema")
 def definir_volume(command: str = None, *, level: int = None) -> str:
     """Sets volume based on voice command.
     
@@ -399,7 +406,7 @@ def definir_volume(command: str = None, *, level: int = None) -> str:
     except ValueError:
         return "Não entendi o valor do volume. Por favor, diga um número entre 0 e 100."
 
-@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Abrir aplicativos ou sites")
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.APPLICATION, description="Abrir aplicativos ou sites")
 def abrir(query: str = None, *, target: str = None) -> Optional[str]:
     """Opens a website or application.
     
@@ -420,6 +427,11 @@ def abrir(query: str = None, *, target: str = None) -> Optional[str]:
     if query_lower in SITES:
         webbrowser.open(SITES[query_lower])
         return f"Abrindo {query_lower}"
+    elif query_lower.startswith("http") or "." in query_lower and " " not in query_lower:
+        # Zero-shot web link
+        url = query_lower if query_lower.startswith("http") else f"https://{query_lower}"
+        webbrowser.open(url)
+        return f"Abrindo site {query_lower}"
 
     os_name = platform.system().lower()
     if os_name == 'darwin': os_name = 'macos'
@@ -439,6 +451,7 @@ def abrir(query: str = None, *, target: str = None) -> Optional[str]:
     # 2. Try Generic System Open
     try:
         if IS_WINDOWS:
+            # Fallback 1: os.startfile for executables in PATH or documents
             os.startfile(query_lower)
             return f"Iniciando {query_lower}"
         elif IS_MACOS:
@@ -451,22 +464,22 @@ def abrir(query: str = None, *, target: str = None) -> Optional[str]:
     except Exception:
         pass
 
-    # 3. Fallback: Windows Start Menu Injection
+    # 3. Fallback: Windows Start Menu Injection (Zero-Shot)
     if IS_WINDOWS:
         try:
             pyautogui.press('win')
             time.sleep(0.5)
             pyautogui.write(query_lower)
-            time.sleep(0.5)
+            time.sleep(0.8)
             pyautogui.press('enter')
-            return f"Abrindo {query_lower}"
+            return f"Buscando e abrindo {query_lower}..."
         except Exception as e:
             print(f"Error with pyautogui: {e}")
             return f"Erro ao tentar abrir visualmente: {e}"
 
     return f"Não consegui encontrar {query_lower}, mas tentei abrir."
 
-@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Fechar aplicativos")
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.APPLICATION, description="Fechar aplicativos")
 def fechar(command: str = None, *, target: str = None) -> str:
     """Closes an application.
     
@@ -488,17 +501,20 @@ def fechar(command: str = None, *, target: str = None) -> str:
     
     if app_to_close in process_dict:
         process_name = process_dict[app_to_close]
-        try:
-            if IS_WINDOWS:
-                subprocess.run(["taskkill", "/f", "/im", process_name], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            else: # macOS and Linux
-                subprocess.run(["pkill", "-f", process_name], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            return f"Fechando {app_to_close}"
-        except subprocess.CalledProcessError:
-            return f"Não foi possível fechar {app_to_close}. O processo pode não estar em execução."
     else:
-        return "Não reconheci o aplicativo para fechar."
+        # Zero-shot guess process name
+        process_name = f"{app_to_close}.exe" if IS_WINDOWS else app_to_close
 
+    try:
+        if IS_WINDOWS:
+            subprocess.run(["taskkill", "/f", "/im", process_name], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else: # macOS and Linux
+            subprocess.run(["pkill", "-f", process_name], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return f"Fechando {app_to_close}"
+    except subprocess.CalledProcessError:
+        return f"Não foi possível fechar {app_to_close}. Pode não estar aberto."
+
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Inicia rotina do dia")
 def start_day() -> str:
     """Starts the daily routine."""
     # Using generic 'abrir' might be safer if the dict keys change
@@ -509,6 +525,7 @@ def start_day() -> str:
     abrir("abrir arquivos")
     return "Rotina de início de dia concluída! Iniciando sistema."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Finaliza rotina do dia")
 def finish_day() -> str:
     """Ends the daily routine and locks screen."""
     fechar("fechar teams")
@@ -532,6 +549,7 @@ def finish_day() -> str:
     
     return msg
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.INFORMATION, description="Verifica a velocidade da internet")
 def verificar_internet() -> str:
     """Checks internet speed."""
     try:
@@ -552,6 +570,7 @@ def verificar_internet() -> str:
         print(f"Speedtest error: {e}")
         return "Não foi possível conectar para medir a velocidade."
 
+@registry.register(intents=[IntentType.INFORMATION_QUERY], category=CommandCategory.INFORMATION, description="Mostra informações do sistema")
 def get_system_info() -> str:
     """Returns system usage info."""
     cpu_usage = psutil.cpu_percent(interval=1)
@@ -561,21 +580,25 @@ def get_system_info() -> str:
 
 # --- NEW COMMANDS: Media Control ---
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.MEDIA, description="Pula para próxima música")
 def proxima_musica() -> str:
     """Skip to next track."""
     pyautogui.press("nexttrack")
     return "Próxima música."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.MEDIA, description="Volta para música anterior")
 def musica_anterior() -> str:
     """Go to previous track."""
     pyautogui.press("prevtrack")
     return "Música anterior."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.MEDIA, description="Muta o áudio do sistema")
 def mutar() -> str:
     """Mute system audio."""
     pyautogui.press("volumemute")
     return "Áudio mutado."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.MEDIA, description="Remove o mudo do áudio")
 def desmutar() -> str:
     """Unmute system audio."""
     pyautogui.press("volumemute")
@@ -583,6 +606,7 @@ def desmutar() -> str:
 
 # --- NEW COMMANDS: System Monitoring ---
 
+@registry.register(intents=[IntentType.INFORMATION_QUERY], category=CommandCategory.INFORMATION, description="Mostra uso de memória RAM")
 def uso_memoria() -> str:
     """Returns memory usage information."""
     memory_info = psutil.virtual_memory()
@@ -590,12 +614,14 @@ def uso_memoria() -> str:
     total_gb = memory_info.total / (1024 ** 3)
     return f"Memória em uso: {memory_info.percent}%. Usando {used_gb:.1f} GB de {total_gb:.1f} GB."
 
+@registry.register(intents=[IntentType.INFORMATION_QUERY], category=CommandCategory.INFORMATION, description="Mostra uso do processador")
 def uso_cpu() -> str:
     """Returns CPU usage information."""
     cpu_percent = psutil.cpu_percent(interval=1)
     cpu_count = psutil.cpu_count()
     return f"Uso do processador: {cpu_percent}%. Você tem {cpu_count} núcleos."
 
+@registry.register(intents=[IntentType.INFORMATION_QUERY], category=CommandCategory.INFORMATION, description="Mostra espaço em disco")
 def espaco_disco() -> str:
     """Returns disk space information."""
     if IS_WINDOWS:
@@ -608,6 +634,7 @@ def espaco_disco() -> str:
     used_percent = disk.percent
     return f"Disco: {used_percent}% usado. {free_gb:.1f} GB livres de {total_gb:.1f} GB."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Bloqueia a tela")
 def bloquear_tela() -> str:
     """Locks the screen."""
     if IS_WINDOWS:
@@ -621,6 +648,7 @@ def bloquear_tela() -> str:
         return "Bloqueando a tela."
     return "Não foi possível bloquear a tela neste sistema."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Esvazia a lixeira")
 def limpar_lixeira() -> str:
     """Empties the recycle bin/trash."""
     try:
@@ -643,6 +671,7 @@ def limpar_lixeira() -> str:
 # Global timer storage
 _active_timers: Dict[str, Any] = {}
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Cria um timer")
 def criar_timer(command: str = None, *, duration: int = None, unit: str = None) -> str:
     """Creates a timer.
     
@@ -694,11 +723,12 @@ def criar_timer(command: str = None, *, duration: int = None, unit: str = None) 
     
     return f"Timer de {amount} {time_unit} criado. Vou te avisar quando terminar."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Traduz texto")
 def traduzir(command: str = None, *, text: str = None, target_lang: str = None) -> Optional[str]:
     """Translates text (Offline fallback)."""
     return "Desculpe, o módulo de tradução local avançada ainda não está ativo."
 
-@registry.register(intents=[IntentType.DIRECT_COMMAND], description="Cotação do Dólar")
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Cotação do Dólar")
 def cotacao_dolar() -> str:
     """Gets the current USD to BRL exchange rate."""
     try:
@@ -713,6 +743,7 @@ def cotacao_dolar() -> str:
     except Exception as e:
         return "Não foi possível obter a cotação do dólar no momento."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Mostra cotação do Bitcoin")
 def cotacao_bitcoin() -> str:
     """Gets the current Bitcoin price."""
     try:
@@ -727,6 +758,7 @@ def cotacao_bitcoin() -> str:
     except Exception as e:
         return "Não foi possível obter a cotação do Bitcoin no momento."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Calcula uma expressão")
 def calcular(command: str = None, *, expression: str = None) -> str:
     """Calculates a mathematical expression.
     
@@ -775,6 +807,7 @@ def calcular(command: str = None, *, expression: str = None) -> str:
 
 # --- NEW COMMANDS: File Management ---
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.FILE, description="Abre uma pasta do usuário")
 def abrir_pasta(command: str = None, *, folder: str = None) -> str:
     """Opens common user folders.
     
@@ -832,6 +865,7 @@ def abrir_pasta(command: str = None, *, folder: str = None) -> str:
     else:
         return f"Pasta {folder_name} não encontrada."
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.FILE, description="Abre o último arquivo baixado")
 def abrir_ultimo_download() -> str:
     """Opens the most recent file in Downloads folder."""
     home = os.path.expanduser("~")
@@ -863,6 +897,7 @@ def abrir_ultimo_download() -> str:
     except Exception as e:
         return f"Erro ao abrir último download: {e}"
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Conta uma piada")
 def contar_piada() -> Optional[str]:
     """Tells a joke using Gemini AI."""
     if not model:
@@ -884,6 +919,7 @@ def contar_piada() -> Optional[str]:
     
     return "O que o pato disse para a pata? Vem quá!"
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Digita um texto")
 def escreva(command: str = None, *, text: str = None) -> str:
     """Types the text found in the command.
     
@@ -904,6 +940,7 @@ def escreva(command: str = None, *, text: str = None) -> str:
     else:
         return "O que você gostaria que eu escrevesse?"
 
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.AI, description="Pergunta ao Gemini AI")
 def pesquisar_gemini(command: str) -> Optional[str]:
     """
     Offline fallback for natural language queries.
@@ -913,11 +950,35 @@ def pesquisar_gemini(command: str) -> Optional[str]:
 
 # --- NEW COMMANDS: Local AI Vision ---
 
-vision_service_instance = VisionService()
+vision_service_instance = VisionService(model="llava")
 
-@registry.register(intents=[IntentType.VISION_QUERY], description="Analisar conteúdo da tela ou câmera")
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Analisa o que está na tela")
+def analisar_tela(command: str = None) -> str:
+    """Captures the screen and asks the vision model to describe it."""
+    try:
+        base64_img = vision_service_instance.capture_screen_base64()
+        if not base64_img:
+            return "Sinto muito, não consegui capturar a tela."
+        
+        return vision_service_instance.analyze_image(base64_img, "Descreva detalhadamente o que você vê nesta imagem da minha tela. Responda em português.")
+    except Exception as e:
+        return f"Erro na análise visual: {e}"
+
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Analisa o que está na câmera")
+def olhar_camera(command: str = None) -> str:
+    """Captures the webcam and asks the vision model to describe it."""
+    try:
+        base64_img = vision_service_instance.capture_camera_base64()
+        if not base64_img:
+            return "Não encontrei nenhuma câmera web ativa, senhor."
+        
+        return vision_service_instance.analyze_image(base64_img, "O que você vê nesta imagem da câmera? Descreva quem ou o que está na frente em português.")
+    except Exception as e:
+        return f"Erro na análise da câmera: {e}"
+
+@registry.register(intents=[IntentType.VISION_QUERY], category=CommandCategory.AI, description="Analisar conteúdo da tela ou câmera")
 def analisar_visao(command: str = None, **kwargs) -> str:
-    """Uses Ollama Vision to see the screen or camera."""
+    """Uses Ollama Vision to see the screen or camera (Legacy route fallback)."""
     is_camera = False
     
     if command:
@@ -927,17 +988,42 @@ def analisar_visao(command: str = None, **kwargs) -> str:
             
     try:
         if is_camera:
-            img_b64 = vision_service_instance.capture_camera_base64()
-            if not img_b64:
-                return "Não consegui acessar a câmera. Ela pode estar em uso ou não conectada."
-            return vision_service_instance.analyze_image(img_b64, "Descreva o que você está vendo na imagem capturada pela webcam.")
+            return olhar_camera(command)
         else:
-            img_b64 = vision_service_instance.capture_screen_base64()
-            if not img_b64:
-                return "Houve um problema ao capturar a sua tela."
-            return vision_service_instance.analyze_image(img_b64, "Me descreva em detalhes o que está aparecendo nesta captura da minha tela de computador.")
+            return analisar_tela(command)
     except Exception as e:
         return f"Erro ao processar imagem para o motor de visão: {e}"
+
+# --- NEW COMMANDS: Local RAG (Long-Term Memory) ---
+
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Memoriza informações a longo prazo")
+def memorizar_fato(command: str = None, **kwargs) -> str:
+    """Explicitly stores a fact into the local RAG MemoryService."""
+    if not command:
+        return "O que você quer que eu memorize, senhor?"
+        
+    # Strip the action words to get the raw fact
+    fact = command.lower()
+    for verb in ["memorizar", "memorize", "lembre-se que", "lembrar que", "guarde que", "guarda que", "guardar"]:
+        if verb in fact:
+            fact = fact.replace(verb, "", 1).strip()
+            # Handle possible connector words left over
+            if fact.startswith("o "): fact = fact[2:].strip()
+            if fact.startswith("a "): fact = fact[2:].strip()
+            break
+            
+    if not fact:
+        return "Não entendi o fato para memorizar."
+        
+    try:
+        from services.memory_service import MemoryService
+        # Initialize or connect to the DB
+        mem_db = MemoryService()
+        mem_db.store_fact(fact, category="user_fact")
+        return f"Informação guardada na minha memória de longo prazo: {fact}."
+    except Exception as e:
+        print(f"Erro no RAG: {e}")
+        return "Houve um problema ao acessar o banco de memória local."
 
 # --- Machine Learning / Pattern Recognition ---
 COMMAND_LOG_FILE = "command_log.json"

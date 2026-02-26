@@ -1,11 +1,11 @@
 import logging
 import queue
 import platform
-import pyttsx3
-try:
-    import pythoncom
-except ImportError:
-    pythoncom = None
+import asyncio
+import tempfile
+import os
+import edge_tts
+from playsound import playsound
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -14,8 +14,7 @@ logger = logging.getLogger(__name__)
 class TTSService(QThread):
     """
     Background service for Text-to-Speech to prevent UI blocking.
-    Runs pyttsx3 in a dedicated thread with a command queue.
-    Reinitializes engine for each speech to avoid state issues.
+    Runs Edge TTS in a dedicated thread with a command queue.
     """
     speaking_started = pyqtSignal(str)
     speaking_finished = pyqtSignal()
@@ -25,48 +24,19 @@ class TTSService(QThread):
         super().__init__()
         self.queue = queue.Queue()
         self.running = True
-        self._voice_id = None  # Cache the voice ID
-
-    def _init_engine(self):
-        """Initialize a fresh pyttsx3 engine"""
-        # Select driver based on OS
-        if platform.system() == "Windows":
-             engine = pyttsx3.init('sapi5')
-        else:
-             # Let pyttsx3 choose the best driver (nsss for Mac, espeak for Linux)
-             engine = pyttsx3.init()
-        
-        # Set voice if we have a cached ID, otherwise find one
-        if self._voice_id:
-            try:
-                engine.setProperty('voice', self._voice_id)
-            except Exception as e:
-                logger.warning(f"TTS: Failed to restore voice ID: {e}")
-        else:
-            try:
-                voices = engine.getProperty('voices')
-                for voice in voices:
-                    if "brazil" in voice.name.lower() or "portuguese" in voice.name.lower():
-                        self._voice_id = voice.id
-                        engine.setProperty('voice', voice.id)
-                        logger.info(f"TTS: Using voice: {voice.name}")
-                        break
-            except Exception as e:
-                logger.warning(f"TTS: Failed to set voice: {e}")
-        
-        engine.setProperty('rate', 180)
-        engine.setProperty('volume', 1.0)
-        return engine
 
     def run(self):
-        """Main thread loop"""
+        """Main thread loop utilizing Microsoft Edge TTS neural voices"""
         try:
-            # Initialize COM for this thread (Crucial for SAPI5 on Windows)
-            if pythoncom:
-                pythoncom.CoInitialize()
-                logger.info("TTS Service: COM initialized (Windows)")
-
-            logger.info("TTS Service: Starting loop")
+            logger.info("TTS Service: Starting High-Quality Neural TTS loop")
+            
+            # Create a new asyncio event loop for this thread to handle the edge-tts async calls
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            # Ultra-realistic neural voice 
+            # Portuguese (Brazil): 'pt-BR-AntonioNeural' (Male) or 'pt-BR-FranciscaNeural' (Female)
+            VOICE_MODEL = "pt-BR-AntonioNeural" 
             
             while self.running:
                 try:
@@ -79,17 +49,18 @@ class TTSService(QThread):
                         self.speaking_started.emit(text)
                         
                         try:
-                            # Create fresh engine for each speech
-                            print("HUD: TTS Initializing engine...")
-                            engine = self._init_engine()
-                            print(f"HUD: TTS Speaking text...")
-                            engine.say(text)
-                            engine.runAndWait()
+                            # Create a temporary mp3 file
+                            temp_path = tempfile.mktemp(suffix=".mp3")
                             
-                            # Clean up engine
-                            print("HUD: TTS Speech chunk finished.")
-                            engine.stop()
-                            del engine
+                            # Generate Neural Voice Audio mapped to the file
+                            communicate = edge_tts.Communicate(text, VOICE_MODEL)
+                            loop.run_until_complete(communicate.save(temp_path))
+                            
+                            # Play the audio (this is a blocking operation exactly like pyttsx3.runAndWait)
+                            if os.path.exists(temp_path):
+                                playsound(temp_path)
+                                # Clean up the memory immediately
+                                os.remove(temp_path)
                             
                             logger.info("TTS: Speech completed")
                         except Exception as e:
@@ -108,15 +79,15 @@ class TTSService(QThread):
             logger.error(f"TTS Service crashed: {e}")
             self.error_occurred.emit(str(e))
         finally:
-            if pythoncom:
-                pythoncom.CoUninitialize()
             logger.info("TTS Service: Shutdown complete")
 
     def speak(self, text: str):
         """Queue text to be spoken"""
         if text:
-            logger.info(f"TTS: Queued: {text[:50]}...")
-            self.queue.put(text)
+            # Strip emojis and markdown formatting to prevent the TTS from reading artifacts
+            clean_text = text.replace("*", "").replace("#", "")
+            logger.info(f"TTS: Queued: {clean_text[:50]}...")
+            self.queue.put(clean_text)
         else:
             logger.warning("TTS: Empty text ignored")
 

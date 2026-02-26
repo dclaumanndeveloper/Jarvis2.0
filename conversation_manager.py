@@ -38,8 +38,20 @@ class IntentType(Enum):
     FOLLOW_UP = "follow_up"
     TIME_QUERY = "time_query"
     DATE_QUERY = "date_query"
+    INFORMATION_QUERY = "information_query"
     VISION_QUERY = "vision_query"
+    INDIRECT_SUGGESTION = "indirect_suggestion"
     UNKNOWN = "unknown"
+
+class CommandCategory(Enum):
+    """Categories of commands"""
+    MEDIA = "media"
+    SYSTEM = "system"
+    APPLICATION = "application"
+    UTILITY = "utility"
+    INFORMATION = "information"
+    FILE = "file"
+    AI = "ai"
 
 class ContextType(Enum):
     """Types of conversation context"""

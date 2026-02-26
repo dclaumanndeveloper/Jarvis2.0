@@ -141,13 +141,38 @@ window.jarvis_hud = {
         const statusEl = document.getElementById('status-overlay');
         const statusText = document.getElementById('status-text');
 
+        // Clear old state classes
+        reactorEl.classList.remove('pulse-active', 'speaking-active');
+
         if (state === 'LISTENING') {
             reactorEl.classList.add('pulse-active');
             statusText.innerText = 'LISTENING...';
             statusEl.style.display = 'flex';
             gsap.to(statusEl, { opacity: 1, duration: 0.3 });
+
+            // Stop speaking waveform animation if any
+            if (window._speakingInterval) {
+                clearInterval(window._speakingInterval);
+                window._speakingInterval = null;
+            }
+        } else if (state === 'SPEAKING') {
+            // Arc reactor glows brighter when speaking
+            reactorEl.classList.add('speaking-active');
+            statusText.innerText = 'RESPONDING...';
+            statusEl.style.display = 'flex';
+            gsap.to(statusEl, { opacity: 1, duration: 0.2 });
+
+            // Animate waveform as if audio is coming out (simulate pulse)
+            window._speakingInterval = setInterval(() => {
+                audioLevel = 0.4 + Math.random() * 0.5;
+            }, 80);
+
         } else {
-            reactorEl.classList.remove('pulse-active');
+            // IDLE / PROCESSING / etc.
+            if (window._speakingInterval) {
+                clearInterval(window._speakingInterval);
+                window._speakingInterval = null;
+            }
             gsap.to(statusEl, {
                 opacity: 0, duration: 0.5, onComplete: () => {
                     statusEl.style.display = 'none';

@@ -33,20 +33,7 @@ class AIService(QThread):
     learning_insight = pyqtSignal(str)       # Emits proactive suggestions
     error_occurred = pyqtSignal(str)
 
-    COMMAND_KEYWORDS = [
-        # Original commands
-        'abrir', 'fechar', 'tocar', 'aumentar', 'diminuir', 'parar', 'continuar',
-        'pesquisar', 'escreva', 'reiniciar', 'desligar', 'horas', 'temperatura',
-        'dia', 'print', 'sistema',
-        # New media commands
-        'próxima', 'anterior', 'mutar', 'silenciar', 'desmutar',
-        # New system commands
-        'memória', 'cpu', 'disco', 'bloquear', 'lixeira',
-        # New utility commands
-        'timer', 'traduzir', 'dólar', 'bitcoin', 'calcular', 'quanto é',
-        # New file commands
-        'pasta', 'download', 'piada'
-    ]
+    # Commands loaded dynamically from ActionController registry
 
     def __init__(self):
         super().__init__()
@@ -76,11 +63,10 @@ class AIService(QThread):
             self.memory_service = MemoryService()
             self.nlp_processor = NLPProcessor()
             try:
-                # self.learning_module = LearningModule()
-                # logger.info("LearningModule initialized successfully")
+                self.learning_module = LearningModule()
+                logger.info("LearningModule initialized successfully")
                 # Start background learning
-                # self.loop.run_until_complete(self.learning_module.start_learning())
-                pass
+                self.loop.run_until_complete(self.learning_module.start_learning())
             except Exception as e:
                 logger.error(f"Failed to initialize LearningModule: {e}")
                 self.learning_module = None
@@ -131,15 +117,32 @@ class AIService(QThread):
             
             # 1. Base Intent Analysis (Fast)
             # Simple keyword match to get started or rely on NLP for everything
+            # Simple intent checking to bypass LLM for fast execution
             text_lower = text.lower()
+            
+            # Fast keyword matching — avoids Ollama for predictable commands ──────────────
+            DIRECT_CMD_KEYWORDS = [
+                'abrir', 'abri', 'abre', 'fechar', 'fecha', 'tocar', 'toca',
+                'pausar', 'pausa', 'aumentar', 'diminuir', 'volume', 'pesquisar',
+                'pesquisa', 'buscar', 'busca', 'procurar', 'desligar', 'reiniciar',
+                'print', 'screenshot', 'calcular', 'calcula'
+            ]
+            VISION_KEYWORDS = [
+                'tela', 'câmera', 'camera', 'olhe', 'analise', 'veja', 'o que tem na'
+            ]
+            
             if any(kw in text_lower for kw in ['horas', 'que horas', 'horário']):
                 base_intent = IntentType.TIME_QUERY
             elif any(kw in text_lower for kw in ['data', 'dia é hoje', 'que dia']):
                 base_intent = IntentType.DATE_QUERY
-            elif any(kw in text_lower for kw in self.COMMAND_KEYWORDS):
+            elif any(kw in text_lower for kw in DIRECT_CMD_KEYWORDS):
                 base_intent = IntentType.DIRECT_COMMAND
+            elif any(kw in text_lower for kw in VISION_KEYWORDS):
+                base_intent = IntentType.VISION_QUERY
             else:
-                base_intent = IntentType.CONVERSATIONAL_QUERY # Default
+                # Only send to Ollama (DETAILED) when we truly can't classify quickly
+                base_intent = IntentType.CONVERSATIONAL_QUERY
+            # ─────────────────────────────────────────────────────────────────────────────
             
             logger.info(f"AIService: Analysis results: detected base_intent as {base_intent}")
             
@@ -148,9 +151,10 @@ class AIService(QThread):
                 self.context.long_term_memory = self.memory_service.retrieve_relevant_context(text)
             
             # 3. Advanced NLP Processing
-            # Skip the 30-second LLM timeout block for simple local commands
+            # Use FAST mode for all pre-classified intents, DETAILED only for unknowns
             process_mode = ProcessingMode.FAST if base_intent in [
-                IntentType.TIME_QUERY, IntentType.DATE_QUERY, IntentType.DIRECT_COMMAND
+                IntentType.TIME_QUERY, IntentType.DATE_QUERY,
+                IntentType.DIRECT_COMMAND, IntentType.VISION_QUERY
             ] else ProcessingMode.DETAILED
             
             result = await self.nlp_processor.process_text(
@@ -176,11 +180,30 @@ class AIService(QThread):
                 'response': result.response_suggestion,
                 'confidence': result.confidence
             })
-            
-            # 4. Emit Result for UI/Execution
+            # 6. Silent Perception Learning (Learn from every interaction)
+            if self.learning_module:
+                try:
+                    turn = ConversationTurn(
+                        id=str(uuid.uuid4()),
+                        timestamp=datetime.now(),
+                        user_input=text,
+                        recognized_text=text,
+                        confidence_score=result.confidence,
+                        intent=result.intent,
+                        entities=result.entities,
+                        context={},
+                        response=result.response_suggestion,
+                        response_time=result.processing_time,
+                        satisfaction_score=0.8 # Default successful baseline
+                    )
+                    await self.learning_module.learn_from_interaction(turn, self.context)
+                except Exception as e:
+                    logger.error(f"Error passing interaction to learning module: {e}")
+                    
+            # 7. Emit Result for UI/Execution
             self.processing_finished.emit(result)
             
-            # 5. Check for Proactive Suggestions (Learning)
+            # 8. Check for Proactive Suggestions (Learning)
             if self.learning_module:
                 try:
                     suggestions = await self.learning_module.generate_proactive_suggestions(self.context)
