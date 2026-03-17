@@ -3,3 +3,5 @@ dist/
 *.exe
 *.zip
 .env
+models/
+*.lfs

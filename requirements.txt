@@ -28,6 +28,7 @@ google-generativeai>=0.3.0        # Gemini API
 python-dotenv>=1.0.0              # Environment variables (.env support)
 scikit-learn>=1.3.0               # Machine Learning
 joblib>=1.3.0                     # Model serialization
+llama-cpp-python>=0.2.0           # Local GGUF inference (Ollama alternative)
 
 # === Web & Browser ===
 requests>=2.28.0                  # HTTP requests

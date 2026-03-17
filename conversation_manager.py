@@ -40,6 +40,11 @@ class IntentType(Enum):
     DATE_QUERY = "date_query"
     INFORMATION_QUERY = "information_query"
     VISION_QUERY = "vision_query"
+    AGENT_RESEARCH_QUERY = "agent_research_query"
+    DOC_LEARNING_QUERY = "doc_learning_query"
+    VISUAL_ACTION = "visual_action"
+    RECORD_WORKFLOW = "record_workflow"
+    RUN_WORKFLOW = "run_workflow"
     INDIRECT_SUGGESTION = "indirect_suggestion"
     UNKNOWN = "unknown"
 

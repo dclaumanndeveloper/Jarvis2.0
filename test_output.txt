@@ -1,0 +1,257 @@
+﻿
+=================================================================
+  J.A.R.V.I.S. 2.0  ÔÇö  TESTE DE COMANDOS
+=================================================================
+
+[INIT] Carregando registro de comandos...
+Volume control initialized: <class 'comtypes._post_coinit.unknwn.POINTER(IAudioEndpointVolume)'>
+[INIT] 55 comandos registrados em 5 inten├º├Áes.
+
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Que horas s├úo
+  Texto: 'que horas s├úo agora'
+  Intent: TIME_QUERY
+  ­ƒöè TTS: Agora s├úo 20 horas e 7 minutos.
+  ­ƒöè TTS: Verificando o hor├írio.
+  Resposta: 'Verificando o hor├írio.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Qual ├® a data de hoje
+  Texto: 'qual ├® a data de hoje'
+  Intent: DATE_QUERY
+  ­ƒöè TTS: Hoje ├® dia 27 de fevereiro de 2026.
+  ­ƒöè TTS: Verificando a data.
+  Resposta: 'Verificando a data.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Informa├º├Áes do sistema
+  Texto: 'informa├º├Áes do sistema'
+  Intent: INFORMATION_QUERY
+  ­ƒöè TTS: Coletando m├®tricas do sistema.
+  Resposta: 'Coletando m├®tricas do sistema.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Uso de mem├│ria RAM
+  Texto: 'qual o uso de mem├│ria'
+  Intent: INFORMATION_QUERY
+  ­ƒöè TTS: Verificando mem├│ria.
+  ­ƒöè TTS: Buscando informa├º├Áes de temperatura no Google.
+  ­ƒöè TTS: Buscando informa├º├Áes de temperatura no Google.
+  Resposta: 'Verificando mem├│ria.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Uso do processador
+  Texto: 'qual o uso do processador'
+  Intent: INFORMATION_QUERY
+  ­ƒöè TTS: Verificando CPU.
+  ­ƒöè TTS: Buscando informa├º├Áes de temperatura no Google.
+  Resposta: 'Verificando CPU.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Espa├ºo em disco
+  Texto: 'quanto espa├ºo tenho no disco'
+  Intent: INFORMATION_QUERY
+  ­ƒöè TTS: Verificando disco.
+  ­ƒöè TTS: Buscando informa├º├Áes de temperatura no Google.
+  Resposta: 'Verificando disco.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Abrir Google
+  Texto: 'abrir google'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: Abrindo Google.
+  Resposta: 'Abrindo Google.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Abrir YouTube
+  Texto: 'abrir youtube'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: Abrindo YouTube.
+  Resposta: 'Abrindo YouTube.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Abrir GitHub
+  Texto: 'abrir github'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: Abrindo GitHub.
+  Resposta: 'Abrindo GitHub.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Abrir Calculadora
+  Texto: 'abrir calculadora'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: Abrindo calculadora.
+  Resposta: 'Abrindo calculadora.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Tirar print
+  Texto: 'tirar print da tela'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Capturando tela.
+  Resposta: 'Capturando tela.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Calcular 15 mais 27
+  Texto: 'calcular 15 mais 27'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Calculando.
+  ­ƒöè TTS: Tocando google
+  Resposta: 'Calculando.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Calcular 100 dividido por 4
+  Texto: 'calcular 100 dividido por 4'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Calculando.
+  Resposta: 'Calculando.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Criar timer de 5 segundos
+  Texto: 'criar timer 5 segundos'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Criando timer.
+  Resposta: 'Criando timer.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Aumentar volume
+  Texto: 'aumentar volume'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Aumentando volume.
+  Resposta: 'Aumentando volume.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Diminuir volume
+  Texto: 'diminuir volume'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Diminuindo volume.
+  ­ƒöè TTS: Tocando github
+  Resposta: 'Diminuindo volume.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Definir volume para 50%
+  Texto: 'definir volume 50'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Definindo volume.
+  Resposta: 'Definindo volume.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Pausar m├¡dia
+  Texto: 'pausar'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Pausando.
+  Resposta: 'Pausando.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Pr├│xima m├║sica
+  Texto: 'pr├│xima m├║sica'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Pr├│xima faixa.
+  Resposta: 'Pr├│xima faixa.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: M├║sica anterior
+  Texto: 'm├║sica anterior'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Faixa anterior.
+  Resposta: 'Faixa anterior.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Mutar ├íudio
+  Texto: 'mutar'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: ├üudio mutado.
+  Resposta: '├üudio mutado.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Cota├º├úo do d├│lar
+  Texto: 'qual a cota├º├úo do d├│lar'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Verificando cota├º├úo.
+  Resposta: 'Verificando cota├º├úo.'
+  Status: Ô£à PASS
+
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  TESTE: Cota├º├úo do Bitcoin
+  Texto: 'qual a cota├º├úo do bitcoin'
+  Intent: DIRECT_COMMAND
+  ­ƒöè TTS: O que voc├¬ gostaria de tocar?
+  ­ƒöè TTS: Verificando Bitcoin.
+  Resposta: 'Verificando Bitcoin.'
+  Status: Ô£à PASS
+
+  ÔÅ¡´©Å  SKIP  [Desligar computador] (pulado ÔÇö pode causar efeito colateral real)
+
+  ÔÅ¡´©Å  SKIP  [Reiniciar computador] (pulado ÔÇö pode causar efeito colateral real)
+
+  ÔÅ¡´©Å  SKIP  [Bloquear tela] (pulado ÔÇö pode causar efeito colateral real)
+
+=================================================================
+  RELAT├ôRIO FINAL DE TESTES
+=================================================================
+
+  Total: 26 | Ô£à Passou: 23 | ÔØî Falhou: 0 | ÔÅ¡´©Å  Pulado: 3
+
+  Ô£à  Que horas s├úo
+  Ô£à  Qual ├® a data de hoje
+  Ô£à  Informa├º├Áes do sistema
+  Ô£à  Uso de mem├│ria RAM
+  Ô£à  Uso do processador
+  Ô£à  Espa├ºo em disco
+  Ô£à  Abrir Google
+  Ô£à  Abrir YouTube
+  Ô£à  Abrir GitHub
+  Ô£à  Abrir Calculadora
+  Ô£à  Tirar print
+  Ô£à  Calcular 15 mais 27
+  Ô£à  Calcular 100 dividido por 4
+  Ô£à  Criar timer de 5 segundos
+  Ô£à  Aumentar volume
+  Ô£à  Diminuir volume
+  Ô£à  Definir volume para 50%
+  Ô£à  Pausar m├¡dia
+  Ô£à  Pr├│xima m├║sica
+  Ô£à  M├║sica anterior
+  Ô£à  Mutar ├íudio
+  Ô£à  Cota├º├úo do d├│lar
+  Ô£à  Cota├º├úo do Bitcoin
+  ÔÅ¡´©Å   Desligar computador
+  ÔÅ¡´©Å   Reiniciar computador
+  ÔÅ¡´©Å   Bloquear tela
+
+  ­ƒÄë Todos os comandos executados com sucesso!
+=================================================================
+

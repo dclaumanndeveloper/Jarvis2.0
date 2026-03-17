@@ -34,9 +34,44 @@ class CommandRegistry:
             return func
         return decorator
 
-    def get_command(self, intent: IntentType) -> Optional[CommandMetadata]:
+    def get_command(self, intent: IntentType, text: str = "") -> Optional[CommandMetadata]:
         cmds = self._commands.get(intent)
-        return cmds[0] if cmds else None
+        if not cmds: return None
+        
+        # If it's a direct command, try to find the specific function based on the action verb
+        if intent == IntentType.DIRECT_COMMAND and text:
+            text_lower = text.lower()
+            
+            verb_mapping = {
+                "abrir": "abrir", "abri": "abrir", "abre": "abrir",
+                "fechar": "fechar", "fecha": "fechar",
+                "tocar": "tocar", "toca": "tocar",
+                "pausar": "pausar", "pausa": "pausar",
+                "pesquisar": "pesquisar", "pesquisa": "pesquisar",
+                "buscar": "pesquisar", "busca": "pesquisar",
+                "volume": "definir_volume",
+                "aumentar": "aumentar_volume",
+                "diminuir": "diminuir_volume",
+                "desligar": "desligar_computador",
+                "reiniciar": "reiniciar_computador",
+                "print": "tirar_print", "screenshot": "tirar_print",
+                "calcular": "calcular", "calcula": "calcular",
+                "timer": "criar_timer"
+            }
+            
+            for verb, func_name in verb_mapping.items():
+                # Check for standalone verbs to avoid false positives inside words
+                if f" {verb} " in f" {text_lower} ":
+                    for cmd in cmds:
+                        if cmd.func.__name__ == func_name:
+                            return cmd
+                            
+            # If no mapping matched, see if the raw function name itself is in the text
+            for cmd in cmds:
+                if cmd.func.__name__.replace("_", " ") in text_lower:
+                    return cmd
+        
+        return cmds[0]
 
 # Global registry instance
 registry = CommandRegistry()
@@ -95,7 +130,8 @@ class ActionController:
                 
                 if target_cmd_meta:
                     if self.tts:
-                        self.tts.speak(nlp_result.response_suggestion or "Acredito que precise disso.")
+                        mood = nlp_result.sentiment if hasattr(nlp_result, 'sentiment') else 'neutral'
+                        self.tts.speak(nlp_result.response_suggestion or "Acredito que precise disso.", mood=mood)
                     
                     thread = threading.Thread(
                         target=self._run_command,
@@ -108,7 +144,7 @@ class ActionController:
                     logger.warning(f"ActionController: Proactive action not found: {recommended_action}")
         
         # 2. Look for a directly registered command
-        cmd_meta = registry.get_command(intent)
+        cmd_meta = registry.get_command(intent, nlp_result.original_text)
         
         if cmd_meta:
             # 2. Execute in a background thread to prevent UI freezing
@@ -125,13 +161,15 @@ class ActionController:
                 response = random.choice(self.response_templates["success"])
             
             if self.tts:
-                self.tts.speak(response)
+                mood = nlp_result.sentiment if hasattr(nlp_result, 'sentiment') else 'neutral'
+                self.tts.speak(response, mood=mood)
             
             return response
         else:
             # No specific command registered, just speak the AI response
             if self.tts:
-                self.tts.speak(nlp_result.response_suggestion)
+                mood = nlp_result.sentiment if hasattr(nlp_result, 'sentiment') else 'neutral'
+                self.tts.speak(nlp_result.response_suggestion, mood=mood)
             return nlp_result.response_suggestion
 
     def _run_command(self, func, nlp_result):
@@ -144,6 +182,7 @@ class ActionController:
             # Simple entity mapping logic
             kwargs = {}
             kwargs['command'] = nlp_result.original_text
+            kwargs['query'] = nlp_result.original_text # some legacy commands use 'query' instead of 'command'
             
             if 'applications' in nlp_result.entities:
                 kwargs['target'] = nlp_result.entities['applications']['values'][0]

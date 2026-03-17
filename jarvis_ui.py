@@ -598,8 +598,8 @@ class VoiceRegistrationWidget(QDialog):
         # Audio setup
         if AUDIO_AVAILABLE:
             self.audio = pyaudio.PyAudio()
-            self.sample_rate = 16000
-            self.chunk_size = 1024
+            self.sample_rate = 28000
+            self.chunk_size = 2048
             self.channels = 1
         
         self.setup_ui()

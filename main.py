@@ -4,6 +4,7 @@ import time
 import json
 import psutil
 import datetime
+import keyboard
 from pathlib import Path
 
 # Fix Unicode printing issues on Windows terminals
@@ -25,9 +26,10 @@ except ImportError:
     pass
 
 from PyQt6.QtCore import QUrl, QTimer, Qt, pyqtSlot, QObject, pyqtSignal, QRect
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLineEdit
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineSettings
+from PyQt6.QtWebChannel import QWebChannel
 
 # Jarvis Services
 from services.optimized_voice_service import OptimizedVoiceThread
@@ -35,14 +37,31 @@ from services.ai_service import AIService
 from services.tts_service import TTSService
 from services.action_controller import ActionController
 from conversation_manager import IntentType
+from services.hud_service import HolographicHUD
 
 # Trigger command registration
 import comandos
 import skills
 
+class JarvisBridge(QObject):
+    """Bridge for direct communication between Python and JS HUD"""
+    metrics_updated = pyqtSignal(str)
+    waveform_updated = pyqtSignal(float)
+    state_changed = pyqtSignal(str)
+    message_shown = pyqtSignal(str)
+    token_streamed = pyqtSignal(str)  # Real-time token delivery
+
+    @pyqtSlot()
+    def request_close(self):
+        print("HUD Bridge: Shutdown requested via JS.")
+        QApplication.quit()
+
 
 
 class JarvisHUD(QMainWindow):
+    # PyQt signal to safely transition from keyboard thread back to main GUI thread
+    toggle_input_signal = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         
@@ -53,6 +72,7 @@ class JarvisHUD(QMainWindow):
             Qt.WindowType.WindowStaysOnTopHint |
             Qt.WindowType.Tool | # Doesn't show in taskbar
             Qt.WindowType.WindowTransparentForInput
+          
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setStyleSheet("background:transparent;")
@@ -66,15 +86,64 @@ class JarvisHUD(QMainWindow):
         settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
         settings.setAttribute(QWebEngineSettings.WebAttribute.LocalStorageEnabled, True)
         
-        # Layout
-        self.setCentralWidget(self.browser)
+        # Central Widget layout
+        main_widget = QWidget()
+        layout = QVBoxLayout(main_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self.browser)
+        
+        # Cyberpunk Text Input
+        self.cmd_input = QLineEdit()
+        self.cmd_input.setPlaceholderText(">> Digite o comando (Esc para cancelar)...")
+        self.cmd_input.setStyleSheet("""
+            QLineEdit {
+                background-color: rgba(0, 20, 40, 0.85);
+                color: #00FFFF;
+                border: 2px solid #00FFFF;
+                border-radius: 5px;
+                padding: 15px;
+                font-family: 'Consolas', monospace;
+                font-size: 16px;
+                font-weight: bold;
+                letter-spacing: 1px;
+            }
+            QLineEdit:focus {
+                border: 2px solid #00FFCC;
+                background-color: rgba(0, 30, 60, 0.95);
+            }
+        """)
+        self.cmd_input.hide()  # Hidden by default
+        self.cmd_input.returnPressed.connect(self.on_text_submit)
+        
+        # Add a subtle margin so it isn't completely flush with the bottom screen edge
+        input_container = QWidget()
+        input_layout = QVBoxLayout(input_container)
+        input_layout.setContentsMargins(200, 0, 200, 40)
+        input_layout.addWidget(self.cmd_input)
+        
+        layout.addWidget(input_container)
+        self.setCentralWidget(main_widget)
         
         # Connect UI custom events
         self.browser.titleChanged.connect(self.on_title_changed)
+        
+        # Connect the hotkey signal
+        self.toggle_input_signal.connect(self.toggle_text_input)
+        
+        # Register global hotkey in background thread
+        try:
+            keyboard.add_hotkey('ctrl+space', lambda: self.toggle_input_signal.emit())
+        except Exception as e:
+            print(f"HUD: Failed to hook global keyboard hotkey: {e}")
 
         # Load local HTML
         web_path = Path(__file__).parent / "web" / "index.html"
         self.browser.setUrl(QUrl.fromLocalFile(str(web_path.absolute())))
+
+        # Secondary "Holographic" HUD for Proactivity
+        self.proactive_hud = HolographicHUD()
+        self.proactive_hud.show()
 
         # Start Async Loader for Heavy Modules
         print("HUD: Showing interface... Queuing AI Core initialization.")
@@ -84,14 +153,22 @@ class JarvisHUD(QMainWindow):
         """Loads Audio and AI components without hanging the main Qt Thread"""
         print("HUD: Starting Background Services...")
         
+        # WebChannel setup for high-speed bridging
+        self.bridge = JarvisBridge()
+        self.web_channel = QWebChannel()
+        self.web_channel.registerObject("jarvis_bridge", self.bridge)
+        self.browser.page().setWebChannel(self.web_channel)
+
         # Voice & AI Setup
         self.tts_service = TTSService()
         self.tts_service.start()
         
         print("HUD: Starting AI Service...")
-        self.ai_service = AIService() # Uses local provider from .env
-        self.ai_service.processing_finished.connect(self.on_ai_finished)
+        self.ai_service = AIService()
+        self.ai_service.processing_finished.connect(self.on_nlp_result)
+        self.ai_service.stream_token_received.connect(self.on_ai_token)
         self.ai_service.learning_insight.connect(self.on_learning_insight)
+        self.ai_service.learning_insight.connect(self.proactive_hud.show_insight)
         self.ai_service.start()
         
         print("HUD: Starting Voice Thread (Whisper/Silero)...")
@@ -112,6 +189,7 @@ class JarvisHUD(QMainWindow):
         self.voice_thread.command_received.connect(self.on_voice_command)
         self.voice_thread.error_occurred.connect(self.on_voice_error)
         self.voice_thread.audio_level.connect(self.on_audio_level)
+        self.voice_thread.user_interrupted.connect(self.tts_service.abort)
         self.voice_thread.start()
         
         # Connect TTS to VoiceThread to prevent speaking-loop (Anti-Echo)
@@ -120,14 +198,10 @@ class JarvisHUD(QMainWindow):
         
         # Connect TTS signals to HUD → React visually when Jarvis speaks
         self.tts_service.speaking_started.connect(
-            lambda text: self.browser.page().runJavaScript(
-                "if(window.jarvis_hud) window.jarvis_hud.set_state('SPEAKING');"
-            )
+            lambda text: self.bridge.state_changed.emit('SPEAKING')
         )
         self.tts_service.speaking_finished.connect(
-            lambda: self.browser.page().runJavaScript(
-                "if(window.jarvis_hud) window.jarvis_hud.set_state('IDLE');"
-            )
+            lambda: self.bridge.state_changed.emit('IDLE')
         )
         
         print("HUD: All background services requested to start.")
@@ -145,7 +219,7 @@ class JarvisHUD(QMainWindow):
 
     def on_voice_error(self, error_msg: str):
         print(f"HUD: CRITICAL VOICE ERROR: {error_msg}")
-        self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.show_message('SYSTEM ERROR: {error_msg}');")
+        self.bridge.message_shown.emit(f"SYSTEM ERROR: {error_msg}")
 
     def center_window(self):
         screen = QApplication.primaryScreen().availableGeometry()
@@ -154,7 +228,7 @@ class JarvisHUD(QMainWindow):
         self.move(x, y)
 
     def push_metrics(self):
-        """Gather system metrics and push to JS HUD"""
+        """Gather system metrics and push to JS HUD via bridge"""
         try:
             data = {
                 "cpu": psutil.cpu_percent(),
@@ -166,15 +240,14 @@ class JarvisHUD(QMainWindow):
                 "thr": 0.1,
                 "sync": 99.9
             }
-            json_data = json.dumps(data)
-            self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.update_metrics({json_data});")
+            self.bridge.metrics_updated.emit(json.dumps(data))
         except Exception as e:
             print(f"Metrics Error: {e}")
 
     def on_voice_state(self, is_listening: bool):
-        """Update HUD visual state for voice activity (Renamed to match connection)"""
+        """Update HUD visual state for voice activity"""
         state = "LISTENING" if is_listening else "IDLE"
-        self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.set_state('{state}');")
+        self.bridge.state_changed.emit(state)
 
     def on_voice_command(self, command: str, confidence: float):
         print(command)
@@ -197,22 +270,63 @@ class JarvisHUD(QMainWindow):
             return
             
         # Show transcribed text on HUD
-        self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.show_message('USER: {clean_text}');")
+        self.bridge.message_shown.emit(f"USER: {clean_text}")
         
         # Pulse visual state and process - Set pause temporarily until action completes
-        self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.set_state('PROCESSING');")
+        self.bridge.state_changed.emit('PROCESSING')
         self.voice_thread.pause()
         self.ai_service.process_command(clean_text)
 
-    def on_ai_finished(self, result):
+    def toggle_text_input(self):
+        """Called safely via PyQT signal when Ctrl+Space is pressed"""
+        if self.cmd_input.isHidden():
+            # Drop transparency so we can click and interact with the input
+            self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowTransparentForInput)
+            self.show() # Refresh flags
+            
+            self.cmd_input.show()
+            self.cmd_input.setFocus()
+            self.bridge.message_shown.emit('INSERIR COMANDO MANUAL...')
+        else:
+            self._hide_text_input()
+            self.bridge.message_shown.emit('MODO MANUAL CANCELADO')
+
+    def _hide_text_input(self):
+        """Helper to hide the text box and restore the click-through property"""
+        self.cmd_input.clear()
+        self.cmd_input.hide()
+        
+        # Restore click-through for the HUD
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowTransparentForInput)
+        self.show() # Refresh windows flags
+
+    def on_text_submit(self):
+        """Process manual text entry"""
+        text = self.cmd_input.text().strip()
+        self._hide_text_input()
+        
+        if text:
+            # Re-use the existing NLP voice pipeline logic!
+            self.on_voice_command(text, 1.0)
+            
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            if not self.cmd_input.isHidden():
+                # Escape cancels the manual input without closing JARVIS
+                self._hide_text_input()
+                self.bridge.message_shown.emit('MODO MANUAL CANCELADO')
+            else:
+                self.close()
+
+    def on_nlp_result(self, result):
         """Handle AI response, execute actions, and provide feedback"""
         print(f"HUD: AI processing finished. Intent: {result.intent}")
         # Execute the action via controller (includes TTS and templates)
         execution_response = self.action_controller.execute_nlp_result(result)
         
         # Update visual HUD
-        self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.set_state('IDLE');")
-        self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.show_message('JARVIS: {execution_response}');")
+        self.bridge.state_changed.emit('IDLE')
+        self.bridge.message_shown.emit(f"JARVIS: {execution_response}")
         print(f"HUD: ActionController Response: {execution_response}")
         # VoiceThread resumes when TTS finishes speaking via the signal connection
 
@@ -223,12 +337,15 @@ class JarvisHUD(QMainWindow):
         self.tts_service.speak(insight)
         
         # Display on HUD
-        self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.show_message('🧠 INSIGHT: {insight}');")
+        self.bridge.message_shown.emit(f"🧠 INSIGHT: {insight}")
+
+    def on_ai_token(self, token: str):
+        """Called when a new token is generated by the AI"""
+        self.bridge.token_streamed.emit(token)
 
     def on_audio_level(self, level: float):
-        """Push audio amplitude to HUD for waveform visualization"""
-        # Optimize by only pushing if browser is ready and value is significant or changed
-        self.browser.page().runJavaScript(f"if(window.jarvis_hud) window.jarvis_hud.update_waveform({level});")
+        """Push audio amplitude to HUD via bridge"""
+        self.bridge.waveform_updated.emit(level)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:

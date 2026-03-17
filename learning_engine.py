@@ -42,6 +42,7 @@ class LearningType(Enum):
     CONTEXT_PATTERN = "context_pattern"
     ERROR_CORRECTION = "error_correction"
     TEMPORAL_PATTERN = "temporal_pattern"
+    VISION_CONTEXT = "vision_context"
 
 class PatternConfidence(Enum):
     """Confidence levels for learned patterns"""
@@ -592,6 +593,11 @@ class LearningModule:
             context_suggestions = self._get_context_suggestions(context)
             suggestions.extend(context_suggestions)
             
+            # Vision-based proactive suggestions
+            if hasattr(context, 'environmental_state') and 'active_window' in context.environmental_state:
+                vision_suggestions = self._get_vision_suggestions(context.environmental_state['active_window'])
+                suggestions.extend(vision_suggestions)
+            
             # Limit and rank suggestions
             suggestions = self._rank_suggestions(suggestions)[:3]
             
@@ -794,6 +800,22 @@ class LearningModule:
                     next_command = commands[1]
                     suggestions.append(f"Você geralmente executa '{next_command}' após '{last_command}'.")
         
+        return suggestions
+
+    def _get_vision_suggestions(self, window_info: Dict[str, str]) -> List[str]:
+        """Generate suggestions based on what the user is doing on screen"""
+        suggestions = []
+        app = window_info.get('app', '').lower()
+        title = window_info.get('title', '').lower()
+        
+        # Heuristic rules for proactivity
+        if 'code' in app or 'vs' in app:
+            suggestions.append("Vejo que está programando. Posso ajudar com documentação ou revisão de bugs?")
+        elif 'youtube' in title or 'spotify' in app:
+            suggestions.append("Deseja que eu controle a reprodução de mídia para você?")
+        elif 'github' in title:
+            suggestions.append("Gostaria que eu fizesse o resumo dos últimos commits deste repositório?")
+            
         return suggestions
     
     def _get_context_suggestions(self, context: ConversationContext) -> List[str]:

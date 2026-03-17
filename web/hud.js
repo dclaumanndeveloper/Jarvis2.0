@@ -104,13 +104,45 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// --- PYTHON BRIDGE ---
-window.addEventListener('pywebviewready', function () {
-    console.log("HUD Bridge Ready");
-    // Initial reveal animation
-    gsap.from(".panel", { duration: 1, opacity: 0, x: (i) => i === 0 ? -100 : 100, stagger: 0.5 });
-    gsap.from("#hud-header", { duration: 1, y: -50, opacity: 0 });
-});
+// --- PYTHON BRIDGE (QWebChannel) ---
+function initBridge() {
+    if (typeof QWebChannel !== 'undefined') {
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            window.jarvis_bridge = channel.objects.jarvis_bridge;
+            console.log("HUD: QWebChannel Bridge Connected!");
+            
+            // Map signals to existing UI logic
+            window.jarvis_bridge.metrics_updated.connect((json_data) => {
+                const data = JSON.parse(json_data);
+                window.jarvis_hud.update_metrics(data);
+            });
+
+            window.jarvis_bridge.waveform_updated.connect((level) => {
+                window.jarvis_hud.update_waveform(level);
+            });
+
+            window.jarvis_bridge.state_changed.connect((state) => {
+                window.jarvis_hud.set_state(state);
+            });
+
+            window.jarvis_bridge.message_shown.connect((msg) => {
+                window.jarvis_hud.show_message(msg);
+            });
+
+            window.jarvis_bridge.token_streamed.connect((token) => {
+                window.jarvis_hud.append_token(token);
+            });
+
+            // Initial reveal animation
+            gsap.from(".panel", { duration: 1, opacity: 0, x: (i) => i === 0 ? -100 : 100, stagger: 0.5 });
+            gsap.from("#hud-header", { duration: 1, y: -50, opacity: 0 });
+        });
+    } else {
+        console.warn("HUD: QWebChannel not found, falling back to legacy mode.");
+    }
+}
+
+initBridge();
 
 // APIs called by Python
 window.jarvis_hud = {
@@ -182,13 +214,52 @@ window.jarvis_hud = {
     },
     show_message: (msg) => {
         const el = document.getElementById('response-text');
-        // Simple typewriter or fade effect
+        // If it starts with JARVIS:, we might want to preserve it or just clear for streaming
+        if (msg.startsWith('JARVIS: ')) {
+            window._currentResponseText = ""; // Clear for potential subsequent tokens (though nlp_result usually finishes)
+        }
         gsap.to(el, {
             opacity: 0, duration: 0.2, onComplete: () => {
                 el.innerText = msg;
                 gsap.to(el, { opacity: 1, x: 0, duration: 0.4 });
             }
         });
+    },
+    append_token: (token) => {
+        const el = document.getElementById('response-text');
+        
+        // Initialize if first token
+        if (!window._tokenBuffer) {
+            window._tokenBuffer = "";
+            window._isStreamingResponse = false;
+        }
+        
+        window._tokenBuffer += token;
+        
+        // Look for the start of the suggested_response content: "suggested_response": "
+        const trigger = '"suggested_response": "';
+        if (!window._isStreamingResponse) {
+            const index = window._tokenBuffer.indexOf(trigger);
+            if (index !== -1) {
+                window._isStreamingResponse = true;
+                window._currentResponseText = "JARVIS: ";
+                // Everything after the trigger
+                window._currentResponseText += window._tokenBuffer.substring(index + trigger.length);
+            }
+        } else {
+            // We are already streaming the core response
+            // Stop if we hit the end quote (simple check)
+            if (token === '"' && !window._tokenBuffer.endsWith('\\"')) {
+                window._isStreamingResponse = false;
+            } else {
+                window._currentResponseText += token;
+            }
+        }
+
+        if (window._isStreamingResponse) {
+            el.innerText = window._currentResponseText;
+            el.style.opacity = 1;
+        }
     },
     update_waveform: (level) => {
         // Boost level for visibility

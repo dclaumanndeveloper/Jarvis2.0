@@ -110,9 +110,16 @@ class VoiceProcessorV2:
                 self.vad_infer_request = None
                 self.vad_session = None # Disable and fallback
         
-        # Energy fallback (RMS) - audio is float32 [-1,1], threshold is 0.02 (~600 int16 RMS)
-        rms = np.sqrt(np.mean(audio_chunk.astype(np.float32)**2))
-        return rms > 0.02
+        # Energy fallback (RMS + ZCR) - audio is float32 [-1,1], lower threshold to 0.015
+        audio_float32 = audio_chunk.astype(np.float32)
+        rms = np.sqrt(np.mean(audio_float32**2))
+        
+        # Simple Zero-Crossing Rate (ZCR) to distinguish voice from static broadband noise
+        zcr = np.mean(np.diff(np.signbit(audio_float32)) != 0)
+        
+        # Human speech usually has ZCR between 0.05 and 0.35. High ZCR is hiss/white noise.
+        is_voice_zcr = 0.04 < zcr < 0.4 
+        return (rms > 0.015) and is_voice_zcr
 
     def transcribe_chunk(self, audio_chunk: bytes) -> Optional[str]:
         """Transcribe audio chunk and return partial or final text"""
@@ -175,6 +182,8 @@ class VoiceProcessorV2:
                             # Let Whisper auto-detect the language to avoid lang_to_id token map errors
                             config.task = "transcribe"
                             config.return_timestamps = False
+                            if hasattr(config, 'temperature'):
+                                config.temperature = 0.0
                         except Exception as e_cfg:
                             logger.warning(f"Whisper config warning: {e_cfg}")
                             config = None

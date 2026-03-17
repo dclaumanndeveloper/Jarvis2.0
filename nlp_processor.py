@@ -22,44 +22,193 @@ from conversation_manager import ConversationContext, IntentType
 logger = logging.getLogger(__name__)
 
 class LocalAIProcessor:
-    """Processor for local AI using Ollama API"""
+    """Processor for local AI using Llama-cpp (standalone) or Ollama API (fallback)"""
     def __init__(self, model_name: str = "qwen2:1.5b"):
-        self.base_url = "http://localhost:11434/api/generate"
-        self.model = model_name
-
-    async def process_complex_query(self, text: str, context: ConversationContext) -> Dict[str, Any]:
-        """Process query using local Ollama instance"""
-        prompt = self._build_contextual_prompt(text, context)
+        self.ollama_url = "http://localhost:11434/api/generate"
+        self.model_name = model_name
         
+        # Standalone Config
+        self.use_llama_cpp = False
+        self.llm = None
+        self.clip_model = None # For Vision
+        
+        # Try to find a local GGUF model in 'models/' directory
+        model_dir = os.path.join(os.path.dirname(__file__), "models")
+        gguf_files = [f for f in os.listdir(model_dir) if f.endswith(".gguf")] if os.path.exists(model_dir) else []
+        
+        if gguf_files:
+            try:
+                from llama_cpp import Llama
+                model_path = os.path.join(model_dir, gguf_files[0])
+                logger.info(f"LocalAIProcessor: Loading standalone model {model_path}...")
+                self.llm = Llama(
+                    model_path=model_path,
+                    n_ctx=2048,
+                    n_threads=os.cpu_count() or 4,
+                    verbose=False,
+                    logits_all=False
+                )
+                self.use_llama_cpp = True
+                self.system_prompt_tokens = self.llm.tokenize(
+                    self._get_base_system_prompt().encode('utf-8')
+                )
+                
+                # Check for Vision Projector (mmproj)
+                mmproj_files = [f for f in os.listdir(model_dir) if "mmproj" in f.lower()]
+                if mmproj_files:
+                    from llama_cpp.llama_chat_format import Llava15ChatHandler
+                    self.clip_model = Llava15ChatHandler(
+                        clip_model_path=os.path.join(model_dir, mmproj_files[0]),
+                        verbose=False
+                    )
+                    logger.info(f"LocalAIProcessor: Multimodal VLM (Clip) loaded: {mmproj_files[0]}")
+
+                logger.info("LocalAIProcessor: Standalone Llama-cpp with KV Cache active.")
+            except Exception as e:
+                logger.warning(f"LocalAIProcessor: Failed to load Llama-cpp ({e}). Falling back to Ollama API.")
+        else:
+            logger.info("LocalAIProcessor: No .gguf model found in models/. Using Ollama API mode.")
+
+    async def process_complex_query(self, text: str, context: ConversationContext, stream_callback=None) -> Dict[str, Any]:
+        """Process query using local Llama-cpp instance or Ollama API with optional streaming"""
+        if self.use_llama_cpp and self.llm:
+            # For standalone, we use a more efficient prompt that reuses cached tokens
+            return await self._process_via_llama_cpp(text, context, stream_callback)
+        else:
+            prompt = self._build_contextual_prompt(text, context)
+            return await self._process_via_ollama(prompt)
+
+    def _get_base_system_prompt(self) -> str:
+        """Fixed system prompt for token reuse"""
+        return "You are J.A.R.V.I.S., a smart AI assistant. Classify the user's intent and return ONLY a valid JSON object."
+
+    async def _process_via_llama_cpp(self, text: str, context: ConversationContext, stream_callback=None) -> Dict[str, Any]:
+        """Inference using llama-cpp-python with KV Cache optimization and streaming"""
+        try:
+            short_mem = str(context.long_term_memory)[:150] if context.long_term_memory else "None"
+            # Build prompt suffix (the dynamic part)
+            prompt_suffix = f"\n\nMEMORY: {short_mem}\nTOPIC: {context.current_topic}\n\nUser: \"{text}\"\nJSON (ONLY output the JSON, nothing else):\n"
+            
+            full_text = ""
+            
+            def run_inference():
+                nonlocal full_text
+                # If streaming is requested, we iterate over the completion
+                if stream_callback:
+                    # We need to manually handle the JSON generation stream
+                    # Llama-cpp stream returns chunks
+                    stream = self.llm(
+                        prompt=self._get_base_system_prompt() + prompt_suffix,
+                        max_tokens=150,
+                        temperature=0.3,
+                        stop=["User:", "\n\n"],
+                        stream=True
+                    )
+                    for chunk in stream:
+                        token = chunk['choices'][0]['text']
+                        if token:
+                            full_text += token
+                            stream_callback(token)
+                else:
+                    response = self.llm(
+                        prompt=self._get_base_system_prompt() + prompt_suffix,
+                        max_tokens=150,
+                        temperature=0.3,
+                        stop=["User:", "\n\n"],
+                        echo=False
+                    )
+                    full_text = response['choices'][0]['text'].strip()
+
+            await asyncio.to_thread(run_inference)
+            return self._parse_local_response(full_text)
+        except Exception as e:
+            logger.error(f"Llama-cpp error: {e}")
+            return {'error': str(e), 'suggested_response': "Erro no processador neural standalone."}
+
+    async def process_image(self, image_path: str, prompt: str) -> str:
+        """Analyze an image using a multimodal local model"""
+        if not self.clip_model or not self.llm:
+            return "Erro: Modelo de visão não carregado. Adicione um arquivo mmproj na pasta models."
+        
+        try:
+            import base64
+            with open(image_path, "rb") as image_file:
+                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+            
+            data_uri = f"data:image/png;base64,{base64_image}"
+            
+            def run_vision():
+                response = self.llm.create_chat_completion(
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant that can see and describe images."},
+                        {"role": "user", "content": [
+                            {"type": "image_url", "image_url": {"url": data_uri}},
+                            {"type": "text", "text": prompt}
+                        ]}
+                    ],
+                    chat_handler=self.clip_model
+                )
+                return response['choices'][0]['message']['content']
+            
+            return await asyncio.to_thread(run_vision)
+        except Exception as e:
+            logger.error(f"VLM Error: {e}")
+            return f"Falha na análise visual: {e}"
+
+    async def extract_coordinates(self, image_path: str, element_description: str) -> Optional[Tuple[int, int]]:
+        """Use VLM to find coordinates (x, y) of an element on screen"""
+        prompt = f"Find the precise [x, y] coordinates of the following element: '{element_description}'. Return ONLY the coordinates in the format [x, y] as normalized values between 0 and 1000. If not found, return [0, 0]."
+        
+        result = await self.process_image(image_path, prompt)
+        
+        # Regex to extract [x, y]
+        match = re.search(r'\[(\d+),\s*(\d+)\]', result)
+        if match:
+            x_norm = int(match.group(1))
+            y_norm = int(match.group(2))
+            
+            # Map back to screen size (using pyautogui size)
+            import pyautogui
+            screen_w, screen_h = pyautogui.size()
+            
+            real_x = int((x_norm / 1000) * screen_w)
+            real_y = int((y_norm / 1000) * screen_h)
+            
+            logger.info(f"LocalAIProcessor: Extracted coordinates {real_x}, {real_y} for '{element_description}'")
+            return (real_x, real_y)
+            
+        return None
+
+    async def _process_via_ollama(self, prompt: str) -> Dict[str, Any]:
+        """Inference using Ollama API"""
         try:
             async with aiohttp.ClientSession() as session:
                 payload = {
-                    "model": self.model,
+                    "model": self.model_name,
                     "prompt": prompt,
                     "stream": False,
                     "format": "json",
+                    "keep_alive": "10m", # Keep model in memory for 10 minutes
                     "options": {
-                        "temperature": 0.1,      # Deterministic → faster, no "creative" token sampling
-                        "num_predict": 80,       # Max output tokens — our JSON never needs more than 80
-                        "num_ctx": 512,          # Reduced context window: less KV cache → faster inference
-                        "top_k": 10,             # Narrow sampling → faster decision per token
-                        "repeat_penalty": 1.0    # No repeat penalty overhead
+                        "temperature": 0.5,
+                        "num_predict": 80,
+                        "num_ctx": 2048,
+                        "top_k": 10,
+                        "num_thread": os.cpu_count() or 4
                     }
                 }
-                async with session.post(self.base_url, json=payload, timeout=120) as response:
+
+                async with session.post(self.ollama_url, json=payload, timeout=240) as response:
                     if response.status == 200:
                         data = await response.json()
                         response_text = data.get('response', '')
                         return self._parse_local_response(response_text)
                     else:
-                        logger.error(f"Ollama error: {response.status}")
-                        return {'error': f'Local AI error: {response.status}', 'suggested_response': "Desculpe, senhor. Tive um erro no processador local."}
+                        return {'error': f'Ollama status: {response.status}', 'suggested_response': "Erro no servidor Ollama."}
         except asyncio.TimeoutError:
-            logger.error("Local AI timeout: A resposta do Ollama demorou demais.")
-            return {'error': 'Timeout', 'suggested_response': "A conexão com o cérebro neural local expirou. Pode demorar na primeira vez que o modelo é carregado."}
+            return {'error': 'Timeout', 'suggested_response': "A resposta do cérebro neural demorou demais."}
         except Exception as e:
-            logger.error(f"Local AI connection error: {e}")
-            return {'error': str(e), 'suggested_response': "Não consegui conectar ao processador neural local."}
+            return {'error': str(e), 'suggested_response': "Não consegui conectar ao processador local."}
 
     def _build_contextual_prompt(self, text: str, context: ConversationContext) -> str:
         """Prompt for local models to ensure robust intent classification and JSON output."""
@@ -337,6 +486,10 @@ class SentimentAnalyzer:
         self.neutral_indicators = [
             'ok', 'certo', 'beleza', 'tudo bem', 'pode ser', 'talvez'
         ]
+        
+        self.joy_indicators = ['feliz', 'alegre', 'ótimo', 'incrível', 'uhul', 'eita', 'viva']
+        self.anger_indicators = ['raiva', 'ódio', 'droga', 'merda', 'caramba', 'aff', 'maluco']
+        self.sadness_indicators = ['triste', 'chateado', 'pena', 'lamento', 'infelizmente', 'puxa']
     
     def analyze_sentiment(self, text: str) -> Tuple[str, float]:
         """Analyze sentiment of text"""
@@ -351,15 +504,24 @@ class SentimentAnalyzer:
         if total_score == 0:
             return 'neutral', 0.5
         
-        if positive_score > negative_score and positive_score > neutral_score:
-            confidence = positive_score / (total_score + 1)
-            return 'positive', confidence
-        elif negative_score > positive_score and negative_score > neutral_score:
-            confidence = negative_score / (total_score + 1)
-            return 'negative', confidence
-        else:
-            confidence = neutral_score / (total_score + 1)
-            return 'neutral', confidence
+        # Extended scoring
+        joy_score = sum(1 for word in self.joy_indicators if word in text_lower)
+        anger_score = sum(1 for word in self.anger_indicators if word in text_lower)
+        sadness_score = sum(1 for word in self.sadness_indicators if word in text_lower)
+        
+        scores = {
+            'positive': positive_score,
+            'negative': negative_score,
+            'neutral': neutral_score,
+            'joy': joy_score,
+            'anger': anger_score,
+            'sadness': sadness_score
+        }
+        
+        best_mood = max(scores, key=scores.get)
+        confidence = scores[best_mood] / (total_score + 1)
+        
+        return best_mood, confidence
 
 
 
@@ -426,18 +588,20 @@ class NLPProcessor:
         self.contextual_analyzer = ContextualIntentAnalyzer()
         
         # Provider selection mapped to Local AI always
-        self.local_model = os.getenv("LOCAL_MODEL_NAME", "llama3")
+        self.local_model = os.getenv("LOCAL_MODEL_NAME", "qwen2:1.5b")
         
         # Initialize selected processor
         self.ai_engine = LocalAIProcessor(self.local_model)
         logger.info(f"NLP initialized with Local AI ({self.local_model})")
         
-        # Configuration - Aumentado para 0.9 para impedir chamadas de API desnecessárias
-        self.complexity_threshold = 0.9
+        # Configuration - High threshold to bypass LLM for simple/direct commands
+        self.complexity_threshold = 0.95
+
         
     async def process_text(self, text: str, base_intent: IntentType, 
-                          context: ConversationContext, 
-                          mode: ProcessingMode = ProcessingMode.DETAILED) -> NLPResult:
+                           context: ConversationContext, 
+                           mode: ProcessingMode = ProcessingMode.DETAILED,
+                           stream_callback=None) -> NLPResult:
         """Main text processing method"""
         
         start_time = time.time()
@@ -467,7 +631,7 @@ class NLPProcessor:
         if (self.ai_engine and 
             (complexity_score > self.complexity_threshold or mode == ProcessingMode.DETAILED)):
             
-            ai_result = await self.ai_engine.process_complex_query(text, context)
+            ai_result = await self.ai_engine.process_complex_query(text, context, stream_callback)
             ai_response = ai_result.get('suggested_response')
             
             # Override response and intent if engine provides better suggestion

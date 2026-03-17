@@ -1,131 +1,268 @@
-# 🤖 Jarvis 2.0
+# Jarvis 2.0
 
-Assistente virtual pessoal avançado 100% offline desenvolvido em Python, inspirado no J.A.R.V.I.S. do universo Marvel. Possui uma interface gráfica futurista via HUD interativo, reconhecimento de voz contínuo e processamento descentralizado e inteligente via IA Local.
-
-![Interface Jarvis 2.0](web/assets/hud_preview.png) *(Exemplo do painel de métricas e status)*
+Assistente virtual pessoal avançado 100% offline desenvolvido em Python, inspirado no J.A.R.V.I.S. do universo Marvel. Possui interface gráfica futurista via HUD interativo, reconhecimento de voz contínuo e processamento descentralizado via IA local.
 
 ---
 
-## ✨ Principais Funcionalidades
+## Principais Funcionalidades
 
 | Funcionalidade | Descrição |
 |----------------|-----------|
-| 🎤 **Reconhecimento de Voz Offline** | Transcrição ultra-rápida usando modelos Whisper e detecção de wake word via Silero VAD. |
-| 🧠 **IA Neural Local** | Processamento de comandos complexos e contexto operando 100% offline via **Ollama** (Modelo otimizado: `qwen2:1.5b`). |
-| 🖥️ **Interface HUD Assíncrona** | Janela translúcida, sem bordas, com design futurista operando sobre o PyQt6 e WebEngine. |
-| 🔊 **Text-to-Speech Fluido** | Síntese de voz em português estruturada em Threads assíncronas (Thread-safe) para evitar bloqueios de UI. |
-| ⚡ **Action Controller Modular** | Execução rápida de comandos usando um sistema de rotas (Registry) e intenções (`IntentType`). |
-| 🎵 **Controles e Automação** | Automação de mídia corporativa, navegação web, sistema de arquivos e comandos nativos de OS (Windows otimizado). |
+| **Reconhecimento de Voz Offline** | Transcrição usando Vosk (PT-BR) + Silero VAD (ONNX) para detecção de atividade de voz. Suporte opcional a Whisper via Intel OpenVINO. |
+| **IA Neural Local** | Inferência 100% offline via `llama-cpp-python` (modelos GGUF) ou Ollama REST API. Fallback opcional para Gemini API (cloud). |
+| **Interface HUD** | Janela translúcida sem bordas renderizada com PyQt6 + QtWebEngine. Front-end em HTML/CSS/JS com Three.js e GSAP. |
+| **Text-to-Speech** | Síntese de voz em português com fila thread-safe. Pausa automática do microfone enquanto fala (anti-eco). |
+| **Action Controller Modular** | Sistema de roteamento por intenções (`IntentType`) com registro via decorator. Resolução de comandos sem chamar o LLM. |
+| **Memória Persistente** | Banco vetorial com histórico de conversas e contexto de longo prazo entre sessões. |
+| **Agente Web** | Pesquisa autônoma em tempo real com scraping e síntese de resultados. |
+| **Visão Computacional** | Análise de tela e imagens via modelo VLM (LLaVA + mmproj GGUF). Monitoramento visual proativo. |
+| **Agente de Código** | Geração e análise de código com contexto de projeto. |
+| **Automação de Workflow** | Gravação e reprodução de macros de sistema. |
+| **Integração Telegram** | Controle remoto do assistente via bot do Telegram. |
+| **Motor de Aprendizado** | Reconhecimento de padrões com SQLite assíncrono; adapta respostas ao longo do tempo. |
+| **Skills e Automação** | Controle de mídia, sistema de arquivos, navegação web, timers e comandos de OS (otimizado para Windows). |
 
 ---
 
-## 🏗️ Arquitetura do Sistema
+## Arquitetura do Sistema
 
-O sistema difere de assistentes tradicionais por rodar serviços pesados localmente sem onerar a interface de usuário.
-
-```text
+```
 Jarvis2.0/
-├── main.py                      # Ponto de entrada; Inicializa UI HUD e delega as Threads.
-├── web/                         # Front-end da interface (HTML/CSS/JS renderizado via QtWebEngine).
-├── comandos.py                  # Registry de automações (Abrir sites, mídia, informações do sistema).
+├── main.py                          # Ponto de entrada; cria JarvisHUD (PyQt6) e delega QThreads
+├── comandos.py                      # Registry de automações (mídia, web, sistema, timers)
+├── conversation_manager.py          # IntentType enums, ConversationContext e histórico
+├── nlp_processor.py                 # Auto-detecção de modelos GGUF, llama-cpp e Ollama API
+├── learning_engine.py               # Módulo de aprendizado com SQLite async
+├── database_manager.py              # Utilitários de persistência de dados
+├── enhanced_speech.py               # Aprimoramentos de síntese de voz
+├── enhanced_voice_recording.py      # Captura de áudio avançada
+├── error_recovery.py                # Tolerância a falhas
+├── requirements.txt
+│
 ├── services/
-│   ├── ai_service.py            # Orquestrador da IA Local; gerencia Memória e Aprendizado de máquina.
-│   ├── tts_service.py           # Gestor da Fila Falada de respostas.
-│   ├── voice_processor_v2.py    # Pipeline acústico avançado usando processamento nativo VAD.
-│   ├── optimized_voice_service.py # Lida com Listening-state assíncrono.
-│   └── action_controller.py     # Disparador final: Resolve Intenções para chamadas de sistema (Callables).
-├── nlp_processor.py             # Formata Prompts e comunica com Ollama/LocalAI API em formato JSON.
-├── conversation_manager.py      # Mantém janela de história contextual do usuário e os Enum Types.
-└── ...
+│   ├── ai_service.py                # Orquestrador central da IA (QThread)
+│   ├── action_controller.py         # Dispara Intenções para callables Python
+│   ├── tts_service.py               # Fila de TTS com sinais Qt (speaking_started/finished)
+│   ├── voice_processor_v2.py        # Pipeline STT: Vosk + Silero VAD + Whisper OpenVINO
+│   ├── optimized_voice_service.py   # Gerenciamento de estado de escuta assíncrono
+│   ├── memory_service.py            # Memória persistente e contexto de longo prazo
+│   ├── web_agent_service.py         # Agente de pesquisa web com scraping
+│   ├── vision_service.py            # Análise de tela/imagem via VLM
+│   ├── vision_monitor_service.py    # Monitoramento visual proativo
+│   ├── coding_agent_service.py      # Agente de geração e análise de código
+│   ├── health_monitor_service.py    # Monitoramento de saúde do sistema
+│   ├── workflow_service.py          # Gravação e execução de macros/workflows
+│   ├── update_service.py            # Serviço de auto-atualização
+│   ├── indexer_service.py           # Indexador de documentos (brain indexer)
+│   ├── telegram_service.py          # Integração com bot do Telegram
+│   ├── hud_service.py               # HUD holográfico secundário
+│   ├── audio_service.py             # Abstração de I/O de áudio
+│   ├── audio_device_monitor.py      # Detecção de mudanças de dispositivo de áudio
+│   └── path_manager.py              # Resolução de caminhos
+│
+├── skills/
+│   ├── media_skills.py              # Comandos de controle de mídia
+│   └── system_skills.py             # Comandos de sistema
+│
+├── web/
+│   ├── index.html                   # Layout do HUD (Three.js + GSAP)
+│   ├── style.css                    # Estilização cyberpunk
+│   └── hud.js                       # Lógica do HUD, métricas, animações, streaming de tokens
+│
+├── tests/
+│   ├── test_ai_service.py
+│   ├── test_audio_service.py
+│   ├── test_comandos.py
+│   ├── test_conversation_manager.py
+│   ├── test_learning_engine.py
+│   ├── test_nlp_processor.py
+│   └── test_tts_service.py
+│
+└── models/
+    ├── qwen2-0_5b-instruct-q4_k_m.gguf      # LLM local quantizado (llama-cpp)
+    ├── mmproj-Qwen2-VL-7B-Instruct-f32.gguf # Projetor de visão (VLM / LLaVA)
+    ├── silero_vad.onnx                        # Modelo de detecção de atividade de voz
+    ├── vosk-model-small-pt-0.3/              # Modelo STT Vosk (Português)
+    ├── whisper_small_ov/                     # Modelo Whisper via Intel OpenVINO
+    ├── embedding_model/                      # Modelo de embeddings (brain indexer)
+    └── piper_voices/                         # Vozes TTS (Piper)
 ```
 
 ---
 
-## 🎙️ Exemplos de Comandos (Em Português)
+## Fluxo de Processamento
 
-O `AIService` classifica as requisições em Intenções para disparo rápido ou passa pela IA Local para processamento semântico complexo.
-
-### Utilitários e Sistema
-```text
-"Jarvis, que horas são?"               → `TIME_QUERY` (Responde instantaneamente)
-"Qual a data de hoje?"                 → `DATE_QUERY` (Responde sem chamar modelo LLM pesado)
-"Bloquear a tela."                     → Trava a sessão do Windows
-"Uso de memória / Espaço em disco."    → Obtém métricas via `psutil`
 ```
-
-### Automação (Zero-Shot & Registrados)
-```text
-"Abrir [Google Chrome / VSCode]."      → Dispara executáveis de sistema ou injeta busca via GUI.
-"Fechar [Aplicativo]."                 → Encerra processos no Task Manager silenciosamente.
-"Tocar [Nome da Música]."              → Abre o vídeo no YouTube automaticamente.
-"Criar timer de 5 minutos."             → Agenda processos background usando Regex e Threads.
-"Pesquisar sobre buracos negros."      → Encaminha buscas estruturadas web.
+Microfone → VoiceProcessorV2 (Vosk + VAD)
+         → OptimizedVoiceService (estado de escuta)
+         → AIService (orquestrador)
+              ├── IntentType de alta prioridade → ActionController → comandos.py / skills/
+              ├── CONVERSATIONAL_QUERY → NLPProcessor → llama-cpp / Ollama / Gemini
+              ├── VISION_QUERY → VisionService (VLM)
+              ├── AGENT_RESEARCH_QUERY → WebAgentService
+              └── Resultado → TTSService → HUD (via QWebChannel)
 ```
-
-### Inteligência Contextual (`CONVERSATIONAL_QUERY`)
-Qualquer pergunta complexa é redirecionada silenciosamente para o LLM. A API local retorna uma rota semântica do que fazer ou o que dizer de volta ao usuário.
 
 ---
 
-## 📋 Pré-requisitos e Setup
+## Exemplos de Comandos (Português)
+
+### Sistema e Utilitários
+```
+"Que horas são?"              → TIME_QUERY  (resposta instantânea)
+"Qual a data de hoje?"        → DATE_QUERY
+"Uso de memória / CPU"        → métricas via psutil
+"Bloquear a tela"             → trava a sessão do Windows
+"Verificar saúde do sistema"  → HealthMonitorService
+```
+
+### Automação
+```
+"Abrir Chrome / VSCode"       → abre executáveis ou injeta busca via PyAutoGUI
+"Fechar [aplicativo]"         → encerra processos silenciosamente
+"Tocar [nome da música]"      → abre vídeo no YouTube
+"Criar timer de 5 minutos"    → agenda processo em background
+"Copiar para área de transferência" → pyperclip
+```
+
+### Pesquisa e Web
+```
+"Pesquisar sobre [tema]"      → WebAgentService (scraping + síntese)
+"Resumir esta página"         → agente web com contexto
+```
+
+### Visão e Tela
+```
+"O que está na tela?"         → VisionService (análise via VLM)
+"Descreva esta imagem"        → VisionService
+```
+
+### Código
+```
+"Analise este código"         → CodingAgentService
+"Gere uma função para [X]"    → CodingAgentService
+```
+
+### Conversa Contextual
+Qualquer pergunta complexa é roteada para o LLM local automaticamente (`CONVERSATIONAL_QUERY`). O histórico de conversa é mantido pelo `ConversationContext`.
+
+---
+
+## Pré-requisitos e Setup
 
 ### 1. Requisitos de Sistema
-- **Sistema Operacional:** Recomendado Windows 10/11 (Devido aos bindings de Audio/PyCAW otimizados).
-- **Processador local AI:** Placa de vídeo adequada ou CPU com boas threads (Recomendado OpenVINO support).
-- **Python:** 3.10+
-- **Motor Offline (Ollama):** O Ollama deve estar instalado globalmente e rodando o `qwen2:1.5b`.
 
-### 2. Preparando a IA
-Baixe o [Ollama](https://ollama.com/) e, no terminal de sua máquina, rode:
+- **OS:** Windows 10/11 (pycaw e bindings de áudio otimizados para Windows)
+- **Python:** 3.10 ou superior (testado até 3.14)
+- **RAM:** 8 GB mínimo (16 GB recomendado para VLM)
+- **GPU/CPU:** Suporte a OpenVINO recomendado para aceleração de Whisper
+
+### 2. Motor de IA Local
+
+**Opção A — Ollama (mais simples):**
 ```bash
+# Instale o Ollama: https://ollama.com/
 ollama run qwen2:1.5b
 ```
 
+**Opção B — GGUF local via llama-cpp (offline total):**
+Coloque o arquivo `.gguf` na pasta `models/`. O `NLPProcessor` detecta automaticamente.
+
 ### 3. Instalação do Projeto
-Clone e instale dependências via Virtual Environment (recomendado):
+
 ```bash
 git clone https://github.com/dclaumanndeveloper/Jarvis2.0.git
 cd Jarvis2.0
 python -m venv .venv
-.venv\Scripts\activate  # No macOS/Linux use: source .venv/bin/activate
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### 4. Variavéis de Ambiente (.env)
-Se for utilizar provedores em nuvem (Fallback fallback), configure seu `.env`. Caso contrário, o sistema focará na porta local `11434` (Ollama).
+> **Nota (Python 3.14+):** Instale o PyAudio separadamente antes:
+> ```bash
+> pip install pipwin
+> pipwin install pyaudio
+> ```
+
+### 4. Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
 ```env
 LOCAL_MODEL_NAME=qwen2:1.5b
-# GEMINI_API_KEY=sua_chave (legado, opcional)
+
+# Fallback cloud (opcional)
+# GEMINI_API_KEY=sua_chave_aqui
 ```
 
-### 5. Execução
-Execute com o interpretador nativo da venv (não utilize terminais bloqueantes):
+### 5. Modelos de Voz (STT)
+
+Baixe o modelo Vosk para Português e extraia em `models/vosk-model-small-pt-0.3/`:
+- [vosk-model-small-pt-0.3](https://alphacephei.com/vosk/models)
+
+### 6. Execução
+
 ```bash
 python main.py
 ```
 
 ---
 
-## ⚠️ Known Issues e Troubleshooting
+## Adicionando Comandos (Skills)
 
-- **Crash 0xc0000005 (Access Violation):** O projeto forçou o *import bypass* na `main.py` para injetar pacotes C++ da GPU `openvino_genai` antes das bibliotecas nativas do `PyQt6` para evitar colisão de alocadores de DLL no Windows.
-- **Portas e Microfone:** O script necessita usar a porta padrão de gravação `44100Hz`, libere permissões nas Configurações de Privacidade do microfone.
-- **Performance TTS:** Para prevenir loops de feedback (eco), a gravação entra automaticamente em estado *Paused* assíncrono via conexão de sinais Qt quando o serviço `TTS` entra na fila de fala.
+Registre novas funções em `comandos.py` ou crie um arquivo em `skills/`:
+
+```python
+from services.action_controller import registry
+from conversation_manager import IntentType, CommandCategory
+
+@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY)
+def meu_comando() -> str:
+    return "Resposta falada pelo Jarvis."
+```
 
 ---
 
-## 🤝 Contribuindo
+## Testes
 
-Ideias empolgantes ou correções? Abra um Pull Request! Modifique ou adicione comandos criando funções em `comandos.py` e marcando-as com:
-```python
-@registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY)
-def seu_comando():
-    return "Resposta falada."
+```bash
+python -m pytest tests/
 ```
 
-## 📄 Licença
-Licença MIT. Livre para uso pessoal, inspirar devkits neurais locais privados, mas modifique os reposiórios de origem se realizar um fork produtivo.
+Os testes cobrem: `AIService`, `AudioService`, `Comandos`, `ConversationManager`, `LearningEngine`, `NLPProcessor` e `TTSService`.
+
+---
+
+## Known Issues e Troubleshooting
+
+| Problema | Solução |
+|----------|---------|
+| **Crash 0xc0000005 (Access Violation)** | O `main.py` importa `openvino_genai` antes do PyQt6 para evitar colisão de alocadores de DLL no Windows. Não altere a ordem de imports. |
+| **Microfone não reconhecido** | Verifique permissões em Configurações > Privacidade > Microfone. O pipeline usa `44100 Hz` por padrão. |
+| **Eco / feedback de voz** | O `TTSService` emite `speaking_started`/`speaking_finished` para pausar o microfone automaticamente. |
+| **Ollama não responde** | Certifique-se de que o serviço Ollama está rodando: `ollama serve` e o modelo foi baixado: `ollama pull qwen2:1.5b`. |
+| **Modelo GGUF não carregado** | Verifique se o arquivo `.gguf` está em `models/` e se `llama-cpp-python` está instalado corretamente para sua plataforma. |
+
+---
+
+## Contribuindo
+
+Pull Requests são bem-vindos! Para contribuir:
+
+1. Faça um fork do repositório
+2. Crie uma branch: `git checkout -b feat/minha-feature`
+3. Adicione seu código seguindo os padrões existentes
+4. Execute os testes: `python -m pytest tests/`
+5. Abra um Pull Request
+
+---
+
+## Licença
+
+MIT — Livre para uso pessoal e projetos derivados. Se realizar um fork produtivo, mantenha a referência ao repositório original.
+
+---
 
 <p align="center">
-  <b>⭐ Desenvolvido por <a href="https://github.com/dclaumanndeveloper">dclaumanndeveloper</a></b>
+  Desenvolvido por <a href="https://github.com/dclaumanndeveloper">dclaumanndeveloper</a>
 </p>

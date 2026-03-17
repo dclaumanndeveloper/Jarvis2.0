@@ -5,7 +5,10 @@ import asyncio
 import tempfile
 import os
 import edge_tts
-from playsound import playsound
+import sounddevice as sd
+import soundfile as sf
+import time
+from piper.voice import PiperVoice
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -24,6 +27,17 @@ class TTSService(QThread):
         super().__init__()
         self.queue = queue.Queue()
         self.running = True
+        self.aborted = False # For interruption
+        self.persona = "edge" # Options: "edge", "piper"
+        self.piper_model_path = os.path.join("models", "piper_voices", "pt_BR-faber-medium.onnx")
+        self.piper_voice = None
+        
+        if os.path.exists(self.piper_model_path):
+            try:
+                self.piper_voice = PiperVoice.load(self.piper_model_path)
+                logger.info("TTS Service: Piper persona model loaded.")
+            except Exception as e:
+                logger.error(f"Failed to load Piper model: {e}")
 
     def run(self):
         """Main thread loop utilizing Microsoft Edge TTS neural voices"""
@@ -40,8 +54,12 @@ class TTSService(QThread):
             
             while self.running:
                 try:
-                    # Get text from queue (blocking with timeout)
-                    text = self.queue.get(timeout=0.5)
+                    # Get (text, mood, persona_override) from queue
+                    data = self.queue.get(timeout=0.5)
+                    if not data: continue
+                    
+                    text, mood, persona_override = data
+                    current_persona = persona_override or self.persona
                     
                     if text:
                         print(f"HUD: TTS Processing request: {text[:50]}")
@@ -52,15 +70,53 @@ class TTSService(QThread):
                             # Create a temporary mp3 file
                             temp_path = tempfile.mktemp(suffix=".mp3")
                             
-                            # Generate Neural Voice Audio mapped to the file
-                            communicate = edge_tts.Communicate(text, VOICE_MODEL)
-                            loop.run_until_complete(communicate.save(temp_path))
+                            # Dynamic voice modulation based on mood
+                            rate = "+0%"
+                            pitch = "+0Hz"
                             
-                            # Play the audio (this is a blocking operation exactly like pyttsx3.runAndWait)
+                            if mood == 'joy':
+                                rate = "+15%"
+                                pitch = "+2Hz"
+                            elif mood == 'anger':
+                                rate = "+25%"
+                                pitch = "-2Hz"
+                            elif mood == 'sadness':
+                                rate = "-15%"
+                                pitch = "-1Hz"
+                            
+                            if current_persona == "edge":
+                                # Generate Neural Voice Audio via Edge
+                                communicate = edge_tts.Communicate(text, VOICE_MODEL, rate=rate, pitch=pitch)
+                                loop.run_until_complete(communicate.save(temp_path))
+                            elif self.piper_voice:
+                                # Generate via Piper (Local)
+                                with open(temp_path, "wb") as f:
+                                    self.piper_voice.synthesize(text, f)
+                            else:
+                                logger.error("TTS: Requested persona not available. Falling back.")
+                                continue
+                            
+                            # Play the audio using sounddevice (non-blocking with wait)
                             if os.path.exists(temp_path):
-                                playsound(temp_path)
+                                data, fs = sf.read(temp_path)
+                                self.aborted = False
+                                
+                                # Play in background
+                                sd.play(data, fs)
+                                
+                                # Wait for finish or abortion
+                                while sd.get_stream().active and not self.aborted:
+                                    time.sleep(0.1)
+                                
+                                if self.aborted:
+                                    sd.stop()
+                                    logger.info("TTS: Speech aborted by user interruption")
+                                
                                 # Clean up the memory immediately
-                                os.remove(temp_path)
+                                try:
+                                    os.remove(temp_path)
+                                except:
+                                    pass
                             
                             logger.info("TTS: Speech completed")
                         except Exception as e:
@@ -81,18 +137,32 @@ class TTSService(QThread):
         finally:
             logger.info("TTS Service: Shutdown complete")
 
-    def speak(self, text: str):
-        """Queue text to be spoken"""
+    def speak(self, text: str, mood: str = 'neutral', persona: str = None):
+        """Queue text to be spoken with emotional context and optional persona override"""
         if text:
-            # Strip emojis and markdown formatting to prevent the TTS from reading artifacts
+            # Strip emojis and markdown
             clean_text = text.replace("*", "").replace("#", "")
-            logger.info(f"TTS: Queued: {clean_text[:50]}...")
-            self.queue.put(clean_text)
+            logger.info(f"TTS: Queued: {clean_text[:50]}... (Mood: {mood}, Persona: {persona or self.persona})")
+            self.queue.put((clean_text, mood, persona))
         else:
             logger.warning("TTS: Empty text ignored")
+
+    def set_persona(self, persona: str):
+        """Switch default persona ('edge' or 'piper')"""
+        if persona in ["edge", "piper"]:
+            self.persona = persona
+            logger.info(f"TTS: Default persona set to {persona}")
 
     def stop(self):
         """Stop the TTS service"""
         logger.info("TTS Service: Stopping...")
         self.running = False
+        self.aborted = True
+        sd.stop()
         self.wait()
+
+    def abort(self):
+        """Abort current speech (for interruption)"""
+        self.aborted = True
+        sd.stop()
+        logger.info("TTS Service: Current speech delivery aborted")

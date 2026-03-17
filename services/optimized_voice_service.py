@@ -5,6 +5,7 @@ import threading
 import numpy as np
 import collections
 import sounddevice as sd
+import librosa
 from PyQt6.QtCore import QThread, pyqtSignal
 from services.voice_processor_v2 import VoiceProcessorV2
 
@@ -18,6 +19,7 @@ class OptimizedVoiceThread(QThread):
     command_received = pyqtSignal(str, float)
     listening_state = pyqtSignal(bool) # True when speech detected
     audio_level = pyqtSignal(float) # Emits 0.0 to 1.0 amplitude
+    user_interrupted = pyqtSignal() # New: Signal when user interrupts TTS
     error_occurred = pyqtSignal(str)
     
     def __init__(self, processor_instance, wake_word="jarvis"):
@@ -26,7 +28,7 @@ class OptimizedVoiceThread(QThread):
         self.is_running = False
         self.processor = processor_instance
         self.audio_queue = queue.Queue()
-        self.pre_speech_buffer = collections.deque(maxlen=20) # Cache last ~640ms of audio
+        self.pre_speech_buffer = collections.deque(maxlen=30) # Cache last ~960ms of audio
         self.sample_rate = 16000
         self.chunk_size = 512 # Required by Silero VAD v5
         self.is_paused = False # Prevents hearing its own TTS output
@@ -114,24 +116,36 @@ class OptimizedVoiceThread(QThread):
                 print(f"HUD: OptimizedVoiceThread: sd.InputStream active at {self.native_sr}Hz.")
                 last_speech_time = None
                 is_speaking = False
-                SILENCE_TIMEOUT = 1.2  # seconds of silence to trigger transcription
+                SILENCE_TIMEOUT = 0.8  # seconds of silence to trigger transcription
+
                 MIN_AUDIO_S = 0.1     # Minimum audio length to bother transcribing
                 
                 while self.is_running:
                     try:
                         chunk = self.audio_queue.get(timeout=0.5)
                         
-                        if self.is_paused:
-                            self.processor.audio_buffer = []  # Clear buffer when paused
-                            continue
-                            
-                        # Read as float32 (data is stored as float32 now)
+                        # Read as float32
                         audio_data = np.frombuffer(chunk, dtype=np.float32)
+                        
+                        # Apply heavy resampling HERE in the background thread (not in the audio callback)
+                        if self.native_sr != 16000:
+                            audio_data = librosa.resample(audio_data, orig_sr=self.native_sr, target_sr=16000)
+                            chunk = audio_data.tobytes() # Update chunk for downstream processors
                         
                         # Detect speech using VAD
                         is_voice_frame = self.processor and self.processor.is_speech(audio_data)
                         
                         if is_voice_frame:
+                            # If we are paused (TTS speaking), and detect significant speech, signal interruption
+                            if self.is_paused:
+                                # Heuristic: If volume is high enough to be intentional speech over TTS
+                                rms = np.sqrt(np.mean(audio_data**2))
+                                if rms > 0.08: # Threshold for interruption
+                                    print("HUD: USER INTERRUPTION DETECTED!")
+                                    self.user_interrupted.emit()
+                                    self.is_paused = False # Autoresume
+                                continue # Still skip processing this chunk to avoid echo-command
+                                
                             last_speech_time = time.time()
                             if not is_speaking:
                                 is_speaking = True
@@ -219,38 +233,18 @@ class OptimizedVoiceThread(QThread):
         if self.is_paused:
             return # Ignore all audio input while TTS is active
             
+        # VERY IMPORTANT: The audio callback must be LIGHTWEIGHT to prevent input overflow!
+        # Do not put librosa or heavy processing here.
+            
         # Calculate amplitude for UI visualizer
         audio_data_flat = indata.flatten().astype(np.float32)
         rms = np.sqrt(np.mean(audio_data_flat**2))
-        normalized_level = min(1.0, rms / 1500.0)
+        # Float32 audio ranges [-1.0, 1.0]. Speech RMS is typically 0.05 to 0.15.
+        normalized_level = min(1.0, rms / 0.15)
         self.audio_level.emit(normalized_level)
         
-        # DEBUG: Print occasionally to verify stream life
-        if not hasattr(self, '_cb_count'): self._cb_count = 0
-        self._cb_count += 1
-        if self._cb_count % 1000 == 0:
-            pass # print(f"HUD: Audio callback alive (RMS: {rms:.2f})")
-        
-        # Resample to 16000 if native_sr is different
-        # For Vosk and VAD, we MUST have 16000
-        processed_data = indata.flatten().astype(np.float32)
-        if self.native_sr != 16000:
-            # High quality linear resampling using numpy
-            duration = len(processed_data) / self.native_sr
-            num_samples_target = int(duration * 16000)
-            
-            # New time points
-            source_indices = np.linspace(0, len(processed_data) - 1, num_samples_target)
-            # Interpolate
-            processed_data = np.interp(source_indices, np.arange(len(processed_data)), processed_data)
-            
-            # DEBUG: Print once to confirm resampling is active
-            if not hasattr(self, '_resample_logged'):
-                print(f"HUD: Resampling ACTIVE: {self.native_sr}Hz -> 16000Hz")
-                self._resample_logged = True
-        
-        # Keep data as float32 [-1, 1] - this is what VAD and Whisper expect
-        self.audio_queue.put(processed_data.astype(np.float32).tobytes())
+        # Keep data as float32 [-1, 1] - send raw buffer to background queue
+        self.audio_queue.put(audio_data_flat.tobytes())
 
     def _process_recognized_text(self, text: str):
         """Handle recognized text and send to HUD/AI"""

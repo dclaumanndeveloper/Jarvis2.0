@@ -41,12 +41,12 @@ class ConversationState(Enum):
 @dataclass
 class AudioConfig:
     """Audio configuration parameters"""
-    sample_rate: int = 16000
-    chunk_size: int = 1024
+    sample_rate: int = 28000
+    chunk_size: int = 2048
     channels: int = 1
     format: int = pyaudio.paInt16
     vad_aggressiveness: int = 2  # 0-3, higher = more aggressive
-    silence_timeout: float = 2.0  # seconds
+    silence_timeout: float = 1.0  # seconds
     phrase_timeout: float = 1.0   # seconds
     confidence_threshold: float = 0.7
 
@@ -84,10 +84,10 @@ class VoiceActivityDetector:
                 audio_np = librosa.resample(
                     audio_np.astype(float), 
                     orig_sr=self.config.sample_rate, 
-                    target_sr=16000
+                    target_sr=32000
                 ).astype(np.int16)
             
-            return self.vad.is_speech(audio_np.tobytes(), 16000)
+            return self.vad.is_speech(audio_np.tobytes(), 28000)
         except Exception as e:
             logger.warning(f"VAD error: {e}")
             return False
@@ -255,7 +255,7 @@ class EnhancedSpeechRecognizer:
             try:
                 # Get audio data with timeout
                 try:
-                    audio_data = self.audio_queue.get(timeout=0.1)
+                    audio_data = self.audio_queue.get(timeout=0.2)
                 except queue.Empty:
                     continue
                 
