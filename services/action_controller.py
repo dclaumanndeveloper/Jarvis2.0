@@ -43,20 +43,23 @@ class CommandRegistry:
             text_lower = text.lower()
             
             verb_mapping = {
+                # More specific verbs FIRST (longer matches win over shorter ones)
+                "aumentar": "aumentar_volume",
+                "diminuir": "diminuir_volume",
                 "abrir": "abrir", "abri": "abrir", "abre": "abrir",
                 "fechar": "fechar", "fecha": "fechar",
                 "tocar": "tocar", "toca": "tocar",
                 "pausar": "pausar", "pausa": "pausar",
                 "pesquisar": "pesquisar", "pesquisa": "pesquisar",
                 "buscar": "pesquisar", "busca": "pesquisar",
+                "procurar": "pesquisar",
                 "volume": "definir_volume",
-                "aumentar": "aumentar_volume",
-                "diminuir": "diminuir_volume",
                 "desligar": "desligar_computador",
                 "reiniciar": "reiniciar_computador",
                 "print": "tirar_print", "screenshot": "tirar_print",
                 "calcular": "calcular", "calcula": "calcular",
-                "timer": "criar_timer"
+                "timer": "criar_timer",
+                "escreva": "escreva", "digite": "escreva",
             }
             
             for verb, func_name in verb_mapping.items():
@@ -182,7 +185,18 @@ class ActionController:
             # Simple entity mapping logic
             kwargs = {}
             kwargs['command'] = nlp_result.original_text
-            kwargs['query'] = nlp_result.original_text # some legacy commands use 'query' instead of 'command'
+
+            # Strip action verb from query to avoid searching "pesquisar X" instead of "X"
+            import re
+            _verb_prefixes = [
+                'pesquisar', 'pesquisa', 'buscar', 'busca', 'procurar',
+                'tocar', 'toca', 'abrir', 'abri', 'abre', 'calcular', 'calcula',
+                'escreva', 'digite'
+            ]
+            _query_text = nlp_result.original_text
+            for vp in sorted(_verb_prefixes, key=len, reverse=True):
+                _query_text = re.sub(r'^\s*' + re.escape(vp) + r'\s+', '', _query_text, count=1, flags=re.IGNORECASE)
+            kwargs['query'] = _query_text.strip() or nlp_result.original_text
             
             if 'applications' in nlp_result.entities:
                 kwargs['target'] = nlp_result.entities['applications']['values'][0]

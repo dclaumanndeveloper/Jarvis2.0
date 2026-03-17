@@ -1,25 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS HUD</title>
+    <title>HUD Test</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap"
-        rel="stylesheet">
-    <!-- Note: If offline, fonts will fallback to system defaults -->
-    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
 </head>
-
 <body>
     <div id="hud-container">
-        <!-- Background Scanlines & Noise -->
         <div class="scanlines"></div>
         <div class="noise"></div>
         <div class="hex-grid"></div>
-
-        <!-- 3D Arc Reactor Layer (CSS-only) -->
+        
         <div id="reactor-canvas-container">
             <div class="arc-reactor">
                 <div class="reactor-core"></div>
@@ -33,47 +24,30 @@
                     <div class="reactor-line" style="transform: rotate(90deg)"></div>
                     <div class="reactor-line" style="transform: rotate(120deg)"></div>
                     <div class="reactor-line" style="transform: rotate(150deg)"></div>
-                    <div class="reactor-line" style="transform: rotate(180deg)"></div>
-                    <div class="reactor-line" style="transform: rotate(210deg)"></div>
-                    <div class="reactor-line" style="transform: rotate(240deg)"></div>
-                    <div class="reactor-line" style="transform: rotate(270deg)"></div>
-                    <div class="reactor-line" style="transform: rotate(300deg)"></div>
-                    <div class="reactor-line" style="transform: rotate(330deg)"></div>
                 </div>
             </div>
         </div>
-
-        <!-- HUD Corners -->
+        
         <div class="corner top-left"></div>
         <div class="corner top-right"></div>
         <div class="corner bottom-left"></div>
         <div class="corner bottom-right"></div>
-
-        <!-- Top Status Bar -->
+        
         <header id="hud-header">
             <div class="system-title">J.A.R.V.I.S. <span class="version">v2.0</span></div>
             <div id="current-time">00:00:00</div>
-            <div onclick="document.title='CLOSE_HUD'"
-                style="cursor: pointer; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #ff3333; font-family: 'Share Tech Mono'; font-size: 16px; font-weight: bold; border: 1px solid #ff3333; padding: 4px 10px; border-radius: 4px; z-index: 1000; text-shadow: 0 0 5px #ff3333; background: rgba(255,0,0,0.1); display: flex; align-items: center; justify-content: center; line-height: 1;">
-                X</div>
         </header>
-
-        <!-- Sidebar Panels -->
+        
         <aside class="panel left-panel">
             <div class="panel-header">SYSTEM ANALYTICS</div>
-            <div class="metrics-container" id="left-metrics">
-                <!-- Metrics injected by JS -->
-            </div>
+            <div class="metrics-container" id="left-metrics"></div>
         </aside>
-
+        
         <aside class="panel right-panel">
             <div class="panel-header">NEURAL STATUS</div>
-            <div class="metrics-container" id="right-metrics">
-                <!-- Metrics injected by JS -->
-            </div>
+            <div class="metrics-container" id="right-metrics"></div>
         </aside>
-
-        <!-- Bottom Interface -->
+        
         <footer id="hud-footer">
             <canvas id="voice-visualizer"></canvas>
             <div id="response-box">
@@ -81,20 +55,31 @@
                 <div id="response-text">INITIALIZING HUD...</div>
             </div>
             <div id="ticker-wrap">
-                <div id="ticker">
-                    SYSTEMS ONLINE // TARGET LOCK: NIL // POWER STABLE: 100% // NETWORK UPLINK: VERIFIED // BIO-SCAN:
-                    ACTIVE
-                </div>
+                <div id="ticker">SYSTEMS ONLINE // TARGET LOCK: NIL // POWER STABLE: 100%</div>
             </div>
         </footer>
-
-        <!-- Overlays -->
+        
         <div id="status-overlay">
             <div id="status-text">INITIALIZING</div>
         </div>
     </div>
-
-    <script src="hud.js"></script>
+    
+    <script>
+        // Simple test clock
+        function updateClock() {
+            const el = document.getElementById('current-time');
+            if (el) {
+                const now = new Date();
+                el.innerText = now.toLocaleTimeString('pt-BR', { hour12: false });
+                console.log('Clock updated:', el.innerText);
+            } else {
+                console.error('Clock element not found!');
+            }
+        }
+        
+        updateClock();
+        setInterval(updateClock, 1000);
+        console.log('Test HUD loaded');
+    </script>
 </body>
-
 </html>

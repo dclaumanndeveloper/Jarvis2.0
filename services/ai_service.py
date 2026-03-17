@@ -5,6 +5,7 @@ import logging
 import threading
 import uuid
 import time
+import re
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
@@ -89,11 +90,36 @@ class AIService(QThread):
                 logger.error(f"Failed to initialize LearningModule: {e}")
                 self.learning_module = None
             
-            # Start background perception loop
-            asyncio.create_task(self._perception_loop())
-            
+            # Start background perception loop (as daemon thread with its own event loop)
+            self._bg_threads = []
+
+            def _run_async_loop(coro_func, name):
+                """Run an async coroutine in a dedicated daemon thread"""
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    loop.run_until_complete(coro_func())
+                except Exception as e:
+                    logger.error(f"Background service '{name}' crashed: {e}")
+                finally:
+                    loop.close()
+
+            perception_thread = threading.Thread(
+                target=_run_async_loop,
+                args=(self._perception_loop, "perception"),
+                daemon=True
+            )
+            perception_thread.start()
+            self._bg_threads.append(perception_thread)
+
             # Start Health Monitor
-            asyncio.create_task(self.health_monitor.start_monitoring(self))
+            health_thread = threading.Thread(
+                target=_run_async_loop,
+                args=(lambda: self.health_monitor.start_monitoring(self), "health_monitor"),
+                daemon=True
+            )
+            health_thread.start()
+            self._bg_threads.append(health_thread)
             
             # Start Brain Indexer
             self.indexer = BrainIndexerService(self.memory_service)
@@ -101,10 +127,22 @@ class AIService(QThread):
             
             # Start Vision Monitor (every 60s)
             self.vision_monitor = VisionMonitorService(self)
-            asyncio.create_task(self.vision_monitor.start())
-            
+            vision_thread = threading.Thread(
+                target=_run_async_loop,
+                args=(self.vision_monitor.start, "vision_monitor"),
+                daemon=True
+            )
+            vision_thread.start()
+            self._bg_threads.append(vision_thread)
+
             # Start periodic update check (every 24h)
-            asyncio.create_task(self._update_check_loop())
+            update_thread = threading.Thread(
+                target=_run_async_loop,
+                args=(self._update_check_loop, "update_check"),
+                daemon=True
+            )
+            update_thread.start()
+            self._bg_threads.append(update_thread)
             
             # Start Telegram Service
             self.telegram.command_received.connect(self.process_command)
@@ -189,21 +227,35 @@ class AIService(QThread):
             VISION_KEYWORDS = [
                 'tela', 'câmera', 'camera', 'olhe', 'analise', 'veja', 'o que tem na'
             ]
-            
+
+            def _word_match(keywords, text):
+                """Check if any keyword exists as a whole word in text"""
+                for kw in keywords:
+                    if ' ' in kw:
+                        # Multi-word keyword: simple substring match
+                        if kw in text:
+                            return True
+                    else:
+                        # Single word: use word boundary
+                        if re.search(r'\b' + re.escape(kw) + r'\b', text):
+                            return True
+                return False
+
             process_mode = ProcessingMode.FAST # Default to fast
-            
-            if any(kw in text_lower for kw in ['horas', 'que horas', 'horário']):
-                base_intent = IntentType.TIME_QUERY
-            elif any(kw in text_lower for kw in ['data', 'dia é hoje', 'que dia']):
-                base_intent = IntentType.DATE_QUERY
-            elif any(kw in text_lower for kw in DIRECT_CMD_KEYWORDS):
+
+            # Check DIRECT_CMD_KEYWORDS FIRST (most specific, avoids stealing by date/time)
+            if _word_match(DIRECT_CMD_KEYWORDS, text_lower):
                 base_intent = IntentType.DIRECT_COMMAND
-            elif any(kw in text_lower for kw in VISION_KEYWORDS):
+            elif _word_match(['horas', 'que horas', 'horário'], text_lower):
+                base_intent = IntentType.TIME_QUERY
+            elif _word_match(['dia é hoje', 'que dia'], text_lower) or text_lower.strip() == 'data':
+                base_intent = IntentType.DATE_QUERY
+            elif _word_match(VISION_KEYWORDS, text_lower):
                 base_intent = IntentType.VISION_QUERY
-            elif any(kw in text_lower for kw in ['pesquisa profunda', 'agente', 'investigue', 'preço de']):
+            elif _word_match(['pesquisa profunda', 'agente', 'investigue', 'preço de'], text_lower):
                 base_intent = IntentType.AGENT_RESEARCH_QUERY
                 process_mode = ProcessingMode.DETAILED
-            elif any(kw in text_lower for kw in ['aprenda da pasta', 'leia os arquivos', 'ingerir']):
+            elif _word_match(['aprenda da pasta', 'leia os arquivos', 'ingerir'], text_lower):
                 base_intent = IntentType.DOC_LEARNING_QUERY
                 process_mode = ProcessingMode.DETAILED
             else:

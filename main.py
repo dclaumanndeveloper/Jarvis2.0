@@ -323,12 +323,23 @@ class JarvisHUD(QMainWindow):
         print(f"HUD: AI processing finished. Intent: {result.intent}")
         # Execute the action via controller (includes TTS and templates)
         execution_response = self.action_controller.execute_nlp_result(result)
-        
+
         # Update visual HUD
         self.bridge.state_changed.emit('IDLE')
         self.bridge.message_shown.emit(f"JARVIS: {execution_response}")
         print(f"HUD: ActionController Response: {execution_response}")
-        # VoiceThread resumes when TTS finishes speaking via the signal connection
+
+        # Safety net: ensure voice thread resumes even if TTS never speaks
+        # (TTS speaking_finished signal is the primary resume, this is a fallback)
+        if hasattr(self, 'voice_thread') and self.voice_thread.is_paused:
+            # Small delay to avoid conflict with TTS anti-echo pause/resume cycle
+            QTimer.singleShot(500, self._ensure_voice_resumed)
+
+    def _ensure_voice_resumed(self):
+        """Fallback to resume voice thread if TTS didn't trigger resume"""
+        if hasattr(self, 'voice_thread') and self.voice_thread.is_paused:
+            print("HUD: Safety net — resuming voice thread (TTS did not resume it)")
+            self.voice_thread.resume()
 
     def on_learning_insight(self, insight: str):
         """Handle proactive learning suggestions from AI Service"""
@@ -346,10 +357,6 @@ class JarvisHUD(QMainWindow):
     def on_audio_level(self, level: float):
         """Push audio amplitude to HUD via bridge"""
         self.bridge.waveform_updated.emit(level)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Escape:
-            self.close()
 
     def on_title_changed(self, title: str):
         if title == "CLOSE_HUD":

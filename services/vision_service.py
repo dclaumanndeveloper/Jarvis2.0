@@ -1,10 +1,12 @@
 import os
 import time
 import logging
+import asyncio
 import pyautogui
 import pygetwindow as gw
 from typing import Optional, Dict, Any, Tuple
 from PIL import Image
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -22,20 +24,16 @@ class VisionService:
         logger.info("VisionService: Initialized.")
 
     def capture_screen(self, monitor_index=0) -> Optional[str]:
-        """Capture a screenshot of a specific monitor and return the file path"""
+        """Capture a screenshot of the primary monitor and return the file path"""
         try:
-            monitors = get_monitors()
-            if monitor_index >= len(monitors):
-                monitor_index = 0
-            
-            # Using pyautogui to capture
+            # Using pyautogui to capture (automatically captures primary display)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"screenshot_{timestamp}.png"
             filepath = os.path.join(self.storage_path, filename)
-            
+
             screenshot = pyautogui.screenshot()
             screenshot.save(filepath)
-            
+
             logger.info(f"VisionService: Screenshot saved to {filepath}")
             return filepath
         except Exception as e:

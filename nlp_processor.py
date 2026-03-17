@@ -34,20 +34,26 @@ class LocalAIProcessor:
         
         # Try to find a local GGUF model in 'models/' directory
         model_dir = os.path.join(os.path.dirname(__file__), "models")
-        gguf_files = [f for f in os.listdir(model_dir) if f.endswith(".gguf")] if os.path.exists(model_dir) else []
+        # Filter out mmproj files (vision projectors) - we only want LLM models
+        gguf_files = [f for f in os.listdir(model_dir) if f.endswith(".gguf") and "mmproj" not in f.lower()] if os.path.exists(model_dir) else []
         
         if gguf_files:
             try:
                 from llama_cpp import Llama
                 model_path = os.path.join(model_dir, gguf_files[0])
                 logger.info(f"LocalAIProcessor: Loading standalone model {model_path}...")
-                self.llm = Llama(
-                    model_path=model_path,
-                    n_ctx=2048,
-                    n_threads=os.cpu_count() or 4,
-                    verbose=False,
-                    logits_all=False
-                )
+
+                # Suppress warnings about sampler attribute in newer llama-cpp versions
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", category=UserWarning)
+                    self.llm = Llama(
+                        model_path=model_path,
+                        n_ctx=2048,
+                        n_threads=os.cpu_count() or 4,
+                        verbose=False
+                    )
+
                 self.use_llama_cpp = True
                 self.system_prompt_tokens = self.llm.tokenize(
                     self._get_base_system_prompt().encode('utf-8')

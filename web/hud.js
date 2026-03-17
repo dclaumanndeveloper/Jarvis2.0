@@ -40,68 +40,36 @@ function updateMetric(id, value) {
     }
 }
 
-// --- THREE.JS ARC REACTOR ---
-let scene, camera, renderer, reactor;
-
-function initThree() {
-    const container = document.getElementById('reactor-canvas-container');
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.z = 5;
-
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(width, height);
-    container.appendChild(renderer.domElement);
-
-    // Create HUD Rings (Torus/Ring Geometries)
-    const ringGroup = new THREE.Group();
-
-    // Outer Ring
-    const outerGeometry = new THREE.TorusGeometry(2, 0.05, 16, 100);
-    const outerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
-    const outerRing = new THREE.Mesh(outerGeometry, outerMaterial);
-    ringGroup.add(outerRing);
-
-    // Inner Segmented Ring
-    const innerGeometry = new THREE.RingGeometry(1.5, 1.7, 32);
-    const innerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
-    const innerRing = new THREE.Mesh(innerGeometry, innerMaterial);
-    ringGroup.add(innerRing);
-
-    // Center Core (Sphere with high emissive look)
-    const coreGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const coreMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const core = new THREE.Mesh(coreGeometry, coreMaterial);
-    ringGroup.add(core);
-
-    // Add some glow lines
-    for (let i = 0; i < 12; i++) {
-        const lineGeom = new THREE.BoxGeometry(0.1, 0.8, 0.1);
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-        const line = new THREE.Mesh(lineGeom, lineMat);
-        line.position.y = 1.0;
-        const pivot = new THREE.Group();
-        pivot.add(line);
-        pivot.rotation.z = (i / 12) * Math.PI * 2;
-        ringGroup.add(pivot);
-    }
-
-    scene.add(ringGroup);
-    reactor = ringGroup;
-
-    animate();
+// --- ANIMATION HELPERS (vanilla JS, no GSAP) ---
+function fadeOut(el, duration, onComplete) {
+    el.style.transition = `opacity ${duration}ms`;
+    el.style.opacity = '0';
+    setTimeout(onComplete || (() => {}), duration);
 }
 
-function animate() {
-    requestAnimationFrame(animate);
-    if (reactor) {
-        reactor.rotation.z += 0.005;
-        reactor.children[0].rotation.y += 0.01; // Outer ring spin
-    }
-    renderer.render(scene, camera);
+function fadeIn(el, duration) {
+    el.style.transition = `opacity ${duration}ms`;
+    el.style.opacity = '1';
+}
+
+function slideIn(el, fromX, duration) {
+    el.style.transition = `transform ${duration}ms, opacity ${duration}ms`;
+    el.style.transform = `translateX(${fromX}px)`;
+    el.style.opacity = '0';
+    setTimeout(() => {
+        el.style.transform = 'translateX(0)';
+        el.style.opacity = '1';
+    }, 10);
+}
+
+function slideDown(el, fromY, duration) {
+    el.style.transition = `transform ${duration}ms, opacity ${duration}ms`;
+    el.style.transform = `translateY(${fromY}px)`;
+    el.style.opacity = '0';
+    setTimeout(() => {
+        el.style.transform = 'translateY(0)';
+        el.style.opacity = '1';
+    }, 10);
 }
 
 // --- PYTHON BRIDGE (QWebChannel) ---
@@ -110,7 +78,7 @@ function initBridge() {
         new QWebChannel(qt.webChannelTransport, function (channel) {
             window.jarvis_bridge = channel.objects.jarvis_bridge;
             console.log("HUD: QWebChannel Bridge Connected!");
-            
+
             // Map signals to existing UI logic
             window.jarvis_bridge.metrics_updated.connect((json_data) => {
                 const data = JSON.parse(json_data);
@@ -133,26 +101,24 @@ function initBridge() {
                 window.jarvis_hud.append_token(token);
             });
 
-            // Initial reveal animation
-            gsap.from(".panel", { duration: 1, opacity: 0, x: (i) => i === 0 ? -100 : 100, stagger: 0.5 });
-            gsap.from("#hud-header", { duration: 1, y: -50, opacity: 0 });
+            // Initial reveal animation using vanilla JS
+            document.querySelectorAll('.panel').forEach((panel, i) => {
+                slideIn(panel, i === 0 ? -100 : 100, 1000);
+            });
+            slideDown(document.getElementById('hud-header'), -50, 1000);
         });
     } else {
         console.warn("HUD: QWebChannel not found, falling back to legacy mode.");
     }
 }
 
-initBridge();
-
 // APIs called by Python
 window.jarvis_hud = {
     update_response: (text) => {
         const el = document.getElementById('response-text');
-        gsap.to(el, {
-            duration: 0.2, opacity: 0, onComplete: () => {
-                el.innerText = text;
-                gsap.to(el, { duration: 0.5, opacity: 1 });
-            }
+        fadeOut(el, 200, () => {
+            el.innerText = text;
+            fadeIn(el, 500);
         });
     },
     update_metrics: (data) => {
@@ -166,7 +132,15 @@ window.jarvis_hud = {
         const txt = document.getElementById('status-text');
         txt.innerText = text;
         el.style.display = show ? 'flex' : 'none';
-        if (show) gsap.from(el, { scale: 1.5, opacity: 0, duration: 0.5 });
+        if (show) {
+            el.style.transform = 'scale(1.5)';
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.style.transition = 'transform 500ms, opacity 500ms';
+                el.style.transform = 'scale(1)';
+                el.style.opacity = '1';
+            }, 10);
+        }
     },
     set_state: (state) => {
         const reactorEl = document.getElementById('reactor-canvas-container');
@@ -180,7 +154,8 @@ window.jarvis_hud = {
             reactorEl.classList.add('pulse-active');
             statusText.innerText = 'LISTENING...';
             statusEl.style.display = 'flex';
-            gsap.to(statusEl, { opacity: 1, duration: 0.3 });
+            statusEl.style.transition = 'opacity 300ms';
+            statusEl.style.opacity = '1';
 
             // Stop speaking waveform animation if any
             if (window._speakingInterval) {
@@ -192,7 +167,8 @@ window.jarvis_hud = {
             reactorEl.classList.add('speaking-active');
             statusText.innerText = 'RESPONDING...';
             statusEl.style.display = 'flex';
-            gsap.to(statusEl, { opacity: 1, duration: 0.2 });
+            statusEl.style.transition = 'opacity 200ms';
+            statusEl.style.opacity = '1';
 
             // Animate waveform as if audio is coming out (simulate pulse)
             window._speakingInterval = setInterval(() => {
@@ -205,24 +181,25 @@ window.jarvis_hud = {
                 clearInterval(window._speakingInterval);
                 window._speakingInterval = null;
             }
-            gsap.to(statusEl, {
-                opacity: 0, duration: 0.5, onComplete: () => {
-                    statusEl.style.display = 'none';
-                }
-            });
+            statusEl.style.transition = 'opacity 500ms';
+            statusEl.style.opacity = '0';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 500);
         }
     },
     show_message: (msg) => {
         const el = document.getElementById('response-text');
         // If it starts with JARVIS:, we might want to preserve it or just clear for streaming
         if (msg.startsWith('JARVIS: ')) {
-            window._currentResponseText = ""; // Clear for potential subsequent tokens (though nlp_result usually finishes)
+            window._currentResponseText = "";
+            // Reset token streaming state for the new request
+            window._tokenBuffer = "";
+            window._isStreamingResponse = false;
         }
-        gsap.to(el, {
-            opacity: 0, duration: 0.2, onComplete: () => {
-                el.innerText = msg;
-                gsap.to(el, { opacity: 1, x: 0, duration: 0.4 });
-            }
+        fadeOut(el, 200, () => {
+            el.innerText = msg;
+            fadeIn(el, 400);
         });
     },
     append_token: (token) => {
@@ -317,7 +294,38 @@ function drawWave() {
 
 // Waveform logic handled above
 
-// Start everything
-initMetrics();
-initThree();
-initWaveform();
+// --- CLOCK UPDATE ---
+function updateClock() {
+    const el = document.getElementById('current-time');
+    if (el) {
+        const now = new Date();
+        el.innerText = now.toLocaleTimeString('pt-BR', { hour12: false });
+    } else {
+        console.warn('Clock element not found');
+    }
+}
+
+// --- INITIALIZATION ---
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeHUD);
+} else {
+    initializeHUD();
+}
+
+function initializeHUD() {
+    console.log('Initializing HUD...');
+
+    // Start visual components first
+    initMetrics();
+    initWaveform();
+
+    // Start clock immediately
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Initialize bridge last (waits for QWebChannel)
+    initBridge();
+
+    console.log('HUD initialized');
+}

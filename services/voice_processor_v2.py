@@ -6,6 +6,7 @@ import threading
 import time
 import numpy as np
 import vosk
+from typing import Optional
 try:
     # Disable OpenVINO Whisper due to native 'vector too long' C++ PyBind11 crashes
     # import openvino_genai as ov_genai
@@ -63,6 +64,8 @@ class VoiceProcessorV2:
                     logger.warning(f"VoiceProcessorV2: Failed to load Silero VAD ({e}). Using energy fallback.")
         
         self.sr = 16000
+        self._vad_error_count = 0
+        self._vad_max_errors = 3
         logger.info("VoiceProcessorV2: Local STT initialized successfully.")
 
     def is_speech(self, audio_chunk: np.ndarray, threshold: float = 0.5) -> bool:
@@ -106,9 +109,12 @@ class VoiceProcessorV2:
                     prob = out[0][0]
                 return prob > threshold
             except Exception as e:
-                logger.error(f"VAD Inference error: {e}")
-                self.vad_infer_request = None
-                self.vad_session = None # Disable and fallback
+                self._vad_error_count += 1
+                logger.error(f"VAD Inference error ({self._vad_error_count}/{self._vad_max_errors}): {e}")
+                if self._vad_error_count >= self._vad_max_errors:
+                    logger.warning("VAD: Too many errors, disabling neural VAD permanently.")
+                    self.vad_infer_request = None
+                    self.vad_session = None
         
         # Energy fallback (RMS + ZCR) - audio is float32 [-1,1], lower threshold to 0.015
         audio_float32 = audio_chunk.astype(np.float32)

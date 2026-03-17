@@ -6,6 +6,7 @@ import numpy as np
 import collections
 import sounddevice as sd
 import librosa
+from typing import Optional
 from PyQt6.QtCore import QThread, pyqtSignal
 from services.voice_processor_v2 import VoiceProcessorV2
 
@@ -32,8 +33,6 @@ class OptimizedVoiceThread(QThread):
         self.sample_rate = 16000
         self.chunk_size = 512 # Required by Silero VAD v5
         self.is_paused = False # Prevents hearing its own TTS output
-        
-        self.input_device = self._get_best_input_device()
         
         self.input_device = self._get_best_input_device()
 
@@ -66,10 +65,6 @@ class OptimizedVoiceThread(QThread):
             print(f"HUD: Error searching for audio devices: {e}")
             return None
 
-        
-        print("HUD: Falling back to default input device.")
-        return None # Use sounddevice default
-
     def run(self):
         """Main recognition loop using streaming audio"""
         self.is_running = True
@@ -79,32 +74,33 @@ class OptimizedVoiceThread(QThread):
             # Always try to capture at 16000Hz directly (Whisper requires this)
             TARGET_SR = 16000
             BLOCK_SIZE = 512  # exactly 32ms at 16000Hz
-            
+
+            # Determine sample rate and block size
+            self.native_sr = TARGET_SR
+            block_size = BLOCK_SIZE
+
             try:
-                # Force 16kHz capture - works on most modern microphones
-                print(f"HUD: [DEBUG-Thread] Attempting sd.InputStream at {TARGET_SR}Hz...")
-                with sd.InputStream(
+                # Test if 16kHz capture works
+                print(f"HUD: [DEBUG-Thread] Testing sd.InputStream at {TARGET_SR}Hz...")
+                test_stream = sd.InputStream(
                     device=self.input_device,
                     samplerate=TARGET_SR,
                     channels=1,
                     dtype='float32',
-                    blocksize=BLOCK_SIZE,
-                    callback=self._audio_callback
-                ) as stream:
-                    self.native_sr = TARGET_SR
-                    print(f"HUD: OptimizedVoiceThread: Direct 16kHz capture active.")
-                    stream.start()
-                    # Fall through to main loop below
+                    blocksize=BLOCK_SIZE
+                )
+                test_stream.close()
+                print(f"HUD: OptimizedVoiceThread: Direct 16kHz capture confirmed.")
             except Exception as e1:
                 print(f"HUD: [DEBUG-Thread] 16kHz InputStream failed: {e1}")
                 # Fallback to native rate + resampling
                 device_info = sd.query_devices(self.input_device, 'input')
                 self.native_sr = int(device_info['default_samplerate'])
+                block_size = int(self.native_sr * 0.032)
                 print(f"HUD: OptimizedVoiceThread: Fallback to native {self.native_sr}Hz + resampling")
-            
-            block_size = int(self.native_sr * 0.032)
-            print(f"HUD: [DEBUG-Thread] Proceeding to main InputStream block with block_size {block_size}...")
-            
+
+            print(f"HUD: [DEBUG-Thread] Opening main InputStream at {self.native_sr}Hz, block_size {block_size}...")
+
             with sd.InputStream(
                 device=self.input_device,
                 samplerate=self.native_sr,
