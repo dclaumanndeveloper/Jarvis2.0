@@ -14,6 +14,7 @@ import numpy as np
 import threading
 import time
 import logging
+import keyboard
 from typing import Optional, Dict, Any, List, Callable
 from enum import Enum
 from dataclasses import dataclass
@@ -25,12 +26,12 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, 
     QProgressBar, QFrame, QGraphicsOpacityEffect, QPushButton,
     QDialog, QTextEdit, QSlider, QGridLayout, QSizePolicy,
-    QScrollArea, QStackedWidget
+    QScrollArea, QStackedWidget, QSystemTrayIcon, QMenu
 )
 from PyQt6.QtGui import (
     QMovie, QFontDatabase, QFont, QPainter, QPen, QBrush, 
     QLinearGradient, QRadialGradient, QColor, QPixmap, QPalette, QIcon,
-    QPainterPath
+    QPainterPath, QAction
 )
 from PyQt6.QtCore import (
     Qt, QTimer, QPoint, QPropertyAnimation, QEasingCurve, 
@@ -1330,11 +1331,77 @@ class UnifiedJarvisUI(QWidget):
         # Connect conversation engine callbacks
         self.setup_conversation_callbacks()
         
+        # System Tray icon
+        self.tray_icon = None
+        self.init_tray_icon()
+
+        # Global Hotkey (Ctrl+Alt+J to show Jarvis, Ctrl+Alt+M to hide)
+        try:
+            # Using lambdas to ensure they run in a safe context or debug if needed
+            keyboard.add_hotkey('ctrl+alt+j', lambda: self.restore_window())
+            keyboard.add_hotkey('ctrl+alt+m', lambda: self.hide_to_tray())
+            logger.info("Global hotkeys Ctrl+Alt+J and Ctrl+Alt+M registered")
+        except Exception as e:
+            logger.error(f"Failed to register global hotkey: {e}")
+        
         # Start timers AFTER UI is ready
         self.state_timer.start(100)
         self.session_timer.start(5000)
         
         logger.info("Unified Jarvis UI initialized")
+
+    def init_tray_icon(self):
+        """Initialize system tray icon"""
+        self.tray_icon = QSystemTrayIcon(self)
+        
+        # Try to find an icon
+        icon_path = os.path.join(os.path.dirname(__file__), "jarvis.gif")
+        if os.path.exists(icon_path):
+            self.tray_icon.setIcon(QIcon(icon_path))
+        else:
+            # Fallback to a standard icon if Jarvis icon not found
+            self.tray_icon.setIcon(self.style().standardIcon(Qt.StandardPixmap.SP_ComputerIcon))
+        
+        # Tray menu
+        tray_menu = QMenu()
+        
+        show_action = QAction("Mostrar Jarvis", self)
+        show_action.triggered.connect(self.restore_window)
+        tray_menu.addAction(show_action)
+        
+        quit_action = QAction("Sair", self)
+        quit_action.triggered.connect(QApplication.instance().quit)
+        tray_menu.addAction(quit_action)
+        
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.activated.connect(self.on_tray_icon_activated)
+        self.tray_icon.show()
+
+    def on_tray_icon_activated(self, reason):
+        """Handle tray icon click"""
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:
+            if self.isVisible():
+                self.hide()
+            else:
+                self.restore_window()
+
+    def restore_window(self):
+        """Restore window from tray"""
+        self.show()
+        self.setWindowState(self.windowState() & ~Qt.WindowState.WindowMinimized | Qt.WindowState.WindowActive)
+        self.raise_()
+        self.activateWindow()
+
+    def hide_to_tray(self):
+        """Hide window to tray instead of just minimizing"""
+        self.hide()
+        if self.tray_icon:
+            self.tray_icon.showMessage(
+                "Jarvis 2.0",
+                "Jarvis continua ativo em segundo plano.",
+                QSystemTrayIcon.MessageIcon.Information,
+                2000
+            )
     
     def init_voice_database(self):
         """Initialize voice profile database"""
@@ -1777,7 +1844,7 @@ class UnifiedJarvisUI(QWidget):
         # Minimize button
         minimize_button = QPushButton("MINIMIZAR")
         minimize_button.setStyleSheet(button_style)
-        minimize_button.clicked.connect(self.showMinimized)
+        minimize_button.clicked.connect(self.hide_to_tray)
         minimize_button.setCursor(Qt.CursorShape.PointingHandCursor)
         footer_layout.addWidget(minimize_button)
         

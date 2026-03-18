@@ -61,6 +61,7 @@ class JarvisBridge(QObject):
 class JarvisHUD(QMainWindow):
     # PyQt signal to safely transition from keyboard thread back to main GUI thread
     toggle_input_signal = pyqtSignal()
+    toggle_visibility_signal = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -130,10 +131,13 @@ class JarvisHUD(QMainWindow):
         
         # Connect the hotkey signal
         self.toggle_input_signal.connect(self.toggle_text_input)
+        self.toggle_visibility_signal.connect(self.toggle_visibility)
         
         # Register global hotkey in background thread
         try:
             keyboard.add_hotkey('ctrl+space', lambda: self.toggle_input_signal.emit())
+            keyboard.add_hotkey('ctrl+alt+m', lambda: self.toggle_visibility_signal.emit())
+            keyboard.add_hotkey('ctrl+alt+j', lambda: self.toggle_visibility_signal.emit())
         except Exception as e:
             print(f"HUD: Failed to hook global keyboard hotkey: {e}")
 
@@ -226,6 +230,21 @@ class JarvisHUD(QMainWindow):
         x = (screen.width() - self.width()) // 2
         y = (screen.height() - self.height()) // 2
         self.move(x, y)
+
+    def toggle_visibility(self):
+        """Toggle HUD and Proactive HUD visibility via global hotkey"""
+        if self.isVisible():
+            self.hide()
+            if hasattr(self, 'proactive_hud'):
+                self.proactive_hud.hide()
+            print("HUD: Hidden to background.")
+        else:
+            self.show()
+            if hasattr(self, 'proactive_hud'):
+                self.proactive_hud.show()
+            self.raise_()
+            self.activateWindow()
+            print("HUD: Restored to foreground.")
 
     def push_metrics(self):
         """Gather system metrics and push to JS HUD via bridge"""
