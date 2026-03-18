@@ -76,7 +76,7 @@ class JarvisHUD(QMainWindow):
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setStyleSheet("background:transparent;")
-        self.resize(1200, 800)
+        self.resize(1600, 900)
 
         # WebEngine setup
         self.browser = QWebEngineView()
@@ -147,12 +147,12 @@ class JarvisHUD(QMainWindow):
 
         # Start Async Loader for Heavy Modules
         print("HUD: Showing interface... Queuing AI Core initialization.")
-        QTimer.singleShot(800, self._delayed_ai_init)
+        QTimer.singleShot(200, self._delayed_ai_init)
 
     def _delayed_ai_init(self):
         """Loads Audio and AI components without hanging the main Qt Thread"""
         print("HUD: Starting Background Services...")
-        
+
         # WebChannel setup for high-speed bridging
         self.bridge = JarvisBridge()
         self.web_channel = QWebChannel()
@@ -162,7 +162,7 @@ class JarvisHUD(QMainWindow):
         # Voice & AI Setup
         self.tts_service = TTSService()
         self.tts_service.start()
-        
+
         print("HUD: Starting AI Service...")
         self.ai_service = AIService()
         self.ai_service.processing_finished.connect(self.on_nlp_result)
@@ -170,7 +170,7 @@ class JarvisHUD(QMainWindow):
         self.ai_service.learning_insight.connect(self.on_learning_insight)
         self.ai_service.learning_insight.connect(self.proactive_hud.show_insight)
         self.ai_service.start()
-        
+
         print("HUD: Starting Voice Thread (Whisper/Silero)...")
         # Instantiate OpenVINO C++ Processors on the Main Thread to avoid Segmentation Fault / Context Loss
         from services.voice_processor_v2 import VoiceProcessorV2
@@ -191,11 +191,11 @@ class JarvisHUD(QMainWindow):
         self.voice_thread.audio_level.connect(self.on_audio_level)
         self.voice_thread.user_interrupted.connect(self.tts_service.abort)
         self.voice_thread.start()
-        
+
         # Connect TTS to VoiceThread to prevent speaking-loop (Anti-Echo)
         self.tts_service.speaking_started.connect(lambda text: self.voice_thread.pause())
         self.tts_service.speaking_finished.connect(self.voice_thread.resume)
-        
+
         # Connect TTS signals to HUD → React visually when Jarvis speaks
         self.tts_service.speaking_started.connect(
             lambda text: self.bridge.state_changed.emit('SPEAKING')
@@ -203,16 +203,16 @@ class JarvisHUD(QMainWindow):
         self.tts_service.speaking_finished.connect(
             lambda: self.bridge.state_changed.emit('IDLE')
         )
-        
+
         print("HUD: All background services requested to start.")
 
-        # Confirm voice at startup
-        QTimer.singleShot(2000, lambda: self.tts_service.speak("Sistemas online. Estou à sua disposição, senhor."))
+        # Confirm voice at startup (faster)
+        QTimer.singleShot(1200, lambda: self.tts_service.speak("Sistemas online. Estou à sua disposição, senhor."))
 
-        # Metrics timer
+        # Metrics timer (less frequent to avoid UI lag)
         self.metrics_timer = QTimer()
         self.metrics_timer.timeout.connect(self.push_metrics)
-        self.metrics_timer.start(1500)
+        self.metrics_timer.start(2000)
 
         # Center on screen
         self.center_window()
@@ -250,28 +250,27 @@ class JarvisHUD(QMainWindow):
         self.bridge.state_changed.emit(state)
 
     def on_voice_command(self, command: str, confidence: float):
-        print(command)
         """Handle recognized command and relay to AI service"""
         if not command.strip():
             return
-            
+
         print(f"HUD: Command received: '{command}' (Conf: {confidence})")
-        
+
         # WAKE WORD ALGORITHM at UI level
-        wake_words = ["jarvis", "jardis", "chaves", "travis", "charles", "djarvis", 
+        wake_words = ["jarvis", "jardis", "chaves", "travis", "charles", "djarvis",
                       "já vi", "já ves", "jarv", "1,", "job", "j'ai mis", "corps des sons"]
-        
+
         # Clean wake word before processing, if the user still speaks it out of habit
         clean_text = command.lower()
         for ww in wake_words:
             clean_text = clean_text.replace(ww, "").strip(" ,.")
-            
+
         if not clean_text:
             return
-            
-        # Show transcribed text on HUD
+
+        # Show transcribed text on HUD IMMEDIATELY
         self.bridge.message_shown.emit(f"USER: {clean_text}")
-        
+
         # Pulse visual state and process - Set pause temporarily until action completes
         self.bridge.state_changed.emit('PROCESSING')
         self.voice_thread.pause()
@@ -321,13 +320,24 @@ class JarvisHUD(QMainWindow):
     def on_nlp_result(self, result):
         """Handle AI response, execute actions, and provide feedback"""
         print(f"HUD: AI processing finished. Intent: {result.intent}")
+
+        # Update visual HUD FIRST (before speaking)
+        self.bridge.state_changed.emit('IDLE')
+        self.bridge.message_shown.emit(f"JARVIS: {result.response_suggestion}")
+        print(f"HUD: AI Response: {result.response_suggestion}")
+
         # Execute the action via controller (includes TTS and templates)
         execution_response = self.action_controller.execute_nlp_result(result)
 
-        # Update visual HUD
-        self.bridge.state_changed.emit('IDLE')
-        self.bridge.message_shown.emit(f"JARVIS: {execution_response}")
-        print(f"HUD: ActionController Response: {execution_response}")
+        # For conversational queries without registered commands, speak the response
+        from conversation_manager import IntentType
+        if result.intent in [IntentType.CONVERSATIONAL_QUERY, IntentType.TIME_QUERY,
+                             IntentType.DATE_QUERY, IntentType.CLARIFICATION_REQUEST,
+                             IntentType.EMOTIONAL_EXPRESSION]:
+            # Speak response for conversational intents
+            if hasattr(self, 'tts_service') and execution_response:
+                mood = result.sentiment if hasattr(result, 'sentiment') else 'neutral'
+                self.tts_service.speak(execution_response, mood=mood)
 
         # Safety net: ensure voice thread resumes even if TTS never speaks
         # (TTS speaking_finished signal is the primary resume, this is a fallback)

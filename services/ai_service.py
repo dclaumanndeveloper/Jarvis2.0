@@ -161,12 +161,12 @@ class AIService(QThread):
                 with self.task_lock:
                     if self.pending_tasks:
                         task = self.pending_tasks.pop(0)
-                
+
                 if task:
                     self.loop.run_until_complete(self._process_task(task))
                 else:
-                    # Sleep briefly to avoid CPU hogging
-                    self.msleep(100)
+                    # Sleep briefly to avoid CPU hogging (reduced from 100ms to 50ms)
+                    self.msleep(50)
                     
             # Cleanup
             if self.learning_module:

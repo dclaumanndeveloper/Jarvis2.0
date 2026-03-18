@@ -114,13 +114,13 @@ class ActionController:
         """Dispatches an action based on NLP intent and entities."""
         intent = nlp_result.intent
         entities = nlp_result.entities
-        
+
         logger.info(f"ActionController: Dispatching intent {intent}")
-        
+
         # 1. Handle Proactive Indirect Suggestions
         if intent == IntentType.INDIRECT_SUGGESTION:
             recommended_action = nlp_result.parameters.get("recommended_action") if hasattr(nlp_result, 'parameters') and nlp_result.parameters else None
-            
+
             if recommended_action:
                 # Find the specific tool in the registry by function name
                 target_cmd_meta = None
@@ -130,50 +130,54 @@ class ActionController:
                             target_cmd_meta = c
                             break
                     if target_cmd_meta: break
-                
+
                 if target_cmd_meta:
-                    if self.tts:
-                        mood = nlp_result.sentiment if hasattr(nlp_result, 'sentiment') else 'neutral'
-                        self.tts.speak(nlp_result.response_suggestion or "Acredito que precise disso.", mood=mood)
-                    
                     thread = threading.Thread(
-                        target=self._run_command,
-                        args=(target_cmd_meta.func, nlp_result),
+                        target=self._run_command_with_tts,
+                        args=(target_cmd_meta.func, nlp_result, nlp_result.response_suggestion or "Acredito que precise disso."),
                         daemon=True
                     )
                     thread.start()
                     return nlp_result.response_suggestion
                 else:
                     logger.warning(f"ActionController: Proactive action not found: {recommended_action}")
-        
+
         # 2. Look for a directly registered command
         cmd_meta = registry.get_command(intent, nlp_result.original_text)
-        
+
         if cmd_meta:
-            # 2. Execute in a background thread to prevent UI freezing
-            thread = threading.Thread(
-                target=self._run_command,
-                args=(cmd_meta.func, nlp_result),
-                daemon=True
-            )
-            thread.start()
-            
-            # 3. Handle Voice Feedback
+            # Prepare response early
             response = nlp_result.response_suggestion
             if not response or response == "Comando reconhecido. Executando...":
                 response = random.choice(self.response_templates["success"])
-            
-            if self.tts:
-                mood = nlp_result.sentiment if hasattr(nlp_result, 'sentiment') else 'neutral'
-                self.tts.speak(response, mood=mood)
-            
+
+            # Execute in a background thread to prevent UI freezing
+            thread = threading.Thread(
+                target=self._run_command_with_tts,
+                args=(cmd_meta.func, nlp_result, response),
+                daemon=True
+            )
+            thread.start()
+
             return response
         else:
-            # No specific command registered, just speak the AI response
-            if self.tts:
-                mood = nlp_result.sentiment if hasattr(nlp_result, 'sentiment') else 'neutral'
-                self.tts.speak(nlp_result.response_suggestion, mood=mood)
+            # No specific command registered, just return response to be spoken
             return nlp_result.response_suggestion
+
+    def _run_command_with_tts(self, func, nlp_result, response_text):
+        """Internal runner that executes command and speaks response"""
+        import time
+
+        # Execute the command first
+        self._run_command(func, nlp_result)
+
+        # Small delay to allow UI update to complete
+        time.sleep(0.1)
+
+        # Speak the response
+        if self.tts:
+            mood = nlp_result.sentiment if hasattr(nlp_result, 'sentiment') else 'neutral'
+            self.tts.speak(response_text, mood=mood)
 
     def _run_command(self, func, nlp_result):
         """Internal runner for commands."""

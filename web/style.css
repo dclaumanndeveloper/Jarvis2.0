@@ -29,7 +29,7 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 10px;
     border: 1px solid rgba(0, 255, 255, 0.1);
 }
 
@@ -78,13 +78,14 @@ body {
 
 /* 3D Core Position */
 #reactor-canvas-container {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 600px;
-    height: 600px;
-    z-index: 5;
+    width: 280px;
+    height: 280px;
+    z-index: 3;
+    pointer-events: none;
     transition: filter 0.5s ease;
     display: flex;
     align-items: center;
@@ -104,14 +105,14 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 100px;
-    height: 100px;
+    width: 50px;
+    height: 50px;
     background: radial-gradient(circle, #ffffff 0%, #00ffff 50%, transparent 100%);
     border-radius: 50%;
     box-shadow:
+        0 0 20px #00ffff,
         0 0 40px #00ffff,
-        0 0 80px #00ffff,
-        inset 0 0 20px #ffffff;
+        inset 0 0 10px #ffffff;
     animation: reactor-core-pulse 2s ease-in-out infinite alternate;
 }
 
@@ -126,24 +127,24 @@ body {
 }
 
 .ring-outer {
-    width: 400px;
-    height: 400px;
-    opacity: 0.5;
+    width: 220px;
+    height: 220px;
+    opacity: 0.4;
     animation: reactor-ring-spin 8s linear infinite;
 }
 
 .ring-mid {
-    width: 300px;
-    height: 300px;
-    opacity: 0.4;
+    width: 160px;
+    height: 160px;
+    opacity: 0.3;
     animation: reactor-ring-spin 6s linear infinite reverse;
 }
 
 .ring-inner {
-    width: 200px;
-    height: 200px;
-    opacity: 0.6;
-    border-width: 3px;
+    width: 100px;
+    height: 100px;
+    opacity: 0.5;
+    border-width: 2px;
     animation: reactor-ring-spin 4s linear infinite;
 }
 
@@ -159,11 +160,11 @@ body {
     position: absolute;
     top: -20%;
     left: 50%;
-    width: 4px;
-    height: 120px;
+    width: 2px;
+    height: 70px;
     background: linear-gradient(to bottom, transparent, #00ffff, transparent);
-    transform-origin: center 270px;
-    opacity: 0.7;
+    transform-origin: center 150px;
+    opacity: 0.4;
 }
 
 @keyframes reactor-idle-rotate {
@@ -179,15 +180,15 @@ body {
 @keyframes reactor-core-pulse {
     from {
         box-shadow:
+            0 0 20px #00ffff,
             0 0 40px #00ffff,
-            0 0 80px #00ffff,
-            inset 0 0 20px #ffffff;
+            inset 0 0 10px #ffffff;
     }
     to {
         box-shadow:
-            0 0 60px #00ffff,
-            0 0 120px #4dffff,
-            inset 0 0 30px #ffffff;
+            0 0 30px #00ffff,
+            0 0 60px #4dffff,
+            inset 0 0 15px #ffffff;
     }
 }
 
@@ -233,8 +234,8 @@ body {
 /* Corners - Tactical Style */
 .corner {
     position: absolute;
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     border: 1px solid var(--hud-dim);
     transition: all 0.5s ease;
     z-index: 30;
@@ -248,8 +249,8 @@ body {
 }
 
 .top-left {
-    top: 20px;
-    left: 20px;
+    top: 10px;
+    left: 10px;
     border-right: 0;
     border-bottom: 0;
 }
@@ -257,20 +258,20 @@ body {
 .top-left::before {
     top: -2px;
     left: -2px;
-    width: 25px;
-    height: 4px;
+    width: 15px;
+    height: 2px;
 }
 
 .top-left::after {
     top: -2px;
     left: -2px;
-    width: 4px;
-    height: 25px;
+    width: 2px;
+    height: 15px;
 }
 
 .top-right {
-    top: 20px;
-    right: 20px;
+    top: 10px;
+    right: 10px;
     border-left: 0;
     border-bottom: 0;
 }
@@ -278,20 +279,20 @@ body {
 .top-right::before {
     top: -2px;
     right: -2px;
-    width: 25px;
-    height: 4px;
+    width: 15px;
+    height: 2px;
 }
 
 .top-right::after {
     top: -2px;
     right: -2px;
-    width: 4px;
-    height: 25px;
+    width: 2px;
+    height: 15px;
 }
 
 .bottom-left {
-    bottom: 20px;
-    left: 20px;
+    bottom: 10px;
+    left: 10px;
     border-right: 0;
     border-top: 0;
 }
@@ -299,20 +300,20 @@ body {
 .bottom-left::before {
     bottom: -2px;
     left: -2px;
-    width: 25px;
-    height: 4px;
+    width: 15px;
+    height: 2px;
 }
 
 .bottom-left::after {
     bottom: -2px;
     left: -2px;
-    width: 4px;
-    height: 25px;
+    width: 2px;
+    height: 15px;
 }
 
 .bottom-right {
-    bottom: 20px;
-    right: 20px;
+    bottom: 10px;
+    right: 10px;
     border-left: 0;
     border-top: 0;
 }
@@ -320,15 +321,15 @@ body {
 .bottom-right::before {
     bottom: -2px;
     right: -2px;
-    width: 25px;
-    height: 4px;
+    width: 15px;
+    height: 2px;
 }
 
 .bottom-right::after {
     bottom: -2px;
     right: -2px;
-    width: 4px;
-    height: 25px;
+    width: 2px;
+    height: 15px;
 }
 
 /* Header */
@@ -336,84 +337,90 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
+    padding: 6px 15px;
     font-family: 'Orbitron', sans-serif;
     border-bottom: 1px solid var(--hud-dim);
     position: relative;
     z-index: 25;
-    min-height: 50px;
+    min-height: 35px;
     flex-shrink: 0;
 }
 
 .system-title {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: bold;
-    letter-spacing: 4px;
+    letter-spacing: 2px;
 }
 
 .version {
-    font-size: 10px;
+    font-size: 8px;
     vertical-align: super;
     opacity: 0.7;
 }
 
 #current-time {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: bold;
 }
 
 /* Sidebar Panels */
 .panel {
     position: absolute;
-    width: 200px;
+    width: 160px;
+    height: 220px;
     background: var(--hud-bg);
     border: 1px solid var(--hud-dim);
     backdrop-filter: blur(5px);
     transition: all 0.3s ease;
-    max-height: calc(100vh - 220px);
-    overflow-y: auto;
     z-index: 20;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .left-panel {
-    left: 40px;
-    top: 110px;
-    border-left: 4px solid var(--hud-cyan);
+    left: 15px;
+    top: 60px;
+    border-left: 2px solid var(--hud-cyan);
 }
 
 .right-panel {
-    right: 40px;
-    top: 110px;
-    border-right: 4px solid var(--hud-cyan);
+    right: 15px;
+    top: 60px;
+    border-right: 2px solid var(--hud-cyan);
 }
 
 .panel-header {
     background: rgba(0, 255, 255, 0.1);
-    padding: 5px 10px;
-    font-size: 12px;
+    padding: 4px 6px;
+    font-size: 8px;
     font-weight: bold;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     border-bottom: 1px solid var(--hud-dim);
+    text-align: center;
+    flex-shrink: 0;
 }
 
 .metrics-container {
-    padding: 10px;
+    padding: 8px 6px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 7px;
+    flex: 1;
+    overflow: hidden;
 }
 
 /* Metric styling */
 .metric-row {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 3px;
 }
 
 .metric-label {
-    font-size: 9px;
+    font-size: 8px;
     opacity: 0.8;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .metric-value-wrap {
@@ -423,16 +430,16 @@ body {
 }
 
 .metric-value {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
     color: white;
 }
 
 .metric-bar-bg {
-    height: 3px;
+    height: 2px;
     background: rgba(0, 255, 255, 0.1);
     width: 100%;
-    border-radius: 2px;
+    border-radius: 1px;
     overflow: hidden;
 }
 
@@ -441,67 +448,71 @@ body {
     background: var(--hud-cyan);
     width: 0%;
     transition: width 0.5s ease;
-    box-shadow: 0 0 5px var(--hud-cyan);
+    box-shadow: 0 0 3px var(--hud-cyan);
 }
 
 /* Footer */
 #hud-footer {
     margin-top: auto;
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 20px;
-    align-items: start;
-    padding-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 15px 10px 15px;
     position: relative;
     z-index: 25;
     flex-shrink: 0;
 }
 
+#voice-visualizer {
+    width: 100%;
+    height: 45px;
+    border: 1px solid var(--hud-dim);
+    background: var(--hud-bg);
+    border-radius: 3px;
+}
+
 #response-box {
     background: var(--hud-bg);
     border: 1px solid var(--hud-dim);
-    padding: 12px;
-    min-height: 70px;
-    max-height: 100px;
+    border-left: 2px solid var(--hud-cyan);
+    padding: 6px 10px;
+    min-height: 45px;
+    max-height: 65px;
     overflow-y: auto;
-    clip-path: polygon(0 0, 95% 0, 100% 15%, 100% 100%, 5% 100%, 0 85%);
-}
-
-#voice-visualizer {
-    width: 100%;
-    height: 70px;
-    border: 1px solid var(--hud-dim);
-    background: var(--hud-bg);
-    border-radius: 4px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 
 #response-box .label {
-    font-size: 10px;
-    margin-bottom: 5px;
-    opacity: 0.6;
+    font-size: 7px;
+    margin-bottom: 3px;
+    opacity: 0.7;
+    letter-spacing: 1px;
 }
 
 #response-text {
-    font-size: 16px;
-    line-height: 1.4;
+    font-size: 12px;
+    line-height: 1.3;
     color: white;
+    white-space: pre-wrap;
 }
 
 /* Ticker */
 #ticker-wrap {
-    grid-column: 1 / span 2;
     overflow: hidden;
     white-space: nowrap;
     border-top: 1px solid var(--hud-dim);
-    padding-top: 5px;
+    padding-top: 4px;
+    margin-top: 2px;
 }
 
 #ticker {
     display: inline-block;
     padding-left: 100%;
     animation: ticker 20s linear infinite;
-    font-size: 10px;
-    opacity: 0.8;
+    font-size: 8px;
+    opacity: 0.6;
+    letter-spacing: 1px;
 }
 
 @keyframes ticker {
@@ -516,25 +527,26 @@ body {
 
 /* Status Overlay (Pop-ups) */
 #status-overlay {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     border: 2px solid var(--hud-cyan);
-    padding: 40px;
-    z-index: 15;
+    padding: 20px 30px;
+    z-index: 100;
     display: none;
-    /* Show/hide via code */
     justify-content: center;
     align-items: center;
     text-align: center;
-    box-shadow: 0 0 50px rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+    opacity: 0;
+    pointer-events: none;
 }
 
 #status-text {
     font-family: 'Orbitron', sans-serif;
-    font-size: 40px;
+    font-size: 24px;
     font-weight: bold;
-    letter-spacing: 10px;
+    letter-spacing: 6px;
 }

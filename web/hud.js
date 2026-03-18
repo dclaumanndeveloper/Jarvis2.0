@@ -101,11 +101,11 @@ function initBridge() {
                 window.jarvis_hud.append_token(token);
             });
 
-            // Initial reveal animation using vanilla JS
+            // Initial reveal animation using vanilla JS (faster)
             document.querySelectorAll('.panel').forEach((panel, i) => {
-                slideIn(panel, i === 0 ? -100 : 100, 1000);
+                slideIn(panel, i === 0 ? -100 : 100, 600);
             });
-            slideDown(document.getElementById('hud-header'), -50, 1000);
+            slideDown(document.getElementById('hud-header'), -50, 600);
         });
     } else {
         console.warn("HUD: QWebChannel not found, falling back to legacy mode.");
@@ -156,6 +156,7 @@ window.jarvis_hud = {
             statusEl.style.display = 'flex';
             statusEl.style.transition = 'opacity 300ms';
             statusEl.style.opacity = '1';
+            statusEl.style.pointerEvents = 'auto';
 
             // Stop speaking waveform animation if any
             if (window._speakingInterval) {
@@ -169,6 +170,7 @@ window.jarvis_hud = {
             statusEl.style.display = 'flex';
             statusEl.style.transition = 'opacity 200ms';
             statusEl.style.opacity = '1';
+            statusEl.style.pointerEvents = 'auto';
 
             // Animate waveform as if audio is coming out (simulate pulse)
             window._speakingInterval = setInterval(() => {
@@ -176,16 +178,17 @@ window.jarvis_hud = {
             }, 80);
 
         } else {
-            // IDLE / PROCESSING / etc.
+            // IDLE / PROCESSING / etc. - HIDE overlay completely
             if (window._speakingInterval) {
                 clearInterval(window._speakingInterval);
                 window._speakingInterval = null;
             }
-            statusEl.style.transition = 'opacity 500ms';
+            statusEl.style.transition = 'opacity 300ms';
             statusEl.style.opacity = '0';
+            statusEl.style.pointerEvents = 'none';
             setTimeout(() => {
                 statusEl.style.display = 'none';
-            }, 500);
+            }, 300);
         }
     },
     show_message: (msg) => {
@@ -323,6 +326,14 @@ function initializeHUD() {
     // Start clock immediately
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Hide status overlay on init
+    const statusOverlay = document.getElementById('status-overlay');
+    if (statusOverlay) {
+        statusOverlay.style.display = 'none';
+        statusOverlay.style.opacity = '0';
+        statusOverlay.style.pointerEvents = 'none';
+    }
 
     // Initialize bridge last (waits for QWebChannel)
     initBridge();
