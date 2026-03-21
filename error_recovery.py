@@ -119,7 +119,7 @@ class ErrorRecoveryManager:
                 'memory_percent': memory.percent,
                 'memory_available_mb': memory.available / 1024 / 1024,
             }
-        except:
+        except Exception:
             system_state = {}
         
         # Create error context
@@ -356,7 +356,7 @@ class ErrorRecoveryManager:
             memory = psutil.virtual_memory()
             cpu_percent = psutil.cpu_percent()
             system_stressed = memory.percent > 85 or cpu_percent > 80
-        except:
+        except Exception:
             pass
         
         return {

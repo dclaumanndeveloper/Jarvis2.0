@@ -115,12 +115,11 @@ class TTSService(QThread):
                                 # Clean up the memory immediately
                                 try:
                                     os.remove(temp_path)
-                                except:
-                                    pass
+                                except OSError as e:
+                                    logger.debug(f"TTS: Could not remove temp file {temp_path}: {e}")
                             
                             logger.info("TTS: Speech completed")
                         except Exception as e:
-                            print(f"HUD: TTS Engine internal error: {e}")
                             logger.error(f"TTS Engine error: {e}")
                         
                         self.speaking_finished.emit()

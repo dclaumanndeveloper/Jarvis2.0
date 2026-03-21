@@ -463,7 +463,7 @@ JSON (ONLY output the JSON, nothing else):
                         if 'parameters' not in parsed:
                             parsed['parameters'] = {}
                         return parsed
-                    except:
+                    except (json.JSONDecodeError, KeyError, ValueError):
                         continue
 
             # Fallback: treat the entire response as the suggested_response

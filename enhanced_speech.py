@@ -131,7 +131,7 @@ class AudioProcessor:
             if noise_power > 0:
                 return float(10 * np.log10(signal_power / noise_power))
             return float('inf')
-        except:
+        except (ValueError, ZeroDivisionError):
             return 0.0
 
 class EnhancedSpeechRecognizer:

@@ -48,27 +48,27 @@ class OptimizedVoiceThread(QThread):
                     name = dev['name'].lower()
                     if "microfone" in name or "microphone" in name or "headset" in name:
                         if not any(kw in name for kw in exclude_keywords):
-                            print(f"HUD: Auto-selecting Microphone: {dev['name']} (Index {i})")
+                            logger.info(f"Auto-selecting Microphone: {dev['name']} (Index {i})")
                             return i
-            
+
             # 2. Fallback to any generic input that isn't excluded
             for i, dev in enumerate(devices):
                 if dev['max_input_channels'] > 0:
                     name = dev['name'].lower()
                     if not any(kw in name for kw in exclude_keywords):
-                        print(f"HUD: Auto-selecting Generic Input: {dev['name']} (Index {i})")
+                        logger.info(f"Auto-selecting Generic Input: {dev['name']} (Index {i})")
                         return i
-                        
-            print("HUD: Falling back to default input device.")
-            return None # Use sounddevice default
+
+            logger.warning("Falling back to default input device.")
+            return None  # Use sounddevice default
         except Exception as e:
-            print(f"HUD: Error searching for audio devices: {e}")
+            logger.error(f"Error searching for audio devices: {e}")
             return None
 
     def run(self):
         """Main recognition loop using streaming audio"""
         self.is_running = True
-        print("HUD: [DEBUG-Thread] Starting OptimizedVoiceThread run()")
+        logger.debug("Starting OptimizedVoiceThread run()")
         
         try:
             # Always try to capture at 16000Hz directly (Whisper requires this)
@@ -81,7 +81,7 @@ class OptimizedVoiceThread(QThread):
 
             try:
                 # Test if 16kHz capture works
-                print(f"HUD: [DEBUG-Thread] Testing sd.InputStream at {TARGET_SR}Hz...")
+                logger.debug(f"Testing sd.InputStream at {TARGET_SR}Hz...")
                 test_stream = sd.InputStream(
                     device=self.input_device,
                     samplerate=TARGET_SR,
@@ -90,16 +90,16 @@ class OptimizedVoiceThread(QThread):
                     blocksize=BLOCK_SIZE
                 )
                 test_stream.close()
-                print(f"HUD: OptimizedVoiceThread: Direct 16kHz capture confirmed.")
+                logger.info("Direct 16kHz capture confirmed.")
             except Exception as e1:
-                print(f"HUD: [DEBUG-Thread] 16kHz InputStream failed: {e1}")
+                logger.warning(f"16kHz InputStream failed: {e1}")
                 # Fallback to native rate + resampling
                 device_info = sd.query_devices(self.input_device, 'input')
                 self.native_sr = int(device_info['default_samplerate'])
                 block_size = int(self.native_sr * 0.032)
-                print(f"HUD: OptimizedVoiceThread: Fallback to native {self.native_sr}Hz + resampling")
+                logger.info(f"Fallback to native {self.native_sr}Hz + resampling")
 
-            print(f"HUD: [DEBUG-Thread] Opening main InputStream at {self.native_sr}Hz, block_size {block_size}...")
+            logger.debug(f"Opening main InputStream at {self.native_sr}Hz, block_size {block_size}...")
 
             with sd.InputStream(
                 device=self.input_device,
@@ -109,7 +109,7 @@ class OptimizedVoiceThread(QThread):
                 blocksize=block_size,
                 callback=self._audio_callback
             ):
-                print(f"HUD: OptimizedVoiceThread: sd.InputStream active at {self.native_sr}Hz.")
+                logger.info(f"sd.InputStream active at {self.native_sr}Hz.")
                 last_speech_time = None
                 is_speaking = False
                 SILENCE_TIMEOUT = 0.8  # seconds of silence to trigger transcription
@@ -137,7 +137,7 @@ class OptimizedVoiceThread(QThread):
                                 # Heuristic: If volume is high enough to be intentional speech over TTS
                                 rms = np.sqrt(np.mean(audio_data**2))
                                 if rms > 0.08: # Threshold for interruption
-                                    print("HUD: USER INTERRUPTION DETECTED!")
+                                    logger.info("USER INTERRUPTION DETECTED!")
                                     self.user_interrupted.emit()
                                     self.is_paused = False # Autoresume
                                 continue # Still skip processing this chunk to avoid echo-command
@@ -146,7 +146,7 @@ class OptimizedVoiceThread(QThread):
                             if not is_speaking:
                                 is_speaking = True
                                 current_speech_samples = 0
-                                print(f"HUD: SPEECH DETECTED (Pre-buffer: {len(self.pre_speech_buffer)} frames)")
+                                logger.debug(f"SPEECH DETECTED (Pre-buffer: {len(self.pre_speech_buffer)} frames)")
                                 self.listening_state.emit(True)
                                 
                                 # Feed the pre-speech buffer to catch the start of the word
@@ -166,30 +166,28 @@ class OptimizedVoiceThread(QThread):
                         # Check if we've had enough silence to end this utterance
                         if last_speech_time and time.time() - last_speech_time >= SILENCE_TIMEOUT:
                             is_speaking = False
-                            print(f"HUD: SILENCE DETECTED (after {time.time()-last_speech_time:.1f}s of silence)")
+                            logger.debug(f"SILENCE DETECTED (after {time.time()-last_speech_time:.1f}s of silence)")
                             self.listening_state.emit(False)
                             last_speech_time = None
-                            
+
                             # Check minimum audio length using actual tracked samples
                             audio_secs = current_speech_samples / 16000
-                            print(f"HUD: [DEBUG] Tracked Speech Duration: ~{audio_secs:.2f}s")
-                            
+                            logger.debug(f"Tracked Speech Duration: ~{audio_secs:.2f}s")
+
                             if audio_secs >= MIN_AUDIO_S:
                                 # Process STT in background to not block the audio loop
                                 def _transcribe():
                                     try:
                                         final_text = self.processor.get_final_text()
-                                        print(f"HUD: [DEBUG] STT final_text result: '{final_text}'")
+                                        logger.debug(f"STT final_text result: '{final_text}'")
                                         if final_text:
                                             self._process_recognized_text(final_text)
                                     except Exception as e:
-                                        import traceback
-                                        print(f"HUD: [ERROR] Background STT transcription failed: {e}")
-                                        traceback.print_exc()
+                                        logger.error(f"Background STT transcription failed: {e}", exc_info=True)
                                 threading.Thread(target=_transcribe, daemon=True).start()
                             else:
                                 self.processor.audio_buffer = []  # Too short, discard for whisper
-                                print("HUD: [DEBUG] Audio too short, discarded")
+                                logger.debug("Audio too short, discarded")
                             
                             current_speech_samples = 0
                                 
@@ -211,7 +209,7 @@ class OptimizedVoiceThread(QThread):
     def pause(self):
         """Temporarily stop listening (e.g., when TTS is speaking)"""
         self.is_paused = True
-        print("HUD: Microphone PAUSED (Anti-Echo)")
+        logger.debug("Microphone PAUSED (Anti-Echo)")
         # Clear queue to drop remaining audio
         with self.audio_queue.mutex:
             self.audio_queue.queue.clear()
@@ -219,12 +217,12 @@ class OptimizedVoiceThread(QThread):
     def resume(self):
         """Resume listening"""
         self.is_paused = False
-        print("HUD: Microphone RESUMED")
+        logger.debug("Microphone RESUMED")
 
     def _audio_callback(self, indata, frames, time, status):
         """SoundDevice callback to push data to queue and emit level"""
         if status:
-            print(f"HUD: Audio status warning: {status}")
+            logger.warning(f"Audio status warning: {status}")
         
         if self.is_paused:
             return # Ignore all audio input while TTS is active
@@ -252,10 +250,9 @@ class OptimizedVoiceThread(QThread):
         HALLUCINATIONS = {"xx", "x", "!", "...", "…", "[música]", "[music]", "[blank_audio]", 
                           "[silêncio]", "[silence]", "[inaudível]", "[inaudible]", "obrigado", "obrigada"}
         if text in HALLUCINATIONS or len(text) < 3:
-            print(f"HUD: [FILTER] Hallucination discarded: '{text}'")
+            logger.debug(f"Hallucination discarded: '{text}'")
             return
-            
-        print(f"HUD: Recognized: '{text}'")
+
         logger.info(f"Recognized: '{text}'")
         
         # Limpar o wake word do comando final, caso o usuário ainda fale por costume

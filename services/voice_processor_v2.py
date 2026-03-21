@@ -38,11 +38,11 @@ class VoiceProcessorV2:
         if not self.use_whisper:
             if not os.path.exists(model_path):
                 raise FileNotFoundError(f"Vosk model not found at {model_path}")
-            print("HUD: [DEBUG-Init] Loading Vosk Model...")
+            logger.info("Loading Vosk Model...")
             self.vosk_model = vosk.Model(model_path)
-            print("HUD: [DEBUG-Init] Vosk Model Loaded. Loading KaldiRecognizer...")
+            logger.info("Vosk Model Loaded. Loading KaldiRecognizer...")
             self.recognizer = vosk.KaldiRecognizer(self.vosk_model, 16000)
-            print("HUD: [DEBUG-Init] KaldiRecognizer Loaded.")
+            logger.info("KaldiRecognizer Loaded.")
         
         # Initialize Silero VAD
         self.vad_session = None
@@ -56,9 +56,9 @@ class VoiceProcessorV2:
                 logger.warning(f"VoiceProcessorV2: OpenVINO disabled ({e_ov}), trying ONNXRuntime...")
                 try:
                     import onnxruntime as ort
-                    print("HUD: [DEBUG-Init] Loading ONNX InferenceSession...")
+                    logger.info("Loading ONNX InferenceSession...")
                     self.vad_session = ort.InferenceSession(vad_path)
-                    print("HUD: [DEBUG-Init] ONNX InferenceSession Loaded.")
+                    logger.info("ONNX InferenceSession Loaded.")
                     logger.info("VoiceProcessorV2: Silero VAD initialized with ONNXRuntime.")
                 except Exception as e:
                     logger.warning(f"VoiceProcessorV2: Failed to load Silero VAD ({e}). Using energy fallback.")
@@ -154,7 +154,7 @@ class VoiceProcessorV2:
                             self.vosk_text += " " + text
                         else:
                             self.vosk_text = text
-                        print(f"HUD: Vosk Partial Accumulated: {self.vosk_text}")
+                        logger.debug(f"Vosk Partial Accumulated: {self.vosk_text}")
                     return text
                 else:
                     return None
@@ -194,7 +194,7 @@ class VoiceProcessorV2:
                             logger.warning(f"Whisper config warning: {e_cfg}")
                             config = None
 
-                        print(f"HUD: Whisper: Starting inference on {len(full_audio)} samples...")
+                        logger.debug(f"Whisper: Starting inference on {len(full_audio)} samples...")
                         
                         # OpenVINO GenAI PyBind11 bindings expect a Python list[float]
                         # Passing a raw numpy array can result in 'vector too long' due to C++ memory cast errors
@@ -209,16 +209,16 @@ class VoiceProcessorV2:
                     else:
                         text = "" # No pipeline available
 
-                    # Safely print without crashing on Windows cp1252
+                    # Safely log without crashing on Windows cp1252
                     safe_print_text = text.encode('ascii', 'replace').decode('ascii') if text else ""
-                    print(f"HUD: Whisper: Inference finished. Result: '{safe_print_text}'")
-                    
+                    logger.debug(f"Whisper: Inference finished. Result: '{safe_print_text}'")
+
                     if text and text not in {'.', '!', '?', '...', '…', ',,', ',,,'} and len(text) > 1:
                         # Clean special characters that might break HUD/JSON
                         safe_text = text.encode('ascii', 'ignore').decode('ascii')
                         if not safe_text.strip(): # If cleaning stripped everything (non-ascii like emojis)
                             safe_text = text # Fallback to original
-                        print(f"HUD: [DEBUG] Whisper result: '{safe_print_text}'")
+                        logger.debug(f"Whisper result: '{safe_print_text}'")
                         return text
                     return ""
                 except Exception as e:

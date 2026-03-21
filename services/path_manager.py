@@ -24,9 +24,9 @@ class PathManager:
 
         try:
             app_dir.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
+        except OSError as e:
             # Fallback to local directory if permission denied
-            print(f"Failed to create app data dir at {app_dir}: {e}")
+            logger.warning(f"Failed to create app data dir at {app_dir}: {e}")
             app_dir = Path.cwd() / "data"
             app_dir.mkdir(parents=True, exist_ok=True)
 

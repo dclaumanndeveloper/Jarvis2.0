@@ -2,11 +2,13 @@ import pyautogui
 # import pyttsx3 # Removed for architecture refactor
 import pywhatkit
 import time
+import shutil
 from datetime import datetime
 import webbrowser
 import platform
 import os
 import subprocess
+import logging
 import psutil
 import geocoder
 import json
@@ -15,6 +17,8 @@ from collections import defaultdict
 from itertools import tee
 from typing import Optional, Tuple, Dict, List, Any
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Import the new registry
 from services.action_controller import registry
@@ -43,7 +47,7 @@ IS_LINUX = platform.system() == "Linux"
 volume: Optional[Any] = None
 
 if IS_WINDOWS:
-    try: 
+    try:
         import comtypes
         comtypes.CoInitialize()  # Initialize COM for this thread
         from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
@@ -51,11 +55,11 @@ if IS_WINDOWS:
         devices = AudioUtilities.GetSpeakers()
         if devices and hasattr(devices, 'EndpointVolume'):
             volume = devices.EndpointVolume
-            print(f"Volume control initialized: {type(volume)}")
+            logger.info(f"Volume control initialized: {type(volume)}")
         else:
-            print("Volume control: No EndpointVolume available")
+            logger.warning("Volume control: No EndpointVolume available")
     except (ImportError, OSError, Exception) as e:
-        print(f"Volume control initialization warning: {e}")
+        logger.warning(f"Volume control initialization warning: {e}")
         volume = None
 
 # --- Local AI & Vision Model Initialization (Global) ---
@@ -177,7 +181,7 @@ def get_current_location() -> Tuple[Optional[str], Optional[str]]:
         if location.ok:
             return location.city, location.country
     except Exception as e:
-        print(f"Error getting location: {e}")
+        logger.warning(f"Error getting location: {e}")
     return None, None
 
 @registry.register(intents=[IntentType.INFORMATION_QUERY], category=CommandCategory.INFORMATION, description="Busca a temperatura atual")
@@ -310,23 +314,31 @@ def pesquisa_agente(query: str = None) -> str:
 @registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Desliga o computador")
 def desligar_computador() -> str:
     """Shuts down the computer."""
-    if IS_WINDOWS:
-        os.system("shutdown /s /t 10")
-    elif IS_MACOS:
-        os.system("sudo shutdown -h +0") # May require sudo
-    elif IS_LINUX:
-        os.system("shutdown now")
+    try:
+        if IS_WINDOWS:
+            subprocess.run(["shutdown", "/s", "/t", "10"], check=True)
+        elif IS_MACOS:
+            subprocess.run(["sudo", "shutdown", "-h", "+0"], check=True)
+        elif IS_LINUX:
+            subprocess.run(["shutdown", "now"], check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Erro ao desligar computador: {e}")
+        return "Não foi possível desligar o computador."
     return "Desligando o computador em 10 segundos."
-                
+
 @registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Reinicia o computador")
 def reiniciar_computador(confirmado: bool = False) -> str:
     """Restarts the computer."""
-    if IS_WINDOWS:
-        os.system("shutdown /r /t 10")
-    elif IS_MACOS:
-        os.system("sudo shutdown -r +0") # May require sudo
-    elif IS_LINUX:
-        os.system("reboot")
+    try:
+        if IS_WINDOWS:
+            subprocess.run(["shutdown", "/r", "/t", "10"], check=True)
+        elif IS_MACOS:
+            subprocess.run(["sudo", "shutdown", "-r", "+0"], check=True)
+        elif IS_LINUX:
+            subprocess.run(["reboot"], check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Erro ao reiniciar computador: {e}")
+        return "Não foi possível reiniciar o computador."
     return "Reiniciando o computador em 10 segundos."
 
 @registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.UTILITY, description="Pesquisar no Google")
@@ -471,11 +483,11 @@ def abrir(query: str = None, *, target: str = None) -> Optional[str]:
     if query_lower in app_dict:
         command_str = app_dict[query_lower]
         try:
-            subprocess.Popen(command_str, shell=True)
-            time.sleep(0.5) 
+            subprocess.Popen(command_str.split(), shell=False)
+            time.sleep(0.5)
             return f"Abrindo {query_lower}"
         except Exception as e:
-            print(f"Error opening app from dict: {e}")
+            logger.warning(f"Error opening app from dict: {e}")
 
     # 2. Try Generic System Open
     try:
@@ -503,7 +515,7 @@ def abrir(query: str = None, *, target: str = None) -> Optional[str]:
             pyautogui.press('enter')
             return f"Buscando e abrindo {query_lower}..."
         except Exception as e:
-            print(f"Error with pyautogui: {e}")
+            logger.warning(f"Error with pyautogui: {e}")
             return f"Erro ao tentar abrir visualmente: {e}"
 
     return f"Não consegui encontrar {query_lower}, mas tentei abrir."
@@ -560,20 +572,21 @@ def finish_day() -> str:
     fechar("fechar teams")
     fechar("fechar arc") # Assumed 'arc' exists in processes or system
 
-    lock_command = ""
+    lock_command: List[str] = []
     if IS_WINDOWS:
-        lock_command = "rundll32.exe user32.dll,LockWorkStation"
+        lock_command = ["rundll32.exe", "user32.dll,LockWorkStation"]
     elif IS_MACOS:
-        lock_command = "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession -suspend"
+        lock_command = ["/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession", "-suspend"]
     elif IS_LINUX:
-        lock_command = "xdg-screensaver lock"
+        lock_command = ["xdg-screensaver", "lock"]
 
     msg = "Rotina de fim de dia concluída! "
     if lock_command:
         try:
-            subprocess.run(lock_command, shell=True, check=True)
+            subprocess.run(lock_command, check=True)
             msg += "Tela bloqueada."
-        except Exception:
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Erro ao bloquear tela no finish_day: {e}")
             msg += "Mas não foi possível bloquear a tela."
     
     return msg
@@ -586,8 +599,8 @@ def verificar_internet() -> str:
         # but here we are kept synchronous as requested, just wrapped in try/except
         result = subprocess.run(["speedtest-cli", "--simple"], capture_output=True, text=True, check=True)
         output = result.stdout
-        print(output)
-        
+        logger.debug(f"Speedtest output: {output}")
+
         response = "Velocidade da internet: "
         for line in output.splitlines():
             if "Download:" in line or "Upload:" in line:
@@ -595,8 +608,11 @@ def verificar_internet() -> str:
         return response
     except FileNotFoundError:
         return "O utilitário speedtest-cli não está instalado."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Speedtest error: {e}")
+        return "Não foi possível conectar para medir a velocidade."
     except Exception as e:
-        print(f"Speedtest error: {e}")
+        logger.error(f"Speedtest error: {e}")
         return "Não foi possível conectar para medir a velocidade."
 
 @registry.register(intents=[IntentType.INFORMATION_QUERY], category=CommandCategory.INFORMATION, description="Mostra informações do sistema")
@@ -666,16 +682,19 @@ def espaco_disco() -> str:
 @registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Bloqueia a tela")
 def bloquear_tela() -> str:
     """Locks the screen."""
-    if IS_WINDOWS:
-        os.system("rundll32.exe user32.dll,LockWorkStation")
+    try:
+        if IS_WINDOWS:
+            subprocess.run(["rundll32.exe", "user32.dll,LockWorkStation"], check=True)
+        elif IS_MACOS:
+            subprocess.run(["pmset", "displaysleepnow"], check=True)
+        elif IS_LINUX:
+            subprocess.run(["gnome-screensaver-command", "-l"], check=True)
+        else:
+            return "Não foi possível bloquear a tela neste sistema."
         return "Bloqueando a tela."
-    elif IS_MACOS:
-        os.system("pmset displaysleepnow")
-        return "Bloqueando a tela."
-    elif IS_LINUX:
-        os.system("gnome-screensaver-command -l")
-        return "Bloqueando a tela."
-    return "Não foi possível bloquear a tela neste sistema."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Erro ao bloquear tela: {e}")
+        return "Não foi possível bloquear a tela."
 
 @registry.register(intents=[IntentType.DIRECT_COMMAND], category=CommandCategory.SYSTEM, description="Esvazia a lixeira")
 def limpar_lixeira() -> str:
@@ -684,16 +703,31 @@ def limpar_lixeira() -> str:
         if IS_WINDOWS:
             import ctypes
             ctypes.windll.shell32.SHEmptyRecycleBinW(None, None, 0x0007)
-            return "Lixeira esvaziada com sucesso."
         elif IS_MACOS:
-            os.system("rm -rf ~/.Trash/*")
-            return "Lixeira esvaziada com sucesso."
+            trash_path = os.path.expanduser("~/.Trash")
+            for item in os.listdir(trash_path):
+                item_path = os.path.join(trash_path, item)
+                if os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+                else:
+                    os.remove(item_path)
         elif IS_LINUX:
-            os.system("rm -rf ~/.local/share/Trash/*")
-            return "Lixeira esvaziada com sucesso."
+            trash_path = os.path.expanduser("~/.local/share/Trash")
+            for subdir in ("files", "info"):
+                subdir_path = os.path.join(trash_path, subdir)
+                if os.path.exists(subdir_path):
+                    for item in os.listdir(subdir_path):
+                        item_path = os.path.join(subdir_path, item)
+                        if os.path.isdir(item_path):
+                            shutil.rmtree(item_path)
+                        else:
+                            os.remove(item_path)
+        else:
+            return "Não foi possível esvaziar a lixeira neste sistema."
+        return "Lixeira esvaziada com sucesso."
     except Exception as e:
+        logger.error(f"Erro ao esvaziar lixeira: {e}")
         return f"Não foi possível esvaziar a lixeira: {e}"
-    return "Não foi possível esvaziar a lixeira neste sistema."
 
 # --- NEW COMMANDS: Utilities ---
 

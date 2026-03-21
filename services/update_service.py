@@ -41,7 +41,8 @@ class AutoUpdateService:
             v_curr = [int(x) for x in self.version.split('.')]
             v_new = [int(x) for x in latest.split('.')]
             return v_new > v_curr
-        except:
+        except (ValueError, AttributeError):
+            logger.warning(f"Could not compare versions: current={self.version}, latest={latest}")
             return False
 
     async def download_update(self):
